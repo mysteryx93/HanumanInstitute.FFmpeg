@@ -1,4 +1,4 @@
-# FFmpeg.NET
+# EmergenceGuardian.Encoder (.NET FFmpeg Wrapper)
 .Net wrapper for media encoders such as FFmpeg, X264 and X265, including Avisynth and VapourSynth support.
 
 [NuGet Package](https://www.nuget.org/packages/EmergenceGuardian.Encoder/)
@@ -7,7 +7,7 @@
 - Manages processes programatically (start, track, cancel).
 - Parses process output from FFmpeg, X264 or X265 to track progress and create a rich user interface.
 - Provides easy access to common functions, and can be extended to call and track any other console process.
-- Can pipe Avisynth and VapourSynth scripts into FFmpeg, X264 and X265 and will manage processes accordingly.
+- Can pipe Avisynth and VapourSynth scripts into FFmpeg, X264 and X265 and will manage processes accordingly. 10-bit videos are supported.
 - Can be extended to support additional encoders.
 - Designed using Dependency Injection principles.
 - Fully tested with unit tests so it just works.
@@ -22,7 +22,7 @@
 
 All operations take 2 parameters: Options and Callback.
 
-**Options** will be explained below.
+**Options** will be explained in ProcessOptions section.
 
 **Callback** plugs into the ProcessStarted event and allows grabbing a reference to ProcessWorker.
 
@@ -37,13 +37,13 @@ IFileInfoFFmpeg FileInfo = InfoReader.GetFileInfo("file.mp4", null, (s, e) => Wo
 
 ## Classes
 
-# IProcessWorkerFactory
+### IProcessWorkerFactory
 
 Creates new instances of process workers.
 
 IMediaConfig **Config** : Gets or sets the configuration settings.
 
-# IMediaConfig
+### IMediaConfig
 
 Contains the configuration settings of EmergenceGuardian.Encoder.
 
@@ -63,7 +63,7 @@ event **CloseProcess** : Occurs when a process needs to be closed. This needs to
 
 event **GetCustomAppPath** : Occurs when running a custom application name to get the path of the application.
 
-# IMediaInfoReader
+### IMediaInfoReader
 
 Provides functions to get information on media files.
 
@@ -73,7 +73,7 @@ IFileInfoFFmpeg **GetFileInfo**(string source) : Gets file streams information o
 
 long **GetFrameCount**(string source) : Returns the exact frame count of specified video file.
 
-# IMediaMuxer
+### IMediaMuxer
 
 Provides functions to manage audio and video streams.
 
@@ -89,7 +89,7 @@ CompletionStatus **Concatenate**(IEnumerable<string> files, string destination) 
 
 CompletionStatus **Truncate**(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null) : Truncates a media file from specified start position with specified duration. This can result in data loss or corruption if not splitting exactly on a framekey.
 
-# IMediaEncoder
+### IMediaEncoder
 
 Provides functions to encode media files.
 
@@ -113,15 +113,15 @@ CompletionStatus **EncodeVapourSynthToX265**(string source, string destination, 
 
 Note: There is no EncodeX265 because X265 only supports reading RAW and Y4M data and cannot read media files directly.
 
-# IMediaScript
+### IMediaScript
 
 Provides methods to execute Avisynth or VapourSynth media script files.
 
 CompletionStatus **RunAvisynth**(string path) : Runs avs2pipemod with specified source file. The output will be discarded.
 
-CompletionStatus ****RunVapourSynth**(string path) : Runs vspipe with specified source file. The output will be discarded.
+CompletionStatus **RunVapourSynth**(string path) : Runs vspipe with specified source file. The output will be discarded.
 
-# IProcessWorker
+### IProcessWorker
 
 Executes an application and manages its process.
 
@@ -145,13 +145,13 @@ CompletionStatus **LastCompletionStatus** : Returns the CompletionStatus of the 
 
 CompletionStatus **RunAsCommand**(string cmd) : Runs the command as 'cmd /c', allowing the use of command line features such as piping.
 
-CompletionStatus **un**(string fileName, string arguments) : Runs specified process with specified arguments.
+CompletionStatus **Run**(string fileName, string arguments) : Runs specified process with specified arguments.
 
 void **Cancel**() : Cancels the currently running job and terminate its process.
 
 string **CommandWithArgs** : Returns the full command with arguments being run.
 
-# ProcessWorkerEncoder
+### ProcessWorkerEncoder
 
 string **EncoderApp** : Gets the application being used for encoding.
 
@@ -173,7 +173,7 @@ CompletionStatus **RunVapourSynthToEncoder**(string source, string arguments, En
 
 Note: RunEncoder, RunAvisynthToEncoder and RunVapourSynthToEncoder can also take a string instead of EncoderApp to specify a custom application name. See section "Parsing Custom Application" for more info.
 
-# TimeLeftCalculator
+### TimeLeftCalculator
 
 Allows calculating the time left during an encoding process.
 
@@ -187,7 +187,7 @@ double **ResultFps** : After calling Calculate, returns the estimated processing
 
 void **Calculate**(long pos) : Calculates the time left and fps. Result will be in ResultTimeLeft and ResultFps.
 
-# UserInterfaceManagerBase
+### UserInterfaceManagerBase
 
 Base class to implement a user interface for running processes.
 
@@ -203,7 +203,7 @@ IUserInterfaceWindow **CreateUI**(string title, bool autoClose) : When implement
 
 void **DisplayError**(IProcessWorker host) : When implemented in a derived class, displays an error window.
 
-# IUserInterfaceWindow
+### IUserInterfaceWindow
 
 Provides an interface that must be implemented by the FFmpeg graphical interface window.
 
@@ -211,16 +211,16 @@ void **Stop**() : Closes the window.
 
 void **DisplayTask**(IProcessWorker host) : Displays specified process.
 
-# ProcessOptions
+### ProcessOptions
 
 Contains options to control the behaviors of a process.
 
 ProcessDisplayMode **DisplayMode** : Gets or sets the display mode when running a process (None | Native | Interface | ErrorOnly).  
 
-None : No graphical interface will be created but events can still be handled manually.
-Native : The native FFmpeg console window will be displayed. Events will not be fired.
-Interface : IUserInterfaceManager will be used to display and manage the graphical interface.
-ErrorOnly : IUserInterfaceManager will be used to display the process' output if the process returned an error.
+None : No graphical interface will be created but events can still be handled manually.  
+Native : The native FFmpeg console window will be displayed. Events will not be fired.  
+Interface : IUserInterfaceManager will be used to display and manage the graphical interface.  
+ErrorOnly : IUserInterfaceManager will be used to display the process' output if the process returned an error.  
 
 string **Title** : Gets or sets the title to display.
 
@@ -230,9 +230,9 @@ bool **IsMainTask** : If displaying several tasks in the same UI, gets whether t
 
 ProcessPriorityClass **Priority** : Gets or sets the overall priority category for the associated process.
 
-TimeSpan Timeout : Gets or sets a timeout after which the process will be stopped.
+TimeSpan **Timeout** : Gets or sets a timeout after which the process will be stopped.
 
-# ProcessOptionsEncoder : ProcessOptions
+### ProcessOptionsEncoder : ProcessOptions
 
 Contains additional options to control the behaviors of an encoder process.
 
@@ -247,7 +247,7 @@ long **ResumePos** : If resuming a job, gets or sets the number of frames that w
 By default, canceling tasks is done with a soft kill to let the process close its files in a clean state. 
 **This implementation, however, won't work for Console Applications.** If you are using this class in a 
 console application, you must handle MediaConfig.CloseProcess event and implement a work-around as 
-described [here](http://stackoverflow.com/a/29274238/3960200); or simply call Process.Kill if you don't mind a hard kill.
+described [here](http://stackoverflow.com/a/29274238/3960200); or simply call ProcessWorker.Kill if you don't mind a hard kill.
 
 ## Parsing Custom Application
 
