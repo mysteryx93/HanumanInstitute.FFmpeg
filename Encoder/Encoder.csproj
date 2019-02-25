@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>EmergenceGuardian.Encoder</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Etienne Charland</Authors>
+    <Company>Emergence Guardian</Company>
+    <Product>EmergenceGuardian.Encoder</Product>
+    <Description>.Net wrapper for media encoders such as FFmpeg, X264 and X265, including Avisynth and VapourSynth support.</Description>
+    <Copyright>Copyright 2017-2019, Emergence Guardian</Copyright>
+    <PackageTags>ffmpeg ffmpeg-wrapper video-encoding video library .net</PackageTags>
+    <PackageReleaseNotes>https://github.com/mysteryx93/EmergenceGuardian.Encoder/releases</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/mysteryx93/EmergenceGuardian.Encoder</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/mysteryx93/EmergenceGuardian.Encoder/blob/master/LICENSE</PackageLicenseUrl>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <RootNamespace>EmergenceGuardian.Encoder</RootNamespace>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <AssemblyName>EmergenceGuardian.Encoder</AssemblyName>
+  </PropertyGroup>
+</Project>

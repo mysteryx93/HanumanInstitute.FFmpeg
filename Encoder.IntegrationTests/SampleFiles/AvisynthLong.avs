@@ -1,0 +1,1 @@
+BlankClip(pixel_type="YUV420", length=10000, color = $AA0000)
