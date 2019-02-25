@@ -43,6 +43,10 @@ Creates new instances of process workers.
 
 IMediaConfig **Config** : Gets or sets the configuration settings.
 
+IProcessWorker **Create** : Creates a new process worker with specified options.
+
+IProcessWorkerEncoder **CreateEncoder** : Creates a new process worker to run an encoder with specified options.
+
 ### IMediaConfig
 
 Contains the configuration settings of EmergenceGuardian.Encoder.
