@@ -31,7 +31,7 @@ var Factory = new ProcessWorkerFactory(new MediaConfig() {
     FFmpegPath = Properties.Settings.Default.FFmpegPath
 });
 var InfoReader = new MediaInfoReader(Factory);
-ProcessWorkerEncoder Worker;
+IProcessWorker Worker;
 IFileInfoFFmpeg FileInfo = InfoReader.GetFileInfo("file.mp4", null, (s, e) => Worker = e.ProcessWorker);
 ```
 
@@ -155,7 +155,7 @@ void **Cancel**() : Cancels the currently running job and terminate its process.
 
 string **CommandWithArgs** : Returns the full command with arguments being run.
 
-### ProcessWorkerEncoder
+### IProcessWorkerEncoder
 
 string **EncoderApp** : Gets the application being used for encoding.
 

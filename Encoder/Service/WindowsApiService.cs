@@ -1,36 +1,23 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace EmergenceGuardian.Encoder.Services {
-
-    #region Interface
-
+namespace HanumanInstitute.Encoder.Services
+{
     /// <summary>
     /// Provides Windows API functions to manage processes.
     /// </summary>
-    public interface IWindowsApiService {
-        bool GenerateConsoleCtrlEvent();
-        bool AttachConsole(uint processId);
-        bool FreeConsole();
-        bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handlerRoutine, bool add);
-    }
+    public class WindowsApiService : IWindowsApiService
+    {
+        public bool GenerateConsoleCtrlEvent() => NativeMethods.GenerateConsoleCtrlEvent(NativeMethods.CTRL_C_EVENT, 0);
 
-    #endregion
+        public bool AttachConsole(uint processId) => NativeMethods.AttachConsole(processId);
 
-    /// <summary>
-    /// Provides Windows API functions to manage processes.
-    /// </summary>
-    public class WindowsApiService: IWindowsApiService {
+        public bool FreeConsole() => NativeMethods.FreeConsole();
 
-        public bool GenerateConsoleCtrlEvent() => Api.GenerateConsoleCtrlEvent(Api.CTRL_C_EVENT, 0);
+        public bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handlerRoutine, bool add) => NativeMethods.SetConsoleCtrlHandler(handlerRoutine, add);
 
-        public bool AttachConsole(uint processId) => Api.AttachConsole(processId);
-
-        public bool FreeConsole() => Api.FreeConsole();
-
-        public bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handlerRoutine, bool add) => Api.SetConsoleCtrlHandler(handlerRoutine, add);
-
-        private static class Api {
+        private static class NativeMethods
+        {
             internal const int CTRL_C_EVENT = 0;
             [DllImport("kernel32.dll")]
             internal static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
@@ -43,4 +30,9 @@ namespace EmergenceGuardian.Encoder.Services {
             // Delegate type to be used as the Handler Routine for SCCH
         }
     }
+
+    /// <summary>
+    /// Delegate used for SetConsoleCtrlHandler Win API call.
+    /// </summary>
+    public delegate bool ConsoleCtrlDelegate(uint CtrlType);
 }

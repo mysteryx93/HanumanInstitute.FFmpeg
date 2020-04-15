@@ -1,13 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
+using HanumanInstitute.Encoder;
 
 namespace EmergenceGuardian.Encoder.IntegrationTests {
     public class MediaEncoderTests {
-
-        #region Utility Methods
 
         private IProcessWorkerFactory factory;
         private readonly ITestOutputHelper output;
@@ -36,9 +34,8 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
             Assert.Equal(streamCount, FileInfo.FileStreams.Count);
         }
 
-        #endregion
 
-        #region FFmpeg
+        // FFmpeg
 
         [Theory]
         [InlineData(AppPaths.Mpeg4WithAudio, true, 2)]
@@ -170,9 +167,8 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
             Assert.Equal(CompletionStatus.Failed, Result);
         }
 
-        #endregion
 
-        #region X264
+        // X264
 
         [Theory]
         [InlineData(AppPaths.Mpeg4WithAudio, null)]
@@ -259,9 +255,8 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
             Assert.Equal(CompletionStatus.Failed, Result);
         }
 
-        #endregion
-        
-        #region X265
+
+        // X265
 
         // X265 only supports RAW and Y4M input sources.
         //[Theory]
@@ -346,8 +341,5 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
 
             Assert.Equal(CompletionStatus.Failed, Result);
         }
-
-        #endregion
-
     }
 }

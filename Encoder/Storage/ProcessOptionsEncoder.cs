@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace EmergenceGuardian.Encoder {
+namespace HanumanInstitute.Encoder
+{
     /// <summary>
     /// Contains options to control the behaviors of an encoder process.
     /// </summary>
-    public class ProcessOptionsEncoder : ProcessOptions {
+    public class ProcessOptionsEncoder : ProcessOptions
+    {
         /// <summary>
         /// Gets or sets the frame count to use when it is not automatically provided by the input file.
         /// </summary>

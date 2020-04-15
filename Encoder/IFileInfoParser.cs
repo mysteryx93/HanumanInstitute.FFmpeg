@@ -1,5 +1,5 @@
 ﻿
-namespace EmergenceGuardian.Encoder {
+namespace HanumanInstitute.Encoder {
     /// <summary>
     /// Allows the implementing class to parse encoder console outputs.
     /// </summary>

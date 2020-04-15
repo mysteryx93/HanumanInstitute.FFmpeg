@@ -1,5 +1,6 @@
-﻿
-namespace EmergenceGuardian.Encoder {
+﻿using System;
+
+namespace HanumanInstitute.Encoder {
     /// <summary>
     /// Provides an interface that must be implemented by the FFmpeg graphical interface window.
     /// </summary>
@@ -7,7 +8,7 @@ namespace EmergenceGuardian.Encoder {
         /// <summary>
         /// Closes the window.
         /// </summary>
-        void Stop();
+        void Close();
         /// <summary>
         /// Displays specified process.
         /// </summary>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EmergenceGuardian.Encoder {
+namespace HanumanInstitute.Encoder {
     /// <summary>
     /// Represents a file stream.
     /// </summary>

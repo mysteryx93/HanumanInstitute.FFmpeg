@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 
-namespace EmergenceGuardian.Encoder.IntegrationTests {
-    public static class AppPaths {
+namespace EmergenceGuardian.Encoder.IntegrationTests
+{
+    public static class AppPaths
+    {
         public static string BaseDirectory => AppDomain.CurrentDomain.BaseDirectory;
         public static string SampleFilesDirectory => Path.Combine(BaseDirectory, "SampleFiles");
         public static string OutputDirectory => Path.Combine(BaseDirectory, "Output");
@@ -29,7 +31,8 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
 
         public static string GetInputFile(string path) => !string.IsNullOrEmpty(path) ? Path.Combine(AppPaths.SampleFilesDirectory, path) : path;
 
-        public static string PrepareDestPath(string prefix, string source, string destExt) {
+        public static string PrepareDestPath(string prefix, string source, string destExt)
+        {
             string Dest = Path.Combine(AppPaths.OutputDirectory, Path.ChangeExtension(prefix + " " + source, destExt));
             Directory.CreateDirectory(Path.GetDirectoryName(Dest));
             File.Delete(Dest);

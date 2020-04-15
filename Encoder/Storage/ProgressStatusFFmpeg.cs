@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EmergenceGuardian.Encoder {
+namespace HanumanInstitute.Encoder {
     /// <summary>
     /// Contains progress information returned from FFmpeg's output.
     /// </summary>

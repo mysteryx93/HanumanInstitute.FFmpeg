@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace EmergenceGuardian.Encoder {
+namespace HanumanInstitute.Encoder
+{
     /// <summary>
     /// Contains options to control the behaviors of a process.
     /// </summary>
-    public class ProcessOptions {
+    public class ProcessOptions
+    {
         /// <summary>
         /// Gets or sets the display mode when running a process.
         /// </summary>
@@ -40,7 +42,8 @@ namespace EmergenceGuardian.Encoder {
         /// Initializes a new instance of the ProcessOptions class.
         /// </summary>
         /// <param name="displayMode">Gets or sets the display mode when running a process.</param>
-        public ProcessOptions(ProcessDisplayMode displayMode) {
+        public ProcessOptions(ProcessDisplayMode displayMode)
+        {
             this.DisplayMode = displayMode;
         }
 
@@ -49,7 +52,8 @@ namespace EmergenceGuardian.Encoder {
         /// </summary>
         /// <param name="displayMode">Gets or sets the display mode when running a process.</param>
         /// <param name="title">The title to display.</param>
-        public ProcessOptions(ProcessDisplayMode displayMode, string title) {
+        public ProcessOptions(ProcessDisplayMode displayMode, string title)
+        {
             this.DisplayMode = displayMode;
             this.Title = title;
         }
@@ -60,7 +64,8 @@ namespace EmergenceGuardian.Encoder {
         /// <param name="displayMode">The display mode when running a process.</param>
         /// <param name="title">The title to display..</param>
         /// <param name="priority">The overall priority category for the associated process.</param>
-        public ProcessOptions(ProcessDisplayMode displayMode, string title, ProcessPriorityClass priority) {
+        public ProcessOptions(ProcessDisplayMode displayMode, string title, ProcessPriorityClass priority)
+        {
             this.DisplayMode = displayMode;
             this.Title = title;
             this.Priority = priority;
@@ -72,7 +77,8 @@ namespace EmergenceGuardian.Encoder {
         /// <param name="jobId">An identifier for the job. Can be used to link a set of jobs to the same UI.</param>
         /// <param name="title">The title to display.</param>
         /// <param name="isMainTask">When displaying several tasks in the same UI, whether this is the main task.</param>
-        public ProcessOptions(object jobId, string title, bool isMainTask) {
+        public ProcessOptions(object jobId, string title, bool isMainTask)
+        {
             this.DisplayMode = ProcessDisplayMode.Interface;
             this.JobId = jobId;
             this.Title = title;
