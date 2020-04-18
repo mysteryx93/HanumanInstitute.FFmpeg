@@ -1,7 +1,7 @@
 ﻿using System;
-using HanumanInstitute.Encoder.Services;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Contains the configuration settings of FFmpeg.NET.
@@ -28,10 +28,6 @@ namespace HanumanInstitute.Encoder
         /// Gets or sets the path to vspipe.exe to use VapourSynth in a separate process.
         /// </summary>
         string VsPipePath { get; set; }
-        /// <summary>
-        /// Gets or sets a class that will manage graphical interface instances when DisplayMode = Interface
-        /// </summary>
-        IUserInterfaceManager UserInterfaceManager { get; set; }
         /// <summary>
         /// Occurs when a process needs to be closed. This needs to be managed manually for Console applications.
         /// See http://stackoverflow.com/a/29274238/3960200

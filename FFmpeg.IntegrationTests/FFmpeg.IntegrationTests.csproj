@@ -13,8 +13,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{D178401D-9674-4D6C-A586-B3402A4A8373}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>EmergenceGuardian.Encoder.IntegrationTests</RootNamespace>
-    <AssemblyName>Encoder.IntegrationTests</AssemblyName>
+    <RootNamespace>HanumanInstitute.FFmpeg.IntegrationTests</RootNamespace>
+    <AssemblyName>FFmpeg.IntegrationTests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -80,6 +80,7 @@
     <Compile Include="MediaInfoTests.cs" />
     <Compile Include="ProcessManagerEncoderTests.cs" />
     <Compile Include="MediaMuxerTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>

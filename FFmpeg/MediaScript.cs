@@ -1,25 +1,35 @@
 ﻿using System;
 using System.Globalization;
+using HanumanInstitute.FFmpeg.Properties;
+using HanumanInstitute.FFmpeg.Services;
 using static System.FormattableString;
-using HanumanInstitute.Encoder.Properties;
-using HanumanInstitute.Encoder.Services;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Provides methods to execute Avisynth or VapourSynth media script files.
     /// </summary>
     public class MediaScript : IMediaScript
     {
-        private readonly IProcessWorkerFactory factory;
-        private readonly IFileSystemService fileSystem;
+        private readonly IProcessWorkerFactory _factory;
+        private readonly IFileSystemService _fileSystem;
 
-        public MediaScript(IProcessWorkerFactory processFactory) : this(processFactory, new FileSystemService()) { }
+        // public MediaScript(IProcessWorkerFactory processFactory) : this(processFactory, new FileSystemService()) { }
 
         public MediaScript(IProcessWorkerFactory processFactory, IFileSystemService fileSystemService)
         {
-            this.factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
-            this.fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
+            _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
+            _fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
+        }
+
+        private object _owner;
+        /// <summary>
+        /// Sets the owner of the process windows.
+        /// </summary>
+        public IMediaScript SetOwner(object owner)
+        {
+            _owner = owner;
+            return this;
         }
 
         /// <summary>
@@ -31,18 +41,18 @@ namespace HanumanInstitute.Encoder
         /// <returns>The process completion status.</returns>
         public CompletionStatus RunAvisynth(string path, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
         {
-            ArgHelper.ValidateNotNull(path, nameof(path));
-            if (!fileSystem.Exists(factory.Config.Avs2PipeMod))
+            ArgHelper.ValidateNotNullOrEmpty(path, nameof(path));
+            if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
             {
-                throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, factory.Config.Avs2PipeMod));
+                throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));
             }
 
-            string Args = Invariant($@"""{path}"" -rawvideo > NUL");
-            IProcessWorker Manager = factory.Create(options, callback);
-            Manager.OutputType = ProcessOutput.Error;
-            string Cmd = Invariant($@"""{factory.Config.Avs2PipeMod}"" {Args}");
-            CompletionStatus Result = Manager.RunAsCommand(Cmd);
-            return Result;
+            var args = Invariant($@"""{path}"" -rawvideo > NUL");
+            var worker = _factory.Create(_owner, options, callback);
+            worker.OutputType = ProcessOutput.Error;
+            var cmd = Invariant($@"""{_factory.Config.Avs2PipeMod}"" {args}");
+            var result = worker.RunAsCommand(cmd);
+            return result;
         }
 
         /// <summary>
@@ -54,16 +64,16 @@ namespace HanumanInstitute.Encoder
         /// <returns>The process completion status.</returns>
         public CompletionStatus RunVapourSynth(string path, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
         {
-            ArgHelper.ValidateNotNull(path, nameof(path));
-            if (!fileSystem.Exists(factory.Config.Avs2PipeMod))
+            ArgHelper.ValidateNotNullOrEmpty(path, nameof(path));
+            if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
             {
-                throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, factory.Config.Avs2PipeMod));
+                throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));
             }
 
-            string Args = Invariant($@"""{path}"" .");
-            IProcessWorker Manager = factory.Create(options, callback);
-            CompletionStatus Result = Manager.Run(factory.Config.VsPipePath, Args);
-            return Result;
+            var args = Invariant($@"""{path}"" .");
+            var worker = _factory.Create(_owner, options, callback);
+            var result = worker.Run(_factory.Config.VsPipePath, args);
+            return result;
         }
     }
 }

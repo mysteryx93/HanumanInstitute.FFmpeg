@@ -2,13 +2,17 @@
 using System.IO;
 using System.Text;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Provides functions to encode media files.
     /// </summary>
     public interface IMediaEncoder
     {
+        /// <summary>
+        /// Sets the owner of the process windows.
+        /// </summary>
+        IMediaEncoder SetOwner(object owner);
         /// <summary>
         /// Converts specified file into AVI UT Video format.
         /// </summary>

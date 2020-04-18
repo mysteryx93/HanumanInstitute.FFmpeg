@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32.SafeHandles;
 
-namespace HanumanInstitute.Encoder.Services
+namespace HanumanInstitute.FFmpeg.Services
 {
     /// <summary>
     /// Abstraction wrapper around the System.Diagnostics.Process class that can be used for unit testing.

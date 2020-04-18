@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
-using HanumanInstitute.Encoder.Properties;
+using HanumanInstitute.FFmpeg.Properties;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Provides helper methods to validate parameters.

@@ -1,46 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class MediaEncoderTests {
-
-        #region Declarations
-
-        protected FakeProcessWorkerFactory factory = new FakeProcessWorkerFactory();
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class MediaEncoderTests
+    {
+        private readonly FakeProcessWorkerFactory _factory = new FakeProcessWorkerFactory();
         private const string SourcePath = "source", DestPath = "dest";
-        private readonly ITestOutputHelper output;
+        private readonly ITestOutputHelper _output;
 
-        public MediaEncoderTests(ITestOutputHelper output) {
-            this.output = output;
+        public MediaEncoderTests(ITestOutputHelper output)
+        {
+            _output = output;
         }
 
-        #endregion
 
-        #region Utility Functions
-
-        protected IMediaEncoder SetupEncoder() {
-            return new MediaEncoder(factory);
+        protected IMediaEncoder SetupEncoder()
+        {
+            return new MediaEncoder(_factory);
         }
 
-        protected void AssertSingleInstance() {
-            string ResultCommand = factory.Instances.FirstOrDefault()?.CommandWithArgs;
-            output.WriteLine(ResultCommand);
-            Assert.Single(factory.Instances);
-            Assert.NotNull(ResultCommand);
+        protected void AssertSingleInstance()
+        {
+            var resultCommand = _factory.Instances.FirstOrDefault()?.CommandWithArgs;
+            _output.WriteLine(resultCommand);
+            Assert.Single(_factory.Instances);
+            Assert.NotNull(resultCommand);
         }
 
-        #endregion
-
-        #region Data Sources
 
         private const string VideoCodecTest = "video";
-        private readonly string[] VideoCodecSimpleList = new string[] { "video" };
 
-        public static IEnumerable<object[]> GenerateEncodeFFmpeg_Valid() {
+        public static IEnumerable<object[]> GenerateEncodeFFmpeg_Valid()
+        {
             yield return new object[] {
                 new string[] { "a", "b", "c" },
                 new string[] { "d", "e", "f" },
@@ -68,18 +63,19 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateEncodeFFmpeg_Empty() {
+        public static IEnumerable<object[]> GenerateEncodeFFmpeg_Empty()
+        {
             yield return new object[] {
                 null,
                 null
             };
             yield return new object[] {
-                new string[] { },
+                Array.Empty<string>(),
                 null,
             };
             yield return new object[] {
                 null,
-                new string[] { }
+                Array.Empty<string>()
             };
             yield return new object[] {
                 new string[] { null, "" },
@@ -87,64 +83,60 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        #endregion
-
-        #region Constructors
 
         [Fact]
-        public void Constructor_WithFactory_Success() => new MediaEncoder(factory);
+        public void Constructor_WithFactory_Success() => new MediaEncoder(_factory);
 
         [Fact]
         public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaEncoder(null));
 
-        #endregion
-
-        #region ConvertToAvi
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void ConvertToAvi_Valid_ReturnsSuccess(bool audio) {
-            var Encoder = SetupEncoder();
+        public void ConvertToAvi_Valid_ReturnsSuccess(bool audio)
+        {
+            var encoder = SetupEncoder();
 
-            var Result = Encoder.ConvertToAviUtVideo(SourcePath, DestPath, audio);
+            var result = encoder.ConvertToAviUtVideo(SourcePath, DestPath, audio);
 
             AssertSingleInstance();
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        public void ConvertToAvi_EmptyArgs_ThrowsException(string source, string dest) {
-            var Encoder = SetupEncoder();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void ConvertToAvi_EmptyArgs_ThrowsException(string source, string dest, Type ex)
+        {
+            var encoder = SetupEncoder();
 
-            Assert.Throws<ArgumentException>(() => Encoder.ConvertToAviUtVideo(source, dest, false));
+            void Act() => encoder.ConvertToAviUtVideo(source, dest, false);
+
+            Assert.Throws(ex, Act);
         }
 
         [Fact]
-        public void ConvertToAvi_ParamOptions_ReturnsSame() {
-            var Encoder = SetupEncoder();
-            var Options = new ProcessOptionsEncoder();
+        public void ConvertToAvi_ParamOptions_ReturnsSame()
+        {
+            var encoder = SetupEncoder();
+            var options = new ProcessOptionsEncoder();
 
-            Encoder.ConvertToAviUtVideo(SourcePath, DestPath, false, Options);
+            encoder.ConvertToAviUtVideo(SourcePath, DestPath, false, options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [Fact]
-        public void ConvertToAvi_ParamCallback_CallbackCalled() {
-            var Encoder = SetupEncoder();
-            int CallbackCalled = 0;
+        public void ConvertToAvi_ParamCallback_CallbackCalled()
+        {
+            var encoder = SetupEncoder();
+            var callbackCalled = 0;
 
-            Encoder.ConvertToAviUtVideo(SourcePath, DestPath, false, null, (s, e) => CallbackCalled++);
+            encoder.ConvertToAviUtVideo(SourcePath, DestPath, false, null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region EncodeFFmpeg Single
 
         [Theory]
         [InlineData("h264", null, null)]
@@ -152,57 +144,59 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         [InlineData(null, "aac", "args")]
         [InlineData("", "aac", "args")]
         [InlineData("\t\n", "\"\"\"", "\0")]
-        public void EncodeFFmpeg_Single_Valid_ReturnsSuccess(string videoCodec, string audioCodec, string arguments) {
-            var Encoder = SetupEncoder();
+        public void EncodeFFmpeg_Single_Valid_ReturnsSuccess(string videoCodec, string audioCodec, string arguments)
+        {
+            var encoder = SetupEncoder();
 
-            var Result = Encoder.EncodeFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, arguments);
+            var result = encoder.EncodeFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, arguments);
 
             AssertSingleInstance();
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        public void EncodeFFmpeg_Single_EmptySourceDest_ThrowsException(string source, string dest) {
-            var Encoder = SetupEncoder();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void EncodeFFmpeg_Single_NullSourceDest_ThrowsException(string source, string dest, Type ex)
+        {
+            var encoder = SetupEncoder();
 
-            Assert.Throws<ArgumentException>(() => Encoder.EncodeFFmpeg(source, dest, VideoCodecTest, null, null));
+            void Act() => encoder.EncodeFFmpeg(source, dest, VideoCodecTest, null, null);
+
+            Assert.Throws(ex, Act);
         }
 
         [Fact]
-        public void EncodeFFmpeg_Single_ParamOptions_ReturnsSame() {
-            var Encoder = SetupEncoder();
-            var Options = new ProcessOptionsEncoder();
+        public void EncodeFFmpeg_Single_ParamOptions_ReturnsSame()
+        {
+            var encoder = SetupEncoder();
+            var options = new ProcessOptionsEncoder();
 
-            Encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecTest, null, null, Options);
+            encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecTest, null, null, options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [Fact]
-        public void EncodeFFmpeg_Single_ParamCallback_CallbackCalled() {
-            var Encoder = SetupEncoder();
-            int CallbackCalled = 0;
+        public void EncodeFFmpeg_Single_ParamCallback_CallbackCalled()
+        {
+            var encoder = SetupEncoder();
+            var callbackCalled = 0;
 
-            Encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecTest, null, null, null, (s, e) => CallbackCalled++);
+            encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecTest, null, null, null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region EncodeFFmpeg List
 
         //[Theory]
         //[MemberData(nameof(GenerateEncodeFFmpeg_Valid))]
         //public void EncodeFFmpeg_List_Valid_ReturnsSuccess(string[] videoCodec, string[] audioCodec, string arguments, bool hasVideo, bool hasAudio) {
-        //    var Encoder = SetupEncoder();
+        //    var encoder = SetupEncoder();
 
-        //    var Result = Encoder.EncodeFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, arguments);
+        //    var result = encoder.EncodeFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, arguments);
 
         //    AssertSingleInstance();
-        //    Assert.Equal(CompletionStatus.Success, Result);
+        //    Assert.Equal(CompletionStatus.Success, result);
         //    factory.Instances[0].CommandWithArgs.ContainsOrNot("-vn", !hasVideo);
         //    factory.Instances[0].CommandWithArgs.ContainsOrNot("-an", !hasAudio);
         //}
@@ -210,43 +204,40 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         //[Theory]
         //[MemberData(nameof(GenerateEncodeFFmpeg_Empty))]
         //public void EncodeFFmpeg_List_Empty_ThrowsException(string[] videoCodec, string[] audioCodec) {
-        //    var Encoder = SetupEncoder();
+        //    var encoder = SetupEncoder();
 
-        //    Assert.Throws<ArgumentException>(() => Encoder.EncodeFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, null));
+        //    Assert.Throws<ArgumentException>(() => encoder.EncodeFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, null));
         //}
 
         //[Theory]
         //[InlineData(null, null)]
         //[InlineData("", "")]
         //public void EncodeFFmpeg_List_EmptySourceDest_ThrowsException(string source, string dest) {
-        //    var Encoder = SetupEncoder();
+        //    var encoder = SetupEncoder();
 
-        //    Assert.Throws<ArgumentException>(() => Encoder.EncodeFFmpeg(source, dest, VideoCodecSimpleList, null, null));
+        //    Assert.Throws<ArgumentException>(() => encoder.EncodeFFmpeg(source, dest, VideoCodecSimpleList, null, null));
         //}
 
         //[Fact]
         //public void EncodeFFmpeg_List_ParamOptions_ReturnsSame() {
-        //    var Encoder = SetupEncoder();
-        //    var Options = new ProcessOptionsEncoder();
+        //    var encoder = SetupEncoder();
+        //    var options = new ProcessOptionsEncoder();
 
-        //    Encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecSimpleList, null, null, Options);
+        //    encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecSimpleList, null, null, options);
 
-        //    Assert.Same(Options, factory.Instances[0].Options);
+        //    Assert.Same(options, factory.Instances[0].Options);
         //}
 
         //[Fact]
         //public void EncodeFFmpeg_List_ParamCallback_CallbackCalled() {
-        //    var Encoder = SetupEncoder();
-        //    int CallbackCalled = 0;
+        //    var encoder = SetupEncoder();
+        //    int callbackCalled = 0;
 
-        //    Encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecSimpleList, null, null, null, (s, e) => CallbackCalled++);
+        //    encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecSimpleList, null, null, null, (s, e) => callbackCalled++);
 
-        //    Assert.Equal(1, CallbackCalled);
+        //    Assert.Equal(1, callbackCalled);
         //}
 
-        #endregion
-
-        #region EncodeAvisynthToFFmpeg
 
         [Theory]
         [InlineData("h264", null, null)]
@@ -254,27 +245,26 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         [InlineData(null, "aac", "args")]
         [InlineData("", "aac", "args")]
         [InlineData("\t\n", "\"\"\"", "\0")]
-        public void EncodeAvisynthToFFmpeg_Valid_ReturnsSuccess(string videoCodec, string audioCodec, string arguments) {
-            var Encoder = SetupEncoder();
+        public void EncodeAvisynthToFFmpeg_Valid_ReturnsSuccess(string videoCodec, string audioCodec, string arguments)
+        {
+            var encoder = SetupEncoder();
 
-            var Result = Encoder.EncodeAvisynthToFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, arguments);
+            var result = encoder.EncodeAvisynthToFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, arguments);
 
             AssertSingleInstance();
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        public void EncodeAvisynthToFFmpeg_EmptySourceDest_ThrowsException(string source, string dest) {
-            var Encoder = SetupEncoder();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void EncodeAvisynthToFFmpeg_NullSourceDest_ThrowsException(string source, string dest, Type ex)
+        {
+            var encoder = SetupEncoder();
 
-            Assert.Throws<ArgumentException>(() => Encoder.EncodeAvisynthToFFmpeg(source, dest, null, VideoCodecTest, null));
+            void Act() => encoder.EncodeAvisynthToFFmpeg(source, dest, null, VideoCodecTest, null);
+
+            Assert.Throws(ex, Act);
         }
-
-        #endregion
-
-        #region EncodeVapourSynthToFFmpeg
 
         [Theory]
         [InlineData("h264", null, null)]
@@ -282,128 +272,129 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         [InlineData(null, "aac", "args")]
         [InlineData("", "aac", "args")]
         [InlineData("\t\n", "\"\"\"", "\0")]
-        public void EncodeVapourSynthToFFmpeg_Valid_ReturnsSuccess(string videoCodec, string audioCodec, string arguments) {
-            var Encoder = SetupEncoder();
+        public void EncodeVapourSynthToFFmpeg_Valid_ReturnsSuccess(string videoCodec, string audioCodec, string arguments)
+        {
+            var encoder = SetupEncoder();
 
-            var Result = Encoder.EncodeVapourSynthToFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, arguments);
+            var result = encoder.EncodeVapourSynthToFFmpeg(SourcePath, DestPath, videoCodec, audioCodec, arguments);
 
             AssertSingleInstance();
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        public void EncodeVapourSynthToFFmpeg_EmptySourceDest_ThrowsException(string source, string dest) {
-            var Encoder = SetupEncoder();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void EncodeVapourSynthToFFmpeg_NulllSourceDest_ThrowsException(string source, string dest, Type ex)
+        {
+            var encoder = SetupEncoder();
 
-            Assert.Throws<ArgumentException>(() => Encoder.EncodeVapourSynthToFFmpeg(source, dest, null, VideoCodecTest, null));
+            void Act() => encoder.EncodeVapourSynthToFFmpeg(source, dest, null, VideoCodecTest, null);
+
+            Assert.Throws(ex, Act);
         }
-
-        #endregion
-
-        #region EncodeX264
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("args")]
         [InlineData("\t\n\0")]
-        public void EncodeX264_Valid_ReturnsSuccess(string arguments) {
-            var Encoder = SetupEncoder();
+        public void EncodeX264_Valid_ReturnsSuccess(string arguments)
+        {
+            var encoder = SetupEncoder();
 
-            var Result = Encoder.EncodeX264(SourcePath, DestPath, arguments);
+            var result = encoder.EncodeX264(SourcePath, DestPath, arguments);
 
             AssertSingleInstance();
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        public void EncodeX264_EmptySourceDest_ThrowsException(string source, string dest) {
-            var Encoder = SetupEncoder();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void EncodeX264_EmptySourceDest_ThrowsException(string source, string dest, Type ex)
+        {
+            var encoder = SetupEncoder();
 
-            Assert.Throws<ArgumentException>(() => Encoder.EncodeX264(source, dest, null));
+            void Act() => encoder.EncodeX264(source, dest, null);
+
+            Assert.Throws(ex, Act);
         }
 
         [Fact]
-        public void EncodeX264_ParamOptions_ReturnsSame() {
-            var Encoder = SetupEncoder();
-            var Options = new ProcessOptionsEncoder();
+        public void EncodeX264_ParamOptions_ReturnsSame()
+        {
+            var encoder = SetupEncoder();
+            var options = new ProcessOptionsEncoder();
 
-            Encoder.EncodeX264(SourcePath, DestPath, null, Options);
+            encoder.EncodeX264(SourcePath, DestPath, null, options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [Fact]
-        public void EncodeX264_ParamCallback_CallbackCalled() {
-            var Encoder = SetupEncoder();
-            int CallbackCalled = 0;
+        public void EncodeX264_ParamCallback_CallbackCalled()
+        {
+            var encoder = SetupEncoder();
+            var callbackCalled = 0;
 
-            Encoder.EncodeX264(SourcePath, DestPath, VideoCodecTest, null, (s, e) => CallbackCalled++);
+            encoder.EncodeX264(SourcePath, DestPath, VideoCodecTest, null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region EncodeAvisynthToX264
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("args")]
         [InlineData("\t\n\0")]
-        public void EncodeAvisynthToX264_Valid_ReturnsSuccess(string arguments) {
-            var Encoder = SetupEncoder();
+        public void EncodeAvisynthToX264_Valid_ReturnsSuccess(string arguments)
+        {
+            var encoder = SetupEncoder();
 
-            var Result = Encoder.EncodeAvisynthToX264(SourcePath, DestPath, arguments);
+            var result = encoder.EncodeAvisynthToX264(SourcePath, DestPath, arguments);
 
             AssertSingleInstance();
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        public void EncodeAvisynthToX264_EmptySourceDest_ThrowsException(string source, string dest) {
-            var Encoder = SetupEncoder();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void EncodeAvisynthToX264_EmptySourceDest_ThrowsException(string source, string dest, Type ex)
+        {
+            var encoder = SetupEncoder();
 
-            Assert.Throws<ArgumentException>(() => Encoder.EncodeAvisynthToX264(source, dest, null));
+            void Act() => encoder.EncodeAvisynthToX264(source, dest, null);
+
+            Assert.Throws(ex, Act);
         }
 
-        #endregion
-
-        #region EncodeVapourSynthToX264
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("args")]
         [InlineData("\t\n\0")]
-        public void EncodeVapourSynthToX264_Valid_ReturnsSuccess(string arguments) {
-            var Encoder = SetupEncoder();
+        public void EncodeVapourSynthToX264_Valid_ReturnsSuccess(string arguments)
+        {
+            var encoder = SetupEncoder();
 
-            var Result = Encoder.EncodeVapourSynthToX264(SourcePath, DestPath, arguments);
+            var result = encoder.EncodeVapourSynthToX264(SourcePath, DestPath, arguments);
 
             AssertSingleInstance();
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        public void EncodeVapourSynthToX264_EmptySourceDest_ThrowsException(string source, string dest) {
-            var Encoder = SetupEncoder();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void EncodeVapourSynthToX264_EmptySourceDest_ThrowsException(string source, string dest, Type ex)
+        {
+            var encoder = SetupEncoder();
 
-            Assert.Throws<ArgumentException>(() => Encoder.EncodeVapourSynthToX264(source, dest, null));
+            void Act() => encoder.EncodeVapourSynthToX264(source, dest, null);
+
+            Assert.Throws(ex, Act);
         }
 
-        #endregion
-
-        #region EncodeX265
 
         //[Theory]
         //[InlineData(null)]
@@ -411,98 +402,95 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         //[InlineData("args")]
         //[InlineData("\t\n\0")]
         //public void EncodeX265_Valid_ReturnsSuccess(string arguments) {
-        //    var Encoder = SetupEncoder();
+        //    var encoder = SetupEncoder();
 
-        //    var Result = Encoder.EncodeX265(SourcePath, DestPath, arguments);
+        //    var result = encoder.EncodeX265(SourcePath, DestPath, arguments);
 
         //    AssertSingleInstance();
-        //    Assert.Equal(CompletionStatus.Success, Result);
+        //    Assert.Equal(CompletionStatus.Success, result);
         //}
 
         //[Theory]
         //[InlineData(null, null)]
         //[InlineData("", "")]
         //public void EncodeX265_EmptySourceDest_ThrowsException(string source, string dest) {
-        //    var Encoder = SetupEncoder();
+        //    var encoder = SetupEncoder();
 
-        //    Assert.Throws<ArgumentException>(() => Encoder.EncodeX265(source, dest, null));
+        //    Assert.Throws<ArgumentException>(() => encoder.EncodeX265(source, dest, null));
         //}
 
         //[Fact]
         //public void EncodeX265_ParamOptions_ReturnsSame() {
-        //    var Encoder = SetupEncoder();
-        //    var Options = new ProcessOptionsEncoder();
+        //    var encoder = SetupEncoder();
+        //    var options = new ProcessOptionsEncoder();
 
-        //    Encoder.EncodeX265(SourcePath, DestPath, null, Options);
+        //    encoder.EncodeX265(SourcePath, DestPath, null, options);
 
-        //    Assert.Same(Options, factory.Instances[0].Options);
+        //    Assert.Same(options, factory.Instances[0].Options);
         //}
 
         //[Fact]
         //public void EncodeX265_ParamCallback_CallbackCalled() {
-        //    var Encoder = SetupEncoder();
-        //    int CallbackCalled = 0;
+        //    var encoder = SetupEncoder();
+        //    int callbackCalled = 0;
 
-        //    Encoder.EncodeX265(SourcePath, DestPath, VideoCodecTest, null, (s, e) => CallbackCalled++);
+        //    encoder.EncodeX265(SourcePath, DestPath, VideoCodecTest, null, (s, e) => callbackCalled++);
 
-        //    Assert.Equal(1, CallbackCalled);
+        //    Assert.Equal(1, callbackCalled);
         //}
 
-        #endregion
-
-        #region EncodeAvisynthToX265
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("args")]
         [InlineData("\t\n\0")]
-        public void EncodeAvisynthToX265_Valid_ReturnsSuccess(string arguments) {
-            var Encoder = SetupEncoder();
+        public void EncodeAvisynthToX265_Valid_ReturnsSuccess(string arguments)
+        {
+            var encoder = SetupEncoder();
 
-            var Result = Encoder.EncodeAvisynthToX265(SourcePath, DestPath, arguments);
+            var result = encoder.EncodeAvisynthToX265(SourcePath, DestPath, arguments);
 
             AssertSingleInstance();
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        public void EncodeAvisynthToX265_EmptySourceDest_ThrowsException(string source, string dest) {
-            var Encoder = SetupEncoder();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void EncodeAvisynthToX265_EmptySourceDest_ThrowsException(string source, string dest, Type ex)
+        {
+            var encoder = SetupEncoder();
 
-            Assert.Throws<ArgumentException>(() => Encoder.EncodeAvisynthToX265(source, dest, null));
+            void Act() => encoder.EncodeAvisynthToX265(source, dest, null);
+
+            Assert.Throws(ex, Act);
         }
 
-        #endregion
-
-        #region EncodeVapourSynthToX265
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("args")]
         [InlineData("\t\n\0")]
-        public void EncodeVapourSynthToX265_Valid_ReturnsSuccess(string arguments) {
-            var Encoder = SetupEncoder();
+        public void EncodeVapourSynthToX265_Valid_ReturnsSuccess(string arguments)
+        {
+            var encoder = SetupEncoder();
 
-            var Result = Encoder.EncodeVapourSynthToX265(SourcePath, DestPath, arguments);
+            var result = encoder.EncodeVapourSynthToX265(SourcePath, DestPath, arguments);
 
             AssertSingleInstance();
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        public void EncodeVapourSynthToX265_EmptySourceDest_ThrowsException(string source, string dest) {
-            var Encoder = SetupEncoder();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void EncodeVapourSynthToX265_EmptySourceDest_ThrowsException(string source, string dest, Type ex)
+        {
+            var encoder = SetupEncoder();
 
-            Assert.Throws<ArgumentException>(() => Encoder.EncodeVapourSynthToX265(source, dest, null));
+            void Act() => encoder.EncodeVapourSynthToX265(source, dest, null);
+
+            Assert.Throws(ex, Act);
         }
-
-        #endregion
-
     }
 }

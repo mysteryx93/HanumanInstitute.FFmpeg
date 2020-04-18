@@ -1,6 +1,9 @@
-﻿
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public static class OutputSamples {
+﻿using System;
+
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public static class OutputSamples
+    {
 
         public const string FFmpegInfo1 = @"ffmpeg version N-83507-g8fa18e0 Copyright (c) 2000-2017 the FFmpeg developers
   built with gcc 5.4.0 (GCC)

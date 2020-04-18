@@ -1,16 +1,19 @@
 ﻿using System;
+using HanumanInstitute.FFmpeg.Services;
 using Moq;
 using Xunit;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class TimeLeftCalculatorFactoryTests {
-
-        public ITimeLeftCalculatorFactory SetupFactory() {
-            return new TimeLeftCalculatorFactory();
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class TimeLeftCalculatorFactoryTests
+    {
+        private static ITimeLeftCalculatorFactory SetupFactory()
+        {
+            return new TimeLeftCalculatorFactory(new FakeEnvironmentService());
         }
 
         [Fact]
-        public void Constructor_Empty_Success() => new TimeLeftCalculatorFactory().Create(0);
+        public void Constructor_Empty_Success() => new TimeLeftCalculatorFactory(new FakeEnvironmentService()).Create(0);
 
         [Fact]
         public void Constructor_Dependency_Success() => new TimeLeftCalculatorFactory(Mock.Of<IEnvironmentService>()).Create(0);
@@ -20,27 +23,29 @@ namespace EmergenceGuardian.Encoder.UnitTests {
 
         [Theory]
         [InlineData(100)]
-        public void Create_1Param_ValidInstance(int frameCount) {
-            var Factory = SetupFactory();
+        public void Create_1Param_ValidInstance(int frameCount)
+        {
+            var factory = SetupFactory();
 
-            var Result = Factory.Create(frameCount);
+            var result = factory.Create(frameCount);
 
-            Assert.NotNull(Result);
-            Assert.IsType<TimeLeftCalculator>(Result);
-            Assert.Equal(frameCount, Result.FrameCount);
+            Assert.NotNull(result);
+            Assert.IsType<TimeLeftCalculator>(result);
+            Assert.Equal(frameCount, result.FrameCount);
         }
 
         [Theory]
         [InlineData(100, 30)]
-        public void Create_2Params_ValidInstance(int frameCount, int historyLength) {
-            var Factory = SetupFactory();
+        public void Create_2Params_ValidInstance(int frameCount, int historyLength)
+        {
+            var factory = SetupFactory();
 
-            var Result = Factory.Create(frameCount, historyLength);
+            var result = factory.Create(frameCount, historyLength);
 
-            Assert.NotNull(Result);
-            Assert.IsType<TimeLeftCalculator>(Result);
-            Assert.Equal(frameCount, Result.FrameCount);
-            Assert.Equal(historyLength, Result.HistoryLength);
+            Assert.NotNull(result);
+            Assert.IsType<TimeLeftCalculator>(result);
+            Assert.Equal(frameCount, result.FrameCount);
+            Assert.Equal(historyLength, result.HistoryLength);
         }
     }
 }

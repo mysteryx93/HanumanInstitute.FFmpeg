@@ -1,44 +1,51 @@
 ﻿using System;
 using Xunit;
 using Xunit.Abstractions;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace EmergenceGuardian.Encoder.IntegrationTests {
-    public class MediaScriptTests {
-        private readonly ITestOutputHelper output;
-        private readonly OutputFeeder feed;
+namespace HanumanInstitute.FFmpeg.IntegrationTests
+{
+    public class MediaScriptTests
+    {
+        private readonly ITestOutputHelper _output;
+        private readonly OutputFeeder _feed;
 
-        public MediaScriptTests(ITestOutputHelper output) {
-            this.output = output;
-            feed = new OutputFeeder(output);
+        public MediaScriptTests(ITestOutputHelper output)
+        {
+            _output = output;
+            _feed = new OutputFeeder(output);
         }
 
-        private IMediaScript SetupScript() {
-            IProcessWorkerFactory Factory = FactoryConfig.CreateWithConfig();
-            return new MediaScript(Factory);
+        private IMediaScript SetupScript()
+        {
+            var factory = FactoryConfig.CreateWithConfig();
+            return new MediaScript(factory, new FileSystemService());
         }
 
         [Theory]
         [InlineData(AppPaths.Avisynth)]
-        public void RunAvisynth_Valid_ResultSuccess(string source) {
-            var Script = SetupScript();
-            var Src = AppPaths.GetInputFile(source);
+        public void RunAvisynth_Valid_ResultSuccess(string source)
+        {
+            var script = SetupScript();
+            var src = AppPaths.GetInputFile(source);
 
-            var Result = Script.RunAvisynth(Src, null, feed.RunCallback);
+            var result = script.RunAvisynth(src, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
         [InlineData(AppPaths.VapourSynth)]
-        public void RunVapourSynth_Valid_ResultSuccess(string source) {
-            var Script = SetupScript();
-            var Src = AppPaths.GetInputFile(source);
+        public void RunVapourSynth_Valid_ResultSuccess(string source)
+        {
+            var script = SetupScript();
+            var src = AppPaths.GetInputFile(source);
 
-            var Result = Script.RunVapourSynth(Src, null, feed.RunCallback);
+            var result = script.RunVapourSynth(src, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
-        
+
     }
 }

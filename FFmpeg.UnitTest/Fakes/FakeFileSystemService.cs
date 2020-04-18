@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
-using EmergenceGuardian.Encoder.Services;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class FakeFileSystemService : IFileSystemService {
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class FakeFileSystemService : IFileSystemService
+    {
         public virtual string Combine(string path1, string path2) => Path.Combine(path1, path2);
 
         public virtual void Delete(string path) { }

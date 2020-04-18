@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Allows calculating the time left for a FFmpeg process.

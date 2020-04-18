@@ -1,19 +1,27 @@
 ﻿using System;
-using System.Globalization;
-using HanumanInstitute.Encoder.Properties;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Provides functions to get information on media files.
     /// </summary>
     public class MediaInfoReader : IMediaInfoReader
     {
-        private readonly IProcessWorkerFactory factory;
+        private readonly IProcessWorkerFactory _factory;
 
         public MediaInfoReader(IProcessWorkerFactory processFactory)
         {
-            factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
+            _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
+        }
+
+        private object _owner;
+        /// <summary>
+        /// Sets the owner of the process windows.
+        /// </summary>
+        public IMediaInfoReader SetOwner(object owner)
+        {
+            _owner = owner;
+            return this;
         }
 
         /// <summary>
@@ -24,10 +32,10 @@ namespace HanumanInstitute.Encoder
         /// <returns>A IFFmpegProcess object containing the version information.</returns>
         public string GetVersion(ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
         {
-            IProcessWorkerEncoder Worker = factory.CreateEncoder(options, callback);
-            Worker.OutputType = ProcessOutput.Output;
-            Worker.RunEncoder("-version", EncoderApp.FFmpeg);
-            return Worker.Output;
+            var worker = _factory.CreateEncoder(_owner, options, callback);
+            worker.OutputType = ProcessOutput.Output;
+            worker.RunEncoder("-version", EncoderApp.FFmpeg);
+            return worker.Output;
         }
 
         /// <summary>
@@ -41,16 +49,16 @@ namespace HanumanInstitute.Encoder
         {
             ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
 
-            IProcessWorkerEncoder Worker = factory.CreateEncoder(options, callback);
-            Worker.ProcessCompleted += (s, e) =>
+            var worker = _factory.CreateEncoder(_owner, options, callback);
+            worker.ProcessCompleted += (s, e) =>
             {
-                if (e.Status == CompletionStatus.Failed && (Worker.FileInfo as IFileInfoFFmpeg)?.FileStreams != null)
+                if (e.Status == CompletionStatus.Failed && (worker.FileInfo as IFileInfoFFmpeg)?.FileStreams != null)
                 {
                     e.Status = CompletionStatus.Success;
                 }
             };
-            Worker.RunEncoder($@"-i ""{source}""", EncoderApp.FFmpeg);
-            return Worker.FileInfo as IFileInfoFFmpeg;
+            worker.RunEncoder($@"-i ""{source}""", EncoderApp.FFmpeg);
+            return worker.FileInfo as IFileInfoFFmpeg;
         }
 
         /// <summary>
@@ -64,15 +72,15 @@ namespace HanumanInstitute.Encoder
         {
             ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
 
-            long Result = 0;
-            IProcessWorkerEncoder Worker = factory.CreateEncoder(options, callback);
-            Worker.ProgressReceived += (sender, e) =>
+            long result = 0;
+            var worker = _factory.CreateEncoder(_owner, options, callback);
+            worker.ProgressReceived += (sender, e) =>
             {
                 // Read all status lines and keep the last one.
-                Result = (e.Progress as ProgressStatusFFmpeg).Frame;
+                result = (e.Progress as ProgressStatusFFmpeg).Frame;
             };
-            Worker.RunEncoder($@"-i ""{source}"" -f null /dev/null", EncoderApp.FFmpeg);
-            return Result;
+            worker.RunEncoder($@"-i ""{source}"" -f null /dev/null", EncoderApp.FFmpeg);
+            return result;
         }
     }
 }

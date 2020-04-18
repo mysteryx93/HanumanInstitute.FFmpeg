@@ -1,40 +1,40 @@
-﻿using DjvuNet.Tests.Xunit;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using DjvuNet.Tests.Xunit;
 using Xunit;
 using Xunit.Abstractions;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace EmergenceGuardian.Encoder.IntegrationTests {
-    public class MediaMuxerTests {
+namespace HanumanInstitute.FFmpeg.IntegrationTests
+{
+    public class MediaMuxerTests
+    {
+        private readonly ITestOutputHelper _output;
+        private readonly OutputFeeder _feed;
+        private IProcessWorkerFactory _factory;
 
-        #region Utility Methods
-
-        private readonly ITestOutputHelper output;
-        private readonly OutputFeeder feed;
-        private IProcessWorkerFactory factory;
-
-        public MediaMuxerTests(ITestOutputHelper output) {
-            this.output = output;
-            feed = new OutputFeeder(output);
+        public MediaMuxerTests(ITestOutputHelper output)
+        {
+            _output = output;
+            _feed = new OutputFeeder(output);
         }
 
-        private IMediaMuxer SetupMuxer() {
-            factory = FactoryConfig.CreateWithConfig();
-            return new MediaMuxer(factory);
+        private IMediaMuxer SetupMuxer()
+        {
+            _factory = FactoryConfig.CreateWithConfig();
+            return new MediaMuxer(_factory, new FileSystemService(), new MediaInfoReader(_factory));
         }
 
-        private IFileInfoFFmpeg GetFileInfo(string path) {
-            var Info = new MediaInfoReader(factory);
-            return Info.GetFileInfo(path);
+        private IFileInfoFFmpeg GetFileInfo(string path)
+        {
+            var info = new MediaInfoReader(_factory);
+            return info.GetFileInfo(path);
         }
 
-        #endregion
-
-        #region Data Sources
-
-        public static IEnumerable<object[]> GenerateMuxeLists_Valid() {
+        public static IEnumerable<object[]> GenerateMuxeLists_Valid()
+        {
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream(AppPaths.Mpeg4, 2, "h264", FFmpegStreamType.Video),
@@ -66,7 +66,8 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateMuxeLists_Invalid() {
+        public static IEnumerable<object[]> GenerateMuxeLists_Invalid()
+        {
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("invalidfile", 0, "", FFmpegStreamType.Video),
@@ -75,7 +76,8 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateConcatenate_Valid() {
+        public static IEnumerable<object[]> GenerateConcatenate_Valid()
+        {
             yield return new object[] {
                 new List<string>() {
                     AppPaths.Part1
@@ -90,7 +92,8 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateConcatenate_Invalid() {
+        public static IEnumerable<object[]> GenerateConcatenate_Invalid()
+        {
             yield return new object[] {
                 new List<string>() {
                     "invalidfile"
@@ -99,7 +102,8 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateTruncate_Valid() {
+        public static IEnumerable<object[]> GenerateTruncate_Valid()
+        {
             yield return new object[] {
                 AppPaths.StreamVp9,
                 ".webm",
@@ -120,7 +124,8 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateTruncate_Invalid() {
+        public static IEnumerable<object[]> GenerateTruncate_Invalid()
+        {
             yield return new object[] {
                 "invalidfile",
                 ".webm",
@@ -129,7 +134,6 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
             };
         }
 
-        #endregion
 
         [Theory]
         [InlineData(AppPaths.StreamH264, AppPaths.StreamAac, ".mp4", 2)]
@@ -139,77 +143,84 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
         [InlineData(AppPaths.Flv, AppPaths.StreamOpus, ".mkv", 2)]
         [InlineData(AppPaths.StreamH264, null, ".mp4", 1)]
         [InlineData("", AppPaths.StreamOpus, ".webm", 1)]
-        public void Muxe_Simple_Valid_Success(string videoFile, string audioFile, string destExt, int streamCount) {
-            string SrcVideo = AppPaths.GetInputFile(videoFile);
-            string SrcAudio = AppPaths.GetInputFile(audioFile);
-            string Dest = AppPaths.PrepareDestPath("Muxe", videoFile, destExt);
-            var Muxer = SetupMuxer();
+        public void Muxe_Simple_Valid_Success(string videoFile, string audioFile, string destExt, int streamCount)
+        {
+            var srcVideo = AppPaths.GetInputFile(videoFile);
+            var srcAudio = AppPaths.GetInputFile(audioFile);
+            var dest = AppPaths.PrepareDestPath("Muxe", videoFile, destExt);
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Muxe(SrcVideo, SrcAudio, Dest, null, feed.RunCallback);
+            var result = muxer.Muxe(srcVideo, srcAudio, dest, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(File.Exists(Dest));
-            var FileInfo = GetFileInfo(Dest);
-            Assert.Equal(streamCount, FileInfo.FileStreams.Count);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(File.Exists(dest));
+            var fileInfo = GetFileInfo(dest);
+            Assert.Equal(streamCount, fileInfo.FileStreams.Count);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateMuxeLists_Valid))]
-        public void Muxe_List_Valid_Success(IEnumerable<MediaStream> fileStreams, string destExt, int streamCount) {
-            string Dest = AppPaths.PrepareDestPath("MuxeList", fileStreams.First().Path, destExt);
-            foreach (var item in fileStreams) {
+        public void Muxe_List_Valid_Success(IEnumerable<MediaStream> fileStreams, string destExt, int streamCount)
+        {
+            var dest = AppPaths.PrepareDestPath("MuxeList", fileStreams.First().Path, destExt);
+            foreach (var item in fileStreams)
+            {
                 item.Path = AppPaths.GetInputFile(item.Path);
             }
-            var Muxer = SetupMuxer();
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Muxe(fileStreams, Dest, null, feed.RunCallback);
+            var result = muxer.Muxe(fileStreams, dest, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(File.Exists(Dest));
-            var FileInfo = GetFileInfo(Dest);
-            Assert.Equal(streamCount, FileInfo.FileStreams.Count);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(File.Exists(dest));
+            var fileInfo = GetFileInfo(dest);
+            Assert.Equal(streamCount, fileInfo.FileStreams.Count);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateMuxeLists_Invalid))]
-        public void Muxe_List_Invalid_ReturnsStatusFailed(IEnumerable<MediaStream> fileStreams, string destExt, int streamCount) {
-            string Dest = AppPaths.PrepareDestPath("MuxeFailed", fileStreams.First().Path, destExt);
-            foreach (var item in fileStreams) {
+        public void Muxe_List_Invalid_ReturnsStatusFailed(IEnumerable<MediaStream> fileStreams, string destExt, int _)
+        {
+            var dest = AppPaths.PrepareDestPath("MuxeFailed", fileStreams.First().Path, destExt);
+            foreach (var item in fileStreams)
+            {
                 item.Path = AppPaths.GetInputFile(item.Path);
             }
-            var Muxer = SetupMuxer();
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Muxe(fileStreams, Dest, null, feed.RunCallback);
+            var result = muxer.Muxe(fileStreams, dest, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Failed, Result);
+            Assert.Equal(CompletionStatus.Failed, result);
         }
 
         [Theory]
         [InlineData(AppPaths.StreamOpus, ".ogg")]
         [InlineData(AppPaths.Mpeg4WithAudio, ".mkv")]
         [InlineData(AppPaths.Flv, ".mkv")]
-        public void ExtractAudio_Valid_Success(string source, string destExt) {
-            string Src = AppPaths.GetInputFile(source);
-            string Dest = AppPaths.PrepareDestPath("ExtractAudio", source, destExt);
-            var Muxer = SetupMuxer();
+        public void ExtractAudio_Valid_Success(string source, string destExt)
+        {
+            var src = AppPaths.GetInputFile(source);
+            var dest = AppPaths.PrepareDestPath("ExtractAudio", source, destExt);
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.ExtractAudio(Src, Dest, null, feed.RunCallback);
+            var result = muxer.ExtractAudio(src, dest, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(File.Exists(Dest));
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(File.Exists(dest));
         }
 
         [Theory]
         [InlineData(AppPaths.Mpeg2, ".aaa")]
-        public void ExtractAudio_WrongExtension_StatusFailed(string source, string destExt) {
-            string Src = AppPaths.GetInputFile(source);
-            string Dest = AppPaths.PrepareDestPath("ExtractAudio", source, destExt);
-            var Muxer = SetupMuxer();
+        public void ExtractAudio_WrongExtension_StatusFailed(string source, string destExt)
+        {
+            var src = AppPaths.GetInputFile(source);
+            var dest = AppPaths.PrepareDestPath("ExtractAudio", source, destExt);
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.ExtractAudio(Src, Dest, null, feed.RunCallback);
+            var result = muxer.ExtractAudio(src, dest, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Failed, Result);
-            Assert.False(File.Exists(Dest));
+            Assert.Equal(CompletionStatus.Failed, result);
+            Assert.False(File.Exists(dest));
         }
 
 
@@ -217,86 +228,95 @@ namespace EmergenceGuardian.Encoder.IntegrationTests {
         [InlineData(AppPaths.Mpeg2, ".mp4")]
         [InlineData(AppPaths.Mpeg4, ".mp4")]
         [InlineData(AppPaths.Flv, ".mkv")]
-        public void ExtractVideo_Valid_Success(string source, string destExt) {
-            string Src = AppPaths.GetInputFile(source);
-            string Dest = AppPaths.PrepareDestPath("ExtractVideo", source, destExt);
-            var Muxer = SetupMuxer();
+        public void ExtractVideo_Valid_Success(string source, string destExt)
+        {
+            var src = AppPaths.GetInputFile(source);
+            var dest = AppPaths.PrepareDestPath("ExtractVideo", source, destExt);
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.ExtractVideo(Src, Dest, null, feed.RunCallback);
+            var result = muxer.ExtractVideo(src, dest, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(File.Exists(Dest));
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(File.Exists(dest));
         }
 
         [Theory]
         [InlineData(AppPaths.Mpeg4, ".bbb")]
-        public void ExtractVideo_WrongExtension_StatusFailed(string source, string destExt) {
-            string Src = AppPaths.GetInputFile(source);
-            string Dest = AppPaths.PrepareDestPath("ExtractVideo", source, destExt);
-            var Muxer = SetupMuxer();
+        public void ExtractVideo_WrongExtension_StatusFailed(string source, string destExt)
+        {
+            var src = AppPaths.GetInputFile(source);
+            var dest = AppPaths.PrepareDestPath("ExtractVideo", source, destExt);
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.ExtractVideo(Src, Dest, null, feed.RunCallback);
+            var result = muxer.ExtractVideo(src, dest, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Failed, Result);
-            Assert.False(File.Exists(Dest));
+            Assert.Equal(CompletionStatus.Failed, result);
+            Assert.False(File.Exists(dest));
         }
 
         [Theory]
         [MemberData(nameof(GenerateConcatenate_Valid))]
-        public void Concatenate_Valid_Success(IEnumerable<string> source, string destExt) {
-            List<string> Src = source.Select(x => AppPaths.GetInputFile(x)).ToList();
-            string Dest = AppPaths.PrepareDestPath("Concatenate", source.First(), destExt);
-            var Muxer = SetupMuxer();
+        public void Concatenate_Valid_Success(IEnumerable<string> source, string destExt)
+        {
+            var src = source.Select(x => AppPaths.GetInputFile(x)).ToList();
+            var dest = AppPaths.PrepareDestPath("Concatenate", source.First(), destExt);
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Concatenate(Src, Dest, null, feed.RunCallback);
+            var result = muxer.Concatenate(src, dest, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(File.Exists(Dest));
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(File.Exists(dest));
         }
 
         [Theory]
         [MemberData(nameof(GenerateConcatenate_Invalid))]
-        public void Concatenate_Invalid_StatusFailed(IEnumerable<string> source, string destExt) {
-            List<string> Src = source.Select(x => AppPaths.GetInputFile(x)).ToList();
-            string Dest = AppPaths.PrepareDestPath("Concatenate", source.First(), destExt);
-            var Muxer = SetupMuxer();
+        public void Concatenate_Invalid_StatusFailed(IEnumerable<string> source, string destExt)
+        {
+            var src = source.Select(x => AppPaths.GetInputFile(x)).ToList();
+            var dest = AppPaths.PrepareDestPath("Concatenate", source.First(), destExt);
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Concatenate(Src, Dest, null, feed.RunCallback);
+            var result = muxer.Concatenate(src, dest, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Failed, Result);
+            Assert.Equal(CompletionStatus.Failed, result);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateTruncate_Valid))]
-        public void Truncate_Valid_Success(string source, string destExt, TimeSpan? startPos, TimeSpan? duration) {
-            string Src = AppPaths.GetInputFile(source);
-            string Dest = AppPaths.PrepareDestPath("Truncate", source, destExt);
-            var Muxer = SetupMuxer();
-            IProcessWorker Manager = null;
-            void Started(object s, ProcessStartedEventArgs e) {
-                Manager = e.ProcessWorker;
-                feed.RunCallback(s, e);
+        public void Truncate_Valid_Success(string source, string destExt, TimeSpan? startPos, TimeSpan? duration)
+        {
+            var src = AppPaths.GetInputFile(source);
+            var dest = AppPaths.PrepareDestPath("Truncate", source, destExt);
+            var muxer = SetupMuxer();
+            IProcessWorker manager = null;
+            void Started(object s, ProcessStartedEventArgs e)
+            {
+                manager = e.ProcessWorker;
+                _feed.RunCallback(s, e);
             }
 
-            var Result = Muxer.Truncate(Src, Dest, startPos, duration, null, Started);
+            var result = muxer.Truncate(src, dest, startPos, duration, null, Started);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(File.Exists(Dest));
-            var FileInfo = GetFileInfo(Dest);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(File.Exists(dest));
+            var fileInfo = GetFileInfo(dest);
             if (duration.HasValue)
-                Assert.True(Math.Abs((duration.Value - FileInfo.FileDuration).TotalSeconds) < .1, "Truncate did not produce expected file duration.");
+            {
+                Assert.True(Math.Abs((duration.Value - fileInfo.FileDuration).TotalSeconds) < .1, "Truncate did not produce expected file duration.");
+            }
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateTruncate_Invalid))]
-        public void Truncate_Invalid_StatusFailed(string source, string destExt, TimeSpan? startPos, TimeSpan? duration) {
-            string Src = AppPaths.GetInputFile(source);
-            string Dest = AppPaths.PrepareDestPath("Truncate", source, destExt);
-            var Muxer = SetupMuxer();
+        public void Truncate_Invalid_StatusFailed(string source, string destExt, TimeSpan? startPos, TimeSpan? duration)
+        {
+            var src = AppPaths.GetInputFile(source);
+            var dest = AppPaths.PrepareDestPath("Truncate", source, destExt);
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Truncate(Src, Dest, startPos, duration, null, feed.RunCallback);
+            var result = muxer.Truncate(src, dest, startPos, duration, null, _feed.RunCallback);
 
-            Assert.Equal(CompletionStatus.Failed, Result);
+            Assert.Equal(CompletionStatus.Failed, result);
         }
     }
 }

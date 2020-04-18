@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Represents the process completion status.

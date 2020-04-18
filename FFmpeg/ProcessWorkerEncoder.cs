@@ -1,26 +1,24 @@
-﻿using HanumanInstitute.Encoder.Properties;
-using HanumanInstitute.Encoder.Services;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using HanumanInstitute.FFmpeg.Properties;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Executes commands through a media encoder process
     /// </summary>
     public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
     {
-        private readonly IFileSystemService fileSystem;
-        private readonly IFileInfoParserFactory parserFactory;
+        private readonly IFileSystemService _fileSystem;
+        private readonly IFileInfoParserFactory _parserFactory;
 
-        public ProcessWorkerEncoder() : this(new MediaConfig(), new ProcessFactory(), new FileSystemService(), new FileInfoParserFactory(), new ProcessOptionsEncoder()) { }
-
-        public ProcessWorkerEncoder(IMediaConfig config, IProcessFactory processFactory, IFileSystemService fileSystemService, IFileInfoParserFactory parserFactory, ProcessOptionsEncoder options = null)
+        public ProcessWorkerEncoder(IMediaConfig config, IProcessFactory processFactory, IFileSystemService fileSystemService, IFileInfoParserFactory parserFactory, ProcessOptionsEncoder options)
             : base(config, processFactory, options ?? new ProcessOptionsEncoder())
         {
-            fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
-            this.parserFactory = parserFactory ?? throw new ArgumentNullException(nameof(parserFactory));
+            _fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
+            _parserFactory = parserFactory ?? throw new ArgumentNullException(nameof(parserFactory));
             OutputType = ProcessOutput.Error;
         }
 
@@ -52,7 +50,8 @@ namespace HanumanInstitute.Encoder
         /// <summary>
         /// Gets or sets the options to control the behaviors of the encoding process.
         /// </summary>
-        public new ProcessOptionsEncoder Options {
+        public new ProcessOptionsEncoder Options
+        {
             get => base.Options as ProcessOptionsEncoder;
             set => base.Options = value;
         }
@@ -76,15 +75,15 @@ namespace HanumanInstitute.Encoder
         /// <returns>The process completion status.</returns>
         public CompletionStatus RunEncoder(string arguments, string encoderApp)
         {
-            string AppPath = Config.GetAppPath(encoderApp);
-            if (!fileSystem.Exists(AppPath))
+            var appPath = Config.GetAppPath(encoderApp);
+            if (!_fileSystem.Exists(appPath))
             {
-                throw new System.IO.FileNotFoundException($@"The file ""{AppPath}"" for the encoding application {encoderApp} configured in MediaConfig was not found.", AppPath);
+                throw new System.IO.FileNotFoundException($@"The file ""{appPath}"" for the encoding application {encoderApp} configured in MediaConfig was not found.", appPath);
             }
 
             EnsureNotRunning();
             EncoderApp = encoderApp;
-            return Run(AppPath, arguments);
+            return Run(appPath, arguments);
         }
 
         /// <summary>
@@ -109,11 +108,11 @@ namespace HanumanInstitute.Encoder
         public CompletionStatus RunAvisynthToEncoder(string source, string arguments, string encoderApp)
         {
             ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
-            if (!fileSystem.Exists(Config.Avs2PipeMod)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, Config.Avs2PipeMod)); }
+            if (!_fileSystem.Exists(Config.Avs2PipeMod)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, Config.Avs2PipeMod)); }
             EnsureNotRunning();
             EncoderApp = encoderApp;
-            String Query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" -y4mp ""{1}"" | ""{2}"" {3}", Config.Avs2PipeMod, source, Config.GetAppPath(encoderApp), arguments);
-            return RunAsCommand(Query);
+            var query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" -y4mp ""{1}"" | ""{2}"" {3}", Config.Avs2PipeMod, source, Config.GetAppPath(encoderApp), arguments);
+            return RunAsCommand(query);
         }
 
         /// <summary>
@@ -138,12 +137,12 @@ namespace HanumanInstitute.Encoder
         public CompletionStatus RunVapourSynthToEncoder(string source, string arguments, string encoderApp)
         {
             ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
-            if (!fileSystem.Exists(Config.VsPipePath)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.VsPipePathNotFound, Config.VsPipePath)); }
+            if (!_fileSystem.Exists(Config.VsPipePath)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.VsPipePathNotFound, Config.VsPipePath)); }
 
             EnsureNotRunning();
             EncoderApp = encoderApp;
-            String Query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" --y4m ""{1}"" - | ""{2}"" {3}", Config.VsPipePath, source, Config.GetAppPath(encoderApp), arguments);
-            return RunAsCommand(Query);
+            var query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" --y4m ""{1}"" - | ""{2}"" {3}", Config.VsPipePath, source, Config.GetAppPath(encoderApp), arguments);
+            return RunAsCommand(query);
         }
 
         /// <summary>
@@ -157,7 +156,7 @@ namespace HanumanInstitute.Encoder
         public override CompletionStatus Run(string fileName, string arguments)
         {
             EnsureNotRunning();
-            Parser = parserFactory.Create(EncoderApp);
+            Parser = _parserFactory.Create(EncoderApp);
             return base.Run(fileName, arguments);
         }
 
@@ -177,7 +176,7 @@ namespace HanumanInstitute.Encoder
 
             base.OnDataReceived(sender, e);
 
-            object ProgressInfo = null;
+            object progressInfo = null;
             if (!Parser.IsParsed && Parser.HasFileInfo(e.Data))
             {
                 ParseFileInfo();
@@ -185,13 +184,13 @@ namespace HanumanInstitute.Encoder
 
             if (Parser.IsParsed && Parser.IsLineProgressUpdate(e.Data))
             {
-                ProgressInfo = Parser.ParseProgress(e.Data);
+                progressInfo = Parser.ParseProgress(e.Data);
             }
 
-            if (ProgressInfo != null)
+            if (progressInfo != null)
             {
-                LastProgressReceived = ProgressInfo;
-                ProgressReceived?.Invoke(this, new ProgressReceivedEventArgs(ProgressInfo));
+                LastProgressReceived = progressInfo;
+                ProgressReceived?.Invoke(this, new ProgressReceivedEventArgs(progressInfo));
             }
         }
 

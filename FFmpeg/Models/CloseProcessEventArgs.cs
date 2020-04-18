@@ -1,7 +1,7 @@
 ﻿using System;
-using HanumanInstitute.Encoder.Services;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Represents a method that will be called when a process needs to be closed.

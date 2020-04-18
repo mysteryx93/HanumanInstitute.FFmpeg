@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using EmergenceGuardian.Encoder.Services;
+using HanumanInstitute.FFmpeg.Services;
 using Moq;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class FakeProcessWorkerFactory : ProcessWorkerFactory {
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class FakeProcessWorkerFactory : ProcessWorkerFactory
+    {
 
-        public FakeProcessWorkerFactory() : base(new FakeMediaConfig(), new FileInfoParserFactory(), new FakeProcessFactory(), new FakeFileSystemService()) {
+        public FakeProcessWorkerFactory() : base(new FakeMediaConfig(), null, new FileInfoParserFactory(), new FakeProcessFactory(), new FakeFileSystemService())
+        {
         }
 
         /// <summary>
@@ -17,29 +20,33 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         /// </summary>
         public List<IProcessWorker> Instances { get; private set; } = new List<IProcessWorker>();
 
-        public override IProcessWorker Create(ProcessOptions options = null, ProcessStartedEventHandler callback = null) {
-            var Result = base.Create(options, callback);
-            Instances.Add(Result);
-            return Result;
+        public override IProcessWorker Create(object owner, ProcessOptions options = null, ProcessStartedEventHandler callback = null)
+        {
+            var result = base.Create(owner, options, callback);
+            Instances.Add(result);
+            return result;
         }
 
-        public override IProcessWorkerEncoder CreateEncoder(ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null) {
-            var Result = base.CreateEncoder(options, callback);
-            Result.ProcessCompleted += (s, e) => {
-                FileInfoFFmpeg Info = Result.FileInfo as FileInfoFFmpeg;
-                if (Info != null && Info.FileStreams == null) {
+        public override IProcessWorkerEncoder CreateEncoder(object owner, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        {
+            var result = base.CreateEncoder(owner, options, callback);
+            result.ProcessCompleted += (s, e) =>
+            {
+                if (result.FileInfo is FileInfoFFmpeg info && info.FileStreams == null)
+                {
                     // If no data was fed into the process, this will initialize FileStreams.
-                    var MockP = Mock.Get<IProcess>(Result.WorkProcess);
-                    MockP.Raise(x => x.ErrorDataReceived += null, CreateMockDataReceivedEventArgs(null));
-                    MockP.Raise(x => x.OutputDataReceived += null, CreateMockDataReceivedEventArgs(null));
-                    if (Info.FileStreams != null) {
-                        Info.FileStreams.Add(new MediaVideoStreamInfo());
-                        Info.FileStreams.Add(new MediaAudioStreamInfo());
+                    var mockP = Mock.Get<IProcess>(result.WorkProcess);
+                    mockP.Raise(x => x.ErrorDataReceived += null, CreateMockDataReceivedEventArgs(null));
+                    mockP.Raise(x => x.OutputDataReceived += null, CreateMockDataReceivedEventArgs(null));
+                    if (info.FileStreams != null)
+                    {
+                        info.FileStreams.Add(new MediaVideoStreamInfo());
+                        info.FileStreams.Add(new MediaAudioStreamInfo());
                     }
                 }
             };
-            Instances.Add(Result);
-            return Result;
+            Instances.Add(result);
+            return result;
         }
 
         /// <summary>
@@ -47,39 +54,45 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         /// </summary>
         /// <param name="p">The process manager to feed data into..</param>
         /// <param name="output">The sample output to feed.</param>
-        public static void FeedOutputToProcess(IProcessWorker p, string output) {
-            var MockP = Mock.Get<IProcess>(p.WorkProcess);
-            using (StringReader sr = new StringReader(output)) {
+        public static void FeedOutputToProcess(IProcessWorker p, string output)
+        {
+            var mockP = Mock.Get<IProcess>(p.WorkProcess);
+            using (var sr = new StringReader(output))
+            {
                 string line;
-                while ((line = sr.ReadLine()) != null) {
-                    MockP.Raise(x => x.ErrorDataReceived += null, CreateMockDataReceivedEventArgs(line));
+                while ((line = sr.ReadLine()) != null)
+                {
+                    mockP.Raise(x => x.ErrorDataReceived += null, CreateMockDataReceivedEventArgs(line));
                 }
             }
-            MockP.Raise(x => x.ErrorDataReceived += null, CreateMockDataReceivedEventArgs(null));
+            mockP.Raise(x => x.ErrorDataReceived += null, CreateMockDataReceivedEventArgs(null));
         }
 
         /// <summary>
         /// Since DataReceivedEventArgs can't be directly created, create an instance through reflection.
         /// </summary>
-        public static DataReceivedEventArgs CreateMockDataReceivedEventArgs(string TestData) {
-            DataReceivedEventArgs MockEventArgs =
+        public static DataReceivedEventArgs CreateMockDataReceivedEventArgs(string testData)
+        {
+            var mockEventArgs =
                 (DataReceivedEventArgs)System.Runtime.Serialization.FormatterServices
                  .GetUninitializedObject(typeof(DataReceivedEventArgs));
 
-            FieldInfo[] EventFields = typeof(DataReceivedEventArgs)
+            var eventFields = typeof(DataReceivedEventArgs)
                 .GetFields(
                     BindingFlags.NonPublic |
                     BindingFlags.Instance |
                     BindingFlags.DeclaredOnly);
 
-            if (EventFields.Length > 0) {
-                EventFields[0].SetValue(MockEventArgs, TestData);
-            } else {
-                throw new ApplicationException(
-                    "Failed to find _data field!");
+            if (eventFields.Length > 0)
+            {
+                eventFields[0].SetValue(mockEventArgs, testData);
+            }
+            else
+            {
+                throw new ApplicationException("Failed to find _data field!");
             }
 
-            return MockEventArgs;
+            return mockEventArgs;
         }
     }
 }

@@ -2,46 +2,53 @@
 using System.Diagnostics;
 using Moq;
 using Xunit;
-using EmergenceGuardian.Encoder.Services;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class ProcessFactoryTests {
-        protected IProcessFactory SetupFactory() {
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class ProcessFactoryTests
+    {
+        private static IProcessFactory SetupFactory()
+        {
             return new ProcessFactory();
         }
 
         [Fact]
-        public void Create_NoArg_ProcessWrapper() {
-            var Factory = SetupFactory();
+        public void Create_NoArg_ProcessWrapper()
+        {
+            var factory = SetupFactory();
 
-            var Result = Factory.Create();
+            var result = factory.Create();
 
-            Assert.NotNull(Result);
-            Assert.IsType<ProcessWrapper>(Result);
-            Assert.NotNull(Result.StartInfo);
+            Assert.NotNull(result);
+            Assert.IsType<ProcessWrapper>(result);
+            Assert.NotNull(result.StartInfo);
         }
 
         [Fact]
-        public void CreateWrapper_ProcessArg_WrapperAroundProcess() {
-            var Factory = SetupFactory();
-            var P = new Process();
+        public void CreateWrapper_ProcessArg_WrapperAroundProcess()
+        {
+            var factory = SetupFactory();
+            var p = new Process();
 
-            var Result = Factory.Create(P);
+            var result = factory.Create(p);
 
-            Assert.NotNull(Result);
-            Assert.IsType<ProcessWrapper>(Result);
-            Assert.Equal(P.StartInfo, Result.StartInfo);
+            Assert.NotNull(result);
+            Assert.IsType<ProcessWrapper>(result);
+            Assert.Equal(p.StartInfo, result.StartInfo);
+            p.Dispose();
         }
 
         [Fact]
-        public void CreateWrapper_NullArg_ProcessWrapper() {
-            var Factory = SetupFactory();
+        public void CreateWrapper_NullArg_ProcessWrapper()
+        {
+            var factory = SetupFactory();
 
-            var Result = Factory.Create(null);
+            var result = factory.Create(null);
 
-            Assert.NotNull(Result);
-            Assert.IsType<ProcessWrapper>(Result);
-            Assert.NotNull(Result.StartInfo);
+            Assert.NotNull(result);
+            Assert.IsType<ProcessWrapper>(result);
+            Assert.NotNull(result.StartInfo);
         }
     }
 }

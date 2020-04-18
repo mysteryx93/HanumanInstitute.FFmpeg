@@ -2,21 +2,31 @@
 using System.Globalization;
 using System.IO;
 using System.Text;
+using HanumanInstitute.FFmpeg.Properties;
 using static System.FormattableString;
-using HanumanInstitute.Encoder.Properties;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Provides functions to encode media files.
     /// </summary>
     public class MediaEncoder : IMediaEncoder
     {
-        private readonly IProcessWorkerFactory factory;
+        private readonly IProcessWorkerFactory _factory;
 
         public MediaEncoder(IProcessWorkerFactory processFactory)
         {
-            factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
+            _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
+        }
+
+        private object _owner;
+        /// <summary>
+        /// Sets the owner of the process windows.
+        /// </summary>
+        public IMediaEncoder SetOwner(object owner)
+        {
+            _owner = owner;
+            return this;
         }
 
         /// <summary>
@@ -195,52 +205,52 @@ namespace HanumanInstitute.Encoder
             if (string.IsNullOrEmpty(videoCodec) && string.IsNullOrEmpty(audioCodec)) { throw new ArgumentException(Resources.CodecNullOrEmpty); }
 
             File.Delete(destination);
-            StringBuilder Query = new StringBuilder();
-            Query.Append("-y -i ");
+            var query = new StringBuilder();
+            query.Append("-y -i ");
             if (sourceType == SourceType.Direct)
             {
-                Query.Append("\"");
-                Query.Append(source);
-                Query.Append("\"");
+                query.Append("\"");
+                query.Append(source);
+                query.Append("\"");
             }
             else
             {
-                Query.Append("-"); // Pipe source
+                query.Append("-"); // Pipe source
             }
 
             // Add video codec.
             if (string.IsNullOrEmpty(videoCodec))
             {
-                Query.Append(" -vn");
+                query.Append(" -vn");
             }
             else
             {
-                Query.Append(Invariant($" -vcodec {videoCodec}"));
+                query.Append(Invariant($" -vcodec {videoCodec}"));
             }
             // Add audio codec.
             if (string.IsNullOrEmpty(audioCodec))
             {
-                Query.Append(" -an");
+                query.Append(" -an");
             }
             else
             {
-                Query.Append(Invariant($" -acodec {audioCodec}"));
+                query.Append(Invariant($" -acodec {audioCodec}"));
             }
 
             if (!string.IsNullOrEmpty(encodeArgs))
             {
-                Query.Append(" ");
-                Query.Append(encodeArgs);
+                query.Append(" ");
+                query.Append(encodeArgs);
             }
 
-            Query.Append(" \"");
-            Query.Append(destination);
-            Query.Append("\"");
+            query.Append(" \"");
+            query.Append(destination);
+            query.Append("\"");
 
             // Run FFmpeg with query.
-            IProcessWorkerEncoder Worker = factory.CreateEncoder(options, callback);
-            CompletionStatus Result = RunEncoderInternal(source, Query.ToString(), Worker, sourceType, EncoderApp.FFmpeg);
-            return Result;
+            var worker = _factory.CreateEncoder(_owner, options, callback);
+            var result = RunEncoderInternal(source, query.ToString(), worker, sourceType, EncoderApp.FFmpeg);
+            return result;
         }
 
         private CompletionStatus EncodeX264Internal(SourceType sourceType, EncoderApp encoderApp, string source, string destination, string encodeArgs, ProcessOptionsEncoder options, ProcessStartedEventHandler callback)
@@ -249,34 +259,34 @@ namespace HanumanInstitute.Encoder
             ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
             File.Delete(destination);
 
-            StringBuilder Query = new StringBuilder();
+            var query = new StringBuilder();
             if (sourceType != SourceType.Direct)
             {
-                Query.AppendFormat(CultureInfo.InvariantCulture, "--{0}y4m ", encoderApp == EncoderApp.x264 ? "demuxer " : "");
+                query.AppendFormat(CultureInfo.InvariantCulture, "--{0}y4m ", encoderApp == EncoderApp.x264 ? "demuxer " : "");
             }
 
             if (!string.IsNullOrEmpty(encodeArgs))
             {
-                Query.Append(Invariant($"{encodeArgs} "));
+                query.Append(Invariant($"{encodeArgs} "));
             }
 
-            Query.Append(Invariant($@"-o ""{destination}"" "));
+            query.Append(Invariant($@"-o ""{destination}"" "));
             if (sourceType == SourceType.Direct)
             {
-                Query.Append(Invariant($@"""{source}"""));
+                query.Append(Invariant($@"""{source}"""));
             }
             else
             {
-                Query.Append("-");
+                query.Append("-");
             }
 
             // Run X264 or X265 with query.
-            IProcessWorkerEncoder Worker = factory.CreateEncoder(options, callback);
-            CompletionStatus Result = RunEncoderInternal(source, Query.ToString(), Worker, sourceType, encoderApp);
-            return Result;
+            var worker = _factory.CreateEncoder(_owner, options, callback);
+            var result = RunEncoderInternal(source, query.ToString(), worker, sourceType, encoderApp);
+            return result;
         }
 
-        private CompletionStatus RunEncoderInternal(string source, string arguments, IProcessWorkerEncoder worker, SourceType sourceType, EncoderApp encoderApp)
+        private static CompletionStatus RunEncoderInternal(string source, string arguments, IProcessWorkerEncoder worker, SourceType sourceType, EncoderApp encoderApp)
         {
             if (sourceType == SourceType.Direct)
             {

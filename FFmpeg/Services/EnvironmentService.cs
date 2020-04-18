@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HanumanInstitute.Encoder.Services
+namespace HanumanInstitute.FFmpeg.Services
 {
     /// <summary>
     /// Provides information about the application, environment and operating system.

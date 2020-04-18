@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="EmergenceGuardian.FFmpeg.IntegrationTests.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="HanumanInstitute.FFmpeg.IntegrationTests.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="FFmpegPath" Type="System.String" Scope="User">
@@ -15,7 +15,7 @@
       <Value Profile="(Default)">C:\GitHub\NaturalGroundingPlayer\Encoder\avs2pipemod.exe</Value>
     </Setting>
     <Setting Name="VsPipePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Program Files (x86)\VapourSynth\core32\vspipe.exe</Value>
+      <Value Profile="(Default)">C:\Program Files (x86)\VapourSynth-32\core\vspipe.exe</Value>
     </Setting>
   </Settings>
 </SettingsFile>

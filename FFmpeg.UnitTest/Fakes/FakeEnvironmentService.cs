@@ -1,12 +1,13 @@
 ﻿using System;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class FakeEnvironmentService : IEnvironmentService {
-        public DateTime CurrentTime = new DateTime(2019, 01, 01);
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class FakeEnvironmentService : IEnvironmentService
+    {
+        public DateTime CurrentTime { get; set; } = new DateTime(2019, 01, 01);
 
-        public void ChangeTime(int seconds) {
-            CurrentTime = CurrentTime.AddSeconds(seconds);
-        }
+        public void AddSeconds(int seconds) => CurrentTime = CurrentTime.AddSeconds(seconds);
 
         public DateTime Now => CurrentTime;
 

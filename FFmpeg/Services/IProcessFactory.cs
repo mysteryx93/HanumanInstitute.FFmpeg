@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace HanumanInstitute.Encoder.Services
+namespace HanumanInstitute.FFmpeg.Services
 {
     /// <summary>
     /// Creates instances of process wrapper classes.

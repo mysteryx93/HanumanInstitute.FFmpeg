@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace HanumanInstitute.Encoder.Services
+namespace HanumanInstitute.FFmpeg.Services
 {
     /// <summary>
     /// Provides Windows API functions to manage processes.
@@ -26,7 +26,7 @@ namespace HanumanInstitute.Encoder.Services
             [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
             internal static extern bool FreeConsole();
             [DllImport("kernel32.dll")]
-            internal static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate HandlerRoutine, bool Add);
+            internal static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handlerRoutine, bool add);
             // Delegate type to be used as the Handler Routine for SCCH
         }
     }
@@ -34,5 +34,5 @@ namespace HanumanInstitute.Encoder.Services
     /// <summary>
     /// Delegate used for SetConsoleCtrlHandler Win API call.
     /// </summary>
-    public delegate bool ConsoleCtrlDelegate(uint CtrlType);
+    public delegate bool ConsoleCtrlDelegate(uint ctrlType);
 }

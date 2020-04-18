@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using Moq;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class FakeUserInterfaceManagerBase : UserInterfaceManagerBase {
-        public List<IUserInterfaceWindow> Instances = new List<IUserInterfaceWindow>();
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class FakeUserInterfaceManagerBase : UserInterfaceManagerBase
+    {
+        public List<IUserInterfaceWindow> Instances { get; private set; } = new List<IUserInterfaceWindow>();
 
-        public override IUserInterfaceWindow CreateUI(string title, bool autoClose) {
-            var Result = Mock.Of<IUserInterfaceWindow>();
-            Instances.Add(Result);
-            return Result;
+        public override IUserInterfaceWindow CreateUI(object owner, string title, bool autoClose)
+        {
+            var result = Mock.Of<IUserInterfaceWindow>();
+            Instances.Add(result);
+            return result;
         }
 
-        public override void DisplayError(IProcessWorker host) { }
+        public override void DisplayError(object owner, IProcessWorker host) { }
     }
 }

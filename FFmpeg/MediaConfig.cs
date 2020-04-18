@@ -1,26 +1,26 @@
-﻿using HanumanInstitute.Encoder.Services;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
 
     /// <summary>
-    /// Contains the configuration settings of HanumanInstitute.Encoder.
+    /// Contains the configuration settings of HanumanInstitute.FFmpeg.
     /// </summary>
     public class MediaConfig : IMediaConfig
     {
-        private readonly IWindowsApiService api;
-        private readonly IFileSystemService fileSystem;
+        private readonly IWindowsApiService _api;
+        private readonly IFileSystemService _fileSystem;
 
         public MediaConfig() : this(new WindowsApiService(), new FileSystemService()) { }
 
         public MediaConfig(IWindowsApiService winApi, IFileSystemService fileSystemService)
         {
-            api = winApi ?? throw new ArgumentNullException(nameof(winApi));
-            fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
+            _api = winApi ?? throw new ArgumentNullException(nameof(winApi));
+            _fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
         }
 
         /// <summary>
@@ -44,10 +44,6 @@ namespace HanumanInstitute.Encoder
         /// </summary>
         public string VsPipePath { get; set; } = "vspipe.exe";
         /// <summary>
-        /// Gets or sets a class that will manage graphical interface instances when DisplayMode = Interface
-        /// </summary>
-        public IUserInterfaceManager UserInterfaceManager { get; set; }
-        /// <summary>
         /// Occurs when a process needs to be closed. This needs to be managed manually for Console applications.
         /// See http://stackoverflow.com/a/29274238/3960200
         /// </summary>
@@ -55,7 +51,7 @@ namespace HanumanInstitute.Encoder
         /// <summary>
         /// Gets the path of the executing assembly.
         /// </summary>
-        public string ApplicationPath => fileSystem.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        public string ApplicationPath => _fileSystem.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         /// <summary>
         /// Returns the configured path for specified encoder application.
@@ -79,9 +75,9 @@ namespace HanumanInstitute.Encoder
             else
             {
                 // Allow specifying custom application paths by handling this event.
-                GetPathEventArgs Args = new GetPathEventArgs(encoderApp);
-                GetCustomAppPath?.Invoke(this, Args);
-                return Args.Path;
+                var args = new GetPathEventArgs(encoderApp);
+                GetCustomAppPath?.Invoke(this, args);
+                return args.Path;
             }
         }
 
@@ -96,8 +92,8 @@ namespace HanumanInstitute.Encoder
         /// <returns>A list of FFmpeg processes.</returns>
         public IProcess[] GetFFmpegProcesses()
         {
-            string ProcessName = fileSystem.GetFileNameWithoutExtension(FFmpegPath);
-            return Process.GetProcessesByName(ProcessName).Select(p => new ProcessWrapper(p)).ToArray();
+            var processName = _fileSystem.GetFileNameWithoutExtension(FFmpegPath);
+            return Process.GetProcessesByName(processName).Select(p => new ProcessWrapper(p)).ToArray();
         }
 
         /// <summary>
@@ -110,9 +106,9 @@ namespace HanumanInstitute.Encoder
         {
             if (process == null) { throw new ArgumentNullException(nameof(process)); }
 
-            CloseProcessEventArgs Args = new CloseProcessEventArgs(process);
-            CloseProcess?.Invoke(null, Args);
-            if (!Args.Handled)
+            var args = new CloseProcessEventArgs(process);
+            CloseProcess?.Invoke(null, args);
+            if (!args.Handled)
             {
                 SoftKillWinApp(process);
             }
@@ -128,12 +124,12 @@ namespace HanumanInstitute.Encoder
         {
             if (process == null) { throw new ArgumentNullException(nameof(process)); }
 
-            if (api.AttachConsole((uint)process.Id))
+            if (_api.AttachConsole((uint)process.Id))
             {
-                api.SetConsoleCtrlHandler(null, true);
+                _api.SetConsoleCtrlHandler(null, true);
                 try
                 {
-                    if (!api.GenerateConsoleCtrlEvent())
+                    if (!_api.GenerateConsoleCtrlEvent())
                     {
                         return;
                     }
@@ -142,8 +138,8 @@ namespace HanumanInstitute.Encoder
                 }
                 finally
                 {
-                    api.FreeConsole();
-                    api.SetConsoleCtrlHandler(null, false);
+                    _api.FreeConsole();
+                    _api.SetConsoleCtrlHandler(null, false);
                 }
             }
         }

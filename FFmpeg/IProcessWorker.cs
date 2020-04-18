@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using HanumanInstitute.Encoder.Services;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Executes an application and manages its process.

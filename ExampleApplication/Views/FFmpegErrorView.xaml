@@ -1,0 +1,14 @@
+﻿<Window x:Class="HanumanInstitute.FFmpegExampleApplication.Views.FFmpegErrorView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="{Binding Title, Mode=OneWay}" Height="477.068" Width="578.571" ShowInTaskbar="False" 
+        DataContext="{Binding FFmpegError, Mode=OneWay, Source={StaticResource Locator}}"
+        xmlns:md="https://github.com/fantasticfiasco/mvvm-dialogs" md:DialogServiceViews.IsRegistered="True" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <TextBox x:Name="OutputText" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" Margin="0,0,0,25" Text="{Binding OutputText, Mode=OneWay}" />
+        <Button x:Name="CloseButton" Content="_Close" Margin="0,0,10,3" VerticalAlignment="Bottom" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Width="80" Command="{Binding CloseCommand, Mode=OneWay}"/>
+    </Grid>
+</Window>

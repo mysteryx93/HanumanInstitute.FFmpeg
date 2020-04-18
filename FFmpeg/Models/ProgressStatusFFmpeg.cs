@@ -1,10 +1,12 @@
 ﻿using System;
 
-namespace HanumanInstitute.Encoder {
+namespace HanumanInstitute.FFmpeg
+{
     /// <summary>
     /// Contains progress information returned from FFmpeg's output.
     /// </summary>
-    public class ProgressStatusFFmpeg {
+    public class ProgressStatusFFmpeg
+    {
         public long Frame { get; set; }
         public float Fps { get; set; }
         public float Quantizer { get; set; }

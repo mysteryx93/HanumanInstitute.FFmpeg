@@ -1,12 +1,16 @@
 ﻿using System;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Provides functions to get information on media files.
     /// </summary>
     public interface IMediaInfoReader
     {
+        /// <summary>
+        /// Sets the owner of the process windows.
+        /// </summary>
+        IMediaInfoReader SetOwner(object owner);
         /// <summary>
         /// Returns the version information from FFmpeg.
         /// </summary>

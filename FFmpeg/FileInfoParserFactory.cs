@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Globalization;
-using HanumanInstitute.Encoder.Properties;
+using HanumanInstitute.FFmpeg.Properties;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Creates new instances of IFileInfoParser.

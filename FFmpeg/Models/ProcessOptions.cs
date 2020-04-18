@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Contains options to control the behaviors of a process.
@@ -44,7 +44,7 @@ namespace HanumanInstitute.Encoder
         /// <param name="displayMode">Gets or sets the display mode when running a process.</param>
         public ProcessOptions(ProcessDisplayMode displayMode)
         {
-            this.DisplayMode = displayMode;
+            DisplayMode = displayMode;
         }
 
         /// <summary>
@@ -54,8 +54,8 @@ namespace HanumanInstitute.Encoder
         /// <param name="title">The title to display.</param>
         public ProcessOptions(ProcessDisplayMode displayMode, string title)
         {
-            this.DisplayMode = displayMode;
-            this.Title = title;
+            DisplayMode = displayMode;
+            Title = title;
         }
 
         /// <summary>
@@ -66,9 +66,9 @@ namespace HanumanInstitute.Encoder
         /// <param name="priority">The overall priority category for the associated process.</param>
         public ProcessOptions(ProcessDisplayMode displayMode, string title, ProcessPriorityClass priority)
         {
-            this.DisplayMode = displayMode;
-            this.Title = title;
-            this.Priority = priority;
+            DisplayMode = displayMode;
+            Title = title;
+            Priority = priority;
         }
 
         /// <summary>
@@ -79,10 +79,10 @@ namespace HanumanInstitute.Encoder
         /// <param name="isMainTask">When displaying several tasks in the same UI, whether this is the main task.</param>
         public ProcessOptions(object jobId, string title, bool isMainTask)
         {
-            this.DisplayMode = ProcessDisplayMode.Interface;
-            this.JobId = jobId;
-            this.Title = title;
-            this.IsMainTask = isMainTask;
+            DisplayMode = ProcessDisplayMode.Interface;
+            JobId = jobId;
+            Title = title;
+            IsMainTask = isMainTask;
         }
     }
 }

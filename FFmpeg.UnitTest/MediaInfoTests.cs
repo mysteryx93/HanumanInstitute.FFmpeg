@@ -1,42 +1,36 @@
 ﻿using System;
 using System.Linq;
-using EmergenceGuardian.Encoder.Services;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class MediaInfoTests {
-
-        #region Declarations
-
-        private FakeProcessWorkerFactory factory;
-        private readonly ITestOutputHelper output;
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class MediaInfoTests
+    {
+        private FakeProcessWorkerFactory _factory;
+        private readonly ITestOutputHelper _output;
         private const string TestFile = "test";
 
-        public MediaInfoTests(ITestOutputHelper output) {
-            this.output = output;
+        public MediaInfoTests(ITestOutputHelper output)
+        {
+            _output = output;
         }
 
-        #endregion
 
-        #region Utility Functions
-
-        protected IMediaInfoReader SetupInfo() {
-            factory = new FakeProcessWorkerFactory();
-            return new MediaInfoReader(factory);
+        protected IMediaInfoReader SetupInfo()
+        {
+            _factory = new FakeProcessWorkerFactory();
+            return new MediaInfoReader(_factory);
         }
 
-        protected void AssertSingleInstance() {
-            string ResultCommand = factory.Instances.FirstOrDefault()?.CommandWithArgs;
-            output.WriteLine(ResultCommand);
-            Assert.Single(factory.Instances);
-            Assert.NotNull(ResultCommand);
+        protected void AssertSingleInstance()
+        {
+            var resultCommand = _factory.Instances.FirstOrDefault()?.CommandWithArgs;
+            _output.WriteLine(resultCommand);
+            Assert.Single(_factory.Instances);
+            Assert.NotNull(resultCommand);
         }
 
-        #endregion
-
-        #region Constructors
 
         [Fact]
         public void Constructor_WithFactory_Success() => new MediaInfoReader(new FakeProcessWorkerFactory());
@@ -44,132 +38,133 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         [Fact]
         public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaInfoReader(null));
 
-        #endregion
-
-        #region GetVersion
 
         [Fact]
-        public void GetVersion_Valid_ReturnsOutput() {
-            var Info = SetupInfo();
+        public void GetVersion_Valid_ReturnsOutput()
+        {
+            var info = SetupInfo();
 
-            string Result = Info.GetVersion();
+            var result = info.GetVersion();
 
             AssertSingleInstance();
-            Assert.NotNull(Result);
+            Assert.NotNull(result);
         }
 
         [Fact]
-        public void GetVersion_ParamOptions_ReturnsSame() {
-            var Info = SetupInfo();
-            var Options = new ProcessOptionsEncoder();
+        public void GetVersion_ParamOptions_ReturnsSame()
+        {
+            var info = SetupInfo();
+            var options = new ProcessOptionsEncoder();
 
-            Info.GetVersion(Options);
+            info.GetVersion(options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [Fact]
-        public void GetVersion_ParamCallback_CallbackCalled() {
-            var Info = SetupInfo();
-            int CallbackCalled = 0;
+        public void GetVersion_ParamCallback_CallbackCalled()
+        {
+            var info = SetupInfo();
+            var callbackCalled = 0;
 
-            Info.GetVersion(null, (s, e) => CallbackCalled++);
+            info.GetVersion(null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region GetFileInfo
 
         [Theory]
         [InlineData("source")]
-        public void GetFileInfo_Valid_ReturnsProcessManager(string source) {
-            var Info = SetupInfo();
+        public void GetFileInfo_Valid_ReturnsProcessManager(string source)
+        {
+            var info = SetupInfo();
 
-            Info.GetFileInfo(source);
+            info.GetFileInfo(source);
 
             AssertSingleInstance();
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void GetFileInfo_EmptyArg_ThrowsException(string source) {
-            var Info = SetupInfo();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 1, MemberType = typeof(TestDataSource))]
+        public void GetFileInfo_EmptyArg_ThrowsException(string source, Type ex)
+        {
+            var info = SetupInfo();
 
-            Assert.Throws<ArgumentException>(() => Info.GetFileInfo(source));
+            void Act() => info.GetFileInfo(source);
+
+            Assert.Throws(ex, Act);
         }
 
         [Theory]
         [InlineData("source")]
-        public void GetFileInfo_ParamOptions_ReturnsSame(string source) {
-            var Info = SetupInfo();
-            var Options = new ProcessOptionsEncoder();
+        public void GetFileInfo_ParamOptions_ReturnsSame(string source)
+        {
+            var info = SetupInfo();
+            var options = new ProcessOptionsEncoder();
 
-            Info.GetFileInfo(source, Options);
+            info.GetFileInfo(source, options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [Theory]
         [InlineData("source")]
-        public void GetFileInfo_ParamCallback_CallbackCalled(string source) {
-            var Info = SetupInfo();
-            int CallbackCalled = 0;
+        public void GetFileInfo_ParamCallback_CallbackCalled(string source)
+        {
+            var info = SetupInfo();
+            var callbackCalled = 0;
 
-            Info.GetFileInfo(source, null, (s, e) => CallbackCalled++);
+            info.GetFileInfo(source, null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region GetFrameCount
 
         [Theory]
         [InlineData(OutputSamples.FFmpegInfoFrameCount, 438)]
-        public void GetFrameCount_Valid_ReturnsFrameCount(string output, int expected) {
-            var Info = SetupInfo();
-            ProcessStartedEventHandler Callback = (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(e.ProcessWorker, output);
+        public void GetFrameCount_Valid_ReturnsFrameCount(string output, int expected)
+        {
+            var info = SetupInfo();
+            void Callback(object s, ProcessStartedEventArgs e) => FakeProcessWorkerFactory.FeedOutputToProcess(e.ProcessWorker, output);
 
-            var Result = Info.GetFrameCount(TestFile, null, Callback);
+            var result = info.GetFrameCount(TestFile, null, Callback);
 
-            Assert.Equal(expected, Result);
+            Assert.Equal(expected, result);
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void GetFrameCount_EmptyArg_ThrowsException(string source) {
-            var Info = SetupInfo();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 1, MemberType = typeof(TestDataSource))]
+        public void GetFrameCount_EmptyArg_ThrowsException(string source, Type ex)
+        {
+            var info = SetupInfo();
 
-            Assert.Throws<ArgumentException>(() => Info.GetFrameCount(source));
-        }
+            void Act() => info.GetFrameCount(source);
 
-        [Theory]
-        [InlineData("source")]
-        public void GetFrameCount_ParamOptions_ReturnsSame(string source) {
-            var Info = SetupInfo();
-            var Options = new ProcessOptionsEncoder();
-
-            Info.GetFrameCount(source, Options);
-
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Throws(ex, Act);
         }
 
         [Theory]
         [InlineData("source")]
-        public void GetFrameCount_ParamCallback_CallbackCalled(string source) {
-            var Info = SetupInfo();
-            int CallbackCalled = 0;
+        public void GetFrameCount_ParamOptions_ReturnsSame(string source)
+        {
+            var info = SetupInfo();
+            var options = new ProcessOptionsEncoder();
 
-            Info.GetFrameCount(source, null, (s, e) => CallbackCalled++);
+            info.GetFrameCount(source, options);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
-        #endregion
+        [Theory]
+        [InlineData("source")]
+        public void GetFrameCount_ParamCallback_CallbackCalled(string source)
+        {
+            var info = SetupInfo();
+            var callbackCalled = 0;
 
+            info.GetFrameCount(source, null, (s, e) => callbackCalled++);
+
+            Assert.Equal(1, callbackCalled);
+        }
     }
 }

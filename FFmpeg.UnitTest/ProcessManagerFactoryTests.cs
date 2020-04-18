@@ -1,76 +1,83 @@
 ﻿using System;
+using HanumanInstitute.FFmpeg.Services;
 using Moq;
 using Xunit;
-using EmergenceGuardian.Encoder.Services;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class ProcessManagerFactoryTests {
-        protected FakeMediaConfig config;
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class ProcessManagerFactoryTests
+    {
+        private FakeMediaConfig _config;
 
-        protected IProcessWorkerFactory SetupFactory() {
+        protected IProcessWorkerFactory SetupFactory()
+        {
             var moq = new MockRepository(MockBehavior.Strict);
-            config = new FakeMediaConfig();
-            var ParserFactory = new FileInfoParserFactory();
-            var ProcessFactory = moq.Create<IProcessFactory>();
-            var FileSystem = moq.Create<IFileSystemService>();
-            return new ProcessWorkerFactory(config, ParserFactory, ProcessFactory.Object, FileSystem.Object);
+            _config = new FakeMediaConfig();
+            var parserFactory = new FileInfoParserFactory();
+            var processFactory = moq.Create<IProcessFactory>();
+            var fileSystem = moq.Create<IFileSystemService>();
+            return new ProcessWorkerFactory(_config, null, parserFactory, processFactory.Object, fileSystem.Object);
         }
 
         [Fact]
-        public void Constructor_NoParam_Success() => new ProcessWorkerFactory().Create();
+        public void Constructor_NoParam_Success() => new ProcessWorkerFactory().Create(null);
 
         [Fact]
-        public void Constructor_Config_Success() => new ProcessWorkerFactory(new MediaConfig()).Create();
+        public void Constructor_Config_Success() => new ProcessWorkerFactory(new MediaConfig(), null).Create(null);
 
         [Fact]
-        public void Constructor_InjectDependencies_Success() => new ProcessWorkerFactory(new MediaConfig(), new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()).Create();
+        public void Constructor_InjectDependencies_Success() => new ProcessWorkerFactory(new MediaConfig(), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()).Create(null);
 
         [Fact]
-        public void Constructor_NullDependencies_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerFactory(null, null, null, null));
+        public void Constructor_NullDependencies_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerFactory(null, null, null, null, null));
 
         [Fact]
-        public void Constructor_InjectOneDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerFactory(new MediaConfig(), null, null, null));
+        public void Constructor_InjectOneDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerFactory(new MediaConfig(), null, null, null, null));
 
         [Fact]
-        public void Create_NoParam_ReturnsProcessManager() {
-            var Factory = SetupFactory();
+        public void Create_NoParam_ReturnsProcessManager()
+        {
+            var factory = SetupFactory();
 
-            var Result = Factory.Create();
+            var result = factory.Create(null);
 
-            Assert.NotNull(Result);
-            Assert.IsType<ProcessWorker>(Result);
-            Assert.Equal(config, Result.Config);
+            Assert.NotNull(result);
+            Assert.IsType<ProcessWorker>(result);
+            Assert.Equal(_config, result.Config);
         }
 
         [Fact]
-        public void Create_ParamOptions_ReturnsSameOptions() {
-            var Factory = SetupFactory();
-            ProcessOptions options = new ProcessOptions();
+        public void Create_ParamOptions_ReturnsSameOptions()
+        {
+            var factory = SetupFactory();
+            var options = new ProcessOptions();
 
-            var Result = Factory.Create(options);
+            var result = factory.Create(options);
 
-            Assert.Equal(options, Result.Options);
+            Assert.Equal(options, result.Options);
         }
 
         [Fact]
-        public void CreateEncoder_NoParam_ReturnsProcessManager() {
-            var Factory = SetupFactory();
+        public void CreateEncoder_NoParam_ReturnsProcessManager()
+        {
+            var factory = SetupFactory();
 
-            var Result = Factory.CreateEncoder();
+            var result = factory.CreateEncoder(null);
 
-            Assert.NotNull(Result);
-            Assert.IsType<ProcessWorkerEncoder>(Result);
-            Assert.Equal(config, Result.Config);
+            Assert.NotNull(result);
+            Assert.IsType<ProcessWorkerEncoder>(result);
+            Assert.Equal(_config, result.Config);
         }
 
         [Fact]
-        public void CreateEncoder_ParamOptions_ReturnsSameOptions() {
-            var Factory = SetupFactory();
-            ProcessOptionsEncoder options = new ProcessOptionsEncoder();
+        public void CreateEncoder_ParamOptions_ReturnsSameOptions()
+        {
+            var factory = SetupFactory();
+            var options = new ProcessOptionsEncoder();
 
-            var Result = Factory.CreateEncoder(options);
+            var result = factory.CreateEncoder(options);
 
-            Assert.Equal(options, Result.Options);
+            Assert.Equal(options, result.Options);
         }
     }
 }

@@ -3,28 +3,38 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using HanumanInstitute.FFmpeg.Properties;
+using HanumanInstitute.FFmpeg.Services;
 using static System.FormattableString;
-using HanumanInstitute.Encoder.Properties;
-using HanumanInstitute.Encoder.Services;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Provides functions to manage audio and video streams.
     /// </summary>
     public class MediaMuxer : IMediaMuxer
     {
-        private readonly IProcessWorkerFactory factory;
-        private readonly IFileSystemService fileSystem;
-        private readonly IMediaInfoReader infoReader;
+        private readonly IProcessWorkerFactory _factory;
+        private readonly IFileSystemService _fileSystem;
+        private readonly IMediaInfoReader _infoReader;
 
-        public MediaMuxer(IProcessWorkerFactory processFactory) : this(processFactory, new FileSystemService(), new MediaInfoReader(processFactory)) { }
+        //public MediaMuxer(IProcessWorkerFactory processFactory, IUserInterfaceManager uiManager) : this(processFactory, uiManager, new FileSystemService(), new MediaInfoReader(processFactory)) { }
 
         public MediaMuxer(IProcessWorkerFactory processFactory, IFileSystemService fileSystemService, IMediaInfoReader infoReader)
         {
-            factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
-            fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
-            this.infoReader = infoReader ?? throw new ArgumentNullException(nameof(infoReader));
+            _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
+            _fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
+            _infoReader = infoReader ?? throw new ArgumentNullException(nameof(infoReader));
+        }
+
+        private object _owner;
+        /// <summary>
+        /// Sets the owner of the process windows.
+        /// </summary>
+        public IMediaMuxer SetOwner(object owner)
+        {
+            _owner = owner;
+            return this;
         }
 
         /// <summary>
@@ -41,28 +51,28 @@ namespace HanumanInstitute.Encoder
             if (string.IsNullOrEmpty(audioFile)) { ArgHelper.ValidateNotNullOrEmpty(videoFile, nameof(videoFile)); }
             ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
 
-            List<MediaStream> InputStreamList = new List<MediaStream>();
-            MediaStream InputStream;
+            var inputStreamList = new List<MediaStream>();
+            MediaStream inputStream;
             if (!string.IsNullOrEmpty(videoFile))
             {
-                InputStream = GetStreamInfo(videoFile, FFmpegStreamType.Video, options);
-                if (InputStream != null)
+                inputStream = GetStreamInfo(videoFile, FFmpegStreamType.Video, options);
+                if (inputStream != null)
                 {
-                    InputStreamList.Add(InputStream);
+                    inputStreamList.Add(inputStream);
                 }
             }
             if (!string.IsNullOrEmpty(audioFile))
             {
-                InputStream = GetStreamInfo(audioFile, FFmpegStreamType.Audio, options);
-                if (InputStream != null)
+                inputStream = GetStreamInfo(audioFile, FFmpegStreamType.Audio, options);
+                if (inputStream != null)
                 {
-                    InputStreamList.Add(InputStream);
+                    inputStreamList.Add(inputStream);
                 }
             }
 
-            if (InputStreamList.Any())
+            if (inputStreamList.Any())
             {
-                return Muxe(InputStreamList, destination, options, callback);
+                return Muxe(inputStreamList, destination, options, callback);
             }
             else
             {
@@ -84,12 +94,12 @@ namespace HanumanInstitute.Encoder
             ArgHelper.ValidateListNotNullOrEmpty(fileStreams, nameof(fileStreams));
             ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
 
-            CompletionStatus Result = CompletionStatus.Success;
-            List<string> TempFiles = new List<string>();
-            fileSystem.Delete(destination);
+            var result = CompletionStatus.Success;
+            var tempFiles = new List<string>();
+            _fileSystem.Delete(destination);
 
             // FFMPEG fails to muxe H264 into MKV container. Converting to MP4 and then muxing with the audio, however, works.
-            foreach (MediaStream item in fileStreams)
+            foreach (var item in fileStreams)
             {
                 if (string.IsNullOrEmpty(item.Path) && item.Type != FFmpegStreamType.None)
                 {
@@ -97,90 +107,91 @@ namespace HanumanInstitute.Encoder
                 }
                 if (item.Type == FFmpegStreamType.Video && (item.Format == "h264" || item.Format == "h265") && destination.EndsWith(".mkv", StringComparison.InvariantCulture))
                 {
-                    string NewFile = item.Path.Substring(0, item.Path.LastIndexOf('.')) + ".mp4";
-                    Result = Muxe(new List<MediaStream>() { item }, NewFile, options);
-                    TempFiles.Add(NewFile);
-                    if (Result != CompletionStatus.Success)
+                    var newFile = item.Path.Substring(0, item.Path.LastIndexOf('.')) + ".mp4";
+                    result = Muxe(new List<MediaStream>() { item }, newFile, options);
+                    tempFiles.Add(newFile);
+                    if (result != CompletionStatus.Success)
                     {
                         break;
                     }
                 }
             }
 
-            if (Result == CompletionStatus.Success)
+            if (result == CompletionStatus.Success)
             {
                 // Join audio and video files.
-                StringBuilder Query = new StringBuilder();
-                StringBuilder Map = new StringBuilder();
-                Query.Append("-y ");
-                int StreamIndex = 0;
-                bool HasVideo = false, HasAudio = false, HasPcmDvdAudio = false;
-                StringBuilder AacFix = new StringBuilder();
-                var FileStreamsOrdered = fileStreams.OrderBy(f => f.Type);
-                foreach (MediaStream item in FileStreamsOrdered)
+                var query = new StringBuilder();
+                var map = new StringBuilder();
+                query.Append("-y ");
+                var streamIndex = 0;
+                bool hasVideo = false, hasAudio = false, hasPcmDvdAudio = false;
+                var aacFix = new StringBuilder();
+                var fileStreamsOrdered = fileStreams.OrderBy(f => f.Type);
+                foreach (var item in fileStreamsOrdered)
                 {
                     if (item.Type == FFmpegStreamType.Video)
                     {
-                        HasVideo = true;
+                        hasVideo = true;
                     }
 
                     if (item.Type == FFmpegStreamType.Audio)
                     {
-                        HasAudio = true;
+                        hasAudio = true;
                         if (item.Format == "aac")
                         {
-                            AacFix.AppendFormat(CultureInfo.InvariantCulture, "-bsf:{0} aac_adtstoasc ", StreamIndex);
+                            aacFix.AppendFormat(CultureInfo.InvariantCulture, "-bsf:{0} aac_adtstoasc ", streamIndex);
                         }
 
                         if (item.Format == "pcm_dvd")
                         {
-                            HasPcmDvdAudio = true;
+                            hasPcmDvdAudio = true;
                         }
                     }
-                    Query.Append("-i \"");
-                    Query.Append(item.Path);
-                    Query.Append("\" ");
-                    Map.Append("-map ");
-                    Map.Append(StreamIndex++);
-                    Map.Append(":");
-                    Map.Append(item.Index);
-                    Map.Append(" ");
+                    query.Append("-i \"");
+                    query.Append(item.Path);
+                    query.Append("\" ");
+                    map.Append("-map ");
+                    map.Append(streamIndex++);
+                    map.Append(":");
+                    map.Append(item.Index);
+                    map.Append(" ");
                 }
-                if (!HasVideo && !HasAudio)
+                if (!hasVideo && !hasAudio)
                 {
                     throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.ArgNullOrEmpty, nameof(fileStreams)), nameof(fileStreams));
                 }
 
-                if (HasVideo)
+                if (hasVideo)
                 {
-                    Query.Append("-vcodec copy ");
+                    query.Append("-vcodec copy ");
                 }
 
-                if (HasAudio)
+                if (hasAudio)
                 {
-                    Query.Append(HasPcmDvdAudio ? "-acodec pcm_s16le " : "-acodec copy ");
+                    query.Append(hasPcmDvdAudio ? "-acodec pcm_s16le " : "-acodec copy ");
                 }
 
-                Query.Append(Map);
+                query.Append(map);
                 // FFMPEG-encoded AAC streams are invalid and require an extra flag to join.
-                if (AacFix.Length > 0 && HasVideo)
+                if (aacFix.Length > 0 && hasVideo)
                 {
-                    Query.Append(AacFix);
+                    query.Append(aacFix);
                 }
 
-                Query.Append("\"");
-                Query.Append(destination);
-                Query.Append("\"");
-                IProcessWorkerEncoder Worker = factory.CreateEncoder(options, callback);
-                Result = Worker.RunEncoder(Query.ToString(), EncoderApp.FFmpeg);
+                query.Append("\"");
+                query.Append(destination);
+                query.Append("\"");
+                var worker = _factory.CreateEncoder(_owner, options, callback);
+
+                result = worker.RunEncoder(query.ToString(), EncoderApp.FFmpeg);
             }
 
             // Delete temp file.
-            foreach (string item in TempFiles)
+            foreach (var item in tempFiles)
             {
-                fileSystem.Delete(item);
+                _fileSystem.Delete(item);
             }
-            return Result;
+            return result;
         }
 
         /// <summary>
@@ -192,15 +203,15 @@ namespace HanumanInstitute.Encoder
         /// <returns>A FFmpegStream object.</returns>
         private MediaStream GetStreamInfo(string path, FFmpegStreamType streamType, ProcessOptionsEncoder options)
         {
-            IFileInfoFFmpeg FileInfo = infoReader.GetFileInfo(path, options);
-            MediaStreamInfo StreamInfo = FileInfo.FileStreams?.FirstOrDefault(x => x.StreamType == streamType);
-            if (StreamInfo != null)
+            var fileInfo = _infoReader.GetFileInfo(path, options);
+            var streamInfo = fileInfo.FileStreams?.FirstOrDefault(x => x.StreamType == streamType);
+            if (streamInfo != null)
             {
                 return new MediaStream()
                 {
                     Path = path,
-                    Index = StreamInfo.Index,
-                    Format = StreamInfo.Format,
+                    Index = streamInfo.Index,
+                    Format = streamInfo.Format,
                     Type = streamType
                 };
             }
@@ -250,9 +261,10 @@ namespace HanumanInstitute.Encoder
             ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
             ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
 
-            fileSystem.Delete(destination);
-            IProcessWorkerEncoder Worker = factory.CreateEncoder(options, callback);
-            return Worker.RunEncoder(string.Format(CultureInfo.InvariantCulture, args, source, destination), EncoderApp.FFmpeg);
+            _fileSystem.Delete(destination);
+            var worker = _factory.CreateEncoder(_owner, options, callback);
+
+            return worker.RunEncoder(string.Format(CultureInfo.InvariantCulture, args, source, destination), EncoderApp.FFmpeg);
         }
 
         /// <summary>
@@ -269,24 +281,25 @@ namespace HanumanInstitute.Encoder
             ArgHelper.ValidateListNotNullOrEmpty(files, nameof(files));
             ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
 
-            CompletionStatus Result = CompletionStatus.None;
+            var result = CompletionStatus.None;
 
             // Write temp file.
-            string TempFile = fileSystem.GetTempFile();
-            StringBuilder TempContent = new StringBuilder();
-            foreach (string item in files)
+            var tempFile = _fileSystem.GetTempFile();
+            var tempContent = new StringBuilder();
+            foreach (var item in files)
             {
-                TempContent.AppendFormat(CultureInfo.InvariantCulture, "file '{0}'", item).AppendLine();
+                tempContent.AppendFormat(CultureInfo.InvariantCulture, "file '{0}'", item).AppendLine();
             }
-            fileSystem.WriteAllText(TempFile, TempContent.ToString());
+            _fileSystem.WriteAllText(tempFile, tempContent.ToString());
 
-            string Query = Invariant($@"-y -f concat -fflags +genpts -async 1 -safe 0 -i ""{TempFile}"" -c copy ""{destination}""");
+            var query = Invariant($@"-y -f concat -fflags +genpts -async 1 -safe 0 -i ""{tempFile}"" -c copy ""{destination}""");
 
-            IProcessWorkerEncoder Worker = factory.CreateEncoder(options, callback);
-            Result = Worker.RunEncoder(Query.ToString(CultureInfo.InvariantCulture), EncoderApp.FFmpeg);
+            var worker = _factory.CreateEncoder(_owner, options, callback);
 
-            fileSystem.Delete(TempFile);
-            return Result;
+            result = worker.RunEncoder(query.ToString(CultureInfo.InvariantCulture), EncoderApp.FFmpeg);
+
+            _fileSystem.Delete(tempFile);
+            return result;
         }
 
         /// <summary>
@@ -304,13 +317,14 @@ namespace HanumanInstitute.Encoder
             ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
             ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
 
-            fileSystem.Delete(destination);
-            IProcessWorkerEncoder Worker = factory.CreateEncoder(options, callback);
-            string Args = string.Format(CultureInfo.InvariantCulture, @"-i ""{0}"" -vcodec copy -acodec copy {1}{2}""{3}""", source,
+            _fileSystem.Delete(destination);
+            var worker = _factory.CreateEncoder(_owner, options, callback);
+
+            var args = string.Format(CultureInfo.InvariantCulture, @"-i ""{0}"" -vcodec copy -acodec copy {1}{2}""{3}""", source,
                 startPos.HasValue && startPos > TimeSpan.Zero ? $"-ss {startPos:c} " : "",
                 duration.HasValue && duration > TimeSpan.Zero ? $"-t {duration:c} " : "",
                 destination);
-            return Worker.RunEncoder(Args, EncoderApp.FFmpeg);
+            return worker.RunEncoder(args, EncoderApp.FFmpeg);
         }
     }
 }

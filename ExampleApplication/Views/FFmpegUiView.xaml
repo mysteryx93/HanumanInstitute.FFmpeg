@@ -1,0 +1,20 @@
+﻿<Window x:Class="HanumanInstitute.FFmpegExampleApplication.Views.FFmpegUiView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="{Binding TitleWithStatus, Mode=OneWay}" Height="102" Width="426" ShowInTaskbar="False" ResizeMode="NoResize" 
+        DataContext="{Binding FFmpegUi, Mode=OneWay, Source={StaticResource Locator}}"
+        xmlns:md="https://github.com/fantasticfiasco/mvvm-dialogs" md:DialogServiceViews.IsRegistered="True" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <ProgressBar x:Name="WorkProgressBar" Height="20" Margin="10,10,10,0" VerticalAlignment="Top" Value="{Binding ProgressBarValue, Mode=OneWay}" Maximum="{Binding ProgressBarMax, Mode=OneWay}" />
+        <TextBlock x:Name="TaskStatusText" HorizontalAlignment="Left" Margin="14,12,0,0" VerticalAlignment="Top" Text="{Binding TaskName, Mode=OneWay}" />
+        <TextBlock x:Name="PercentText" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top" Foreground="Blue" Text="{Binding Status}"/>
+        <TextBlock HorizontalAlignment="Left" Margin="87,35,0,0" VerticalAlignment="Top" Text="Fps:"/>
+        <TextBlock x:Name="FpsText" HorizontalAlignment="Left" Margin="113,35,0,0" VerticalAlignment="Top" Foreground="Blue" Text="{Binding Fps, Mode=OneWay}" />
+        <TextBlock HorizontalAlignment="Left" Margin="183,35,0,0" VerticalAlignment="Top" Text="Time left:" />
+        <TextBlock x:Name="TimeLeftText" HorizontalAlignment="Left" Margin="237,35,0,0" VerticalAlignment="Top" Foreground="Blue" Text="{Binding TimeLeft, Mode=OneWay}"/>
+        <Button x:Name="CancelButton" Content="{Binding CancelText, Mode=OneWay}" HorizontalAlignment="Left" Margin="323,34,0,0" VerticalAlignment="Top" Width="75" IsCancel="True" Command="{Binding CloseCommand, Mode=OneWay}" />
+    </Grid>
+</Window>

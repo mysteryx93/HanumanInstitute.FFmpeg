@@ -1,11 +1,11 @@
-﻿using HanumanInstitute.Encoder.Properties;
-using HanumanInstitute.Encoder.Services;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using HanumanInstitute.FFmpeg.Properties;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Executes an application and manages its process.
@@ -43,7 +43,7 @@ namespace HanumanInstitute.Encoder
         /// <summary>
         /// Returns the raw console output.
         /// </summary>
-        public string Output => output.ToString();
+        public string Output => _output.ToString();
         /// <summary>
         /// Returns the CompletionStatus of the last operation.
         /// </summary>
@@ -53,17 +53,17 @@ namespace HanumanInstitute.Encoder
         /// </summary>
         public string CommandWithArgs { get; private set; }
 
-        private readonly StringBuilder output = new StringBuilder();
-        private CancellationTokenSource cancelWork;
-        private readonly IProcessFactory factory;
+        private readonly StringBuilder _output = new StringBuilder();
+        private CancellationTokenSource _cancelWork;
+        private readonly IProcessFactory _factory;
         protected object LockToken { get; private set; } = new object();
 
-        public ProcessWorker() : this(new MediaConfig(), new ProcessFactory(), null) { }
+        //public ProcessWorker() : this(new MediaConfig(), new ProcessFactory(), null) { }
 
-        public ProcessWorker(IMediaConfig config, IProcessFactory processFactory, ProcessOptions options = null)
+        public ProcessWorker(IMediaConfig config, IProcessFactory processFactory, ProcessOptions options)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
-            factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
+            _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
             Options = options ?? new ProcessOptions();
         }
 
@@ -91,62 +91,62 @@ namespace HanumanInstitute.Encoder
         {
             ArgHelper.ValidateNotNullOrEmpty(fileName, nameof(fileName));
 
-            IProcess P;
+            IProcess p;
             lock (LockToken)
             {
                 if (WorkProcess != null) { throw new InvalidOperationException(Resources.ProcessWorkerBusy); }
-                P = factory.Create();
-                WorkProcess = P;
+                p = _factory.Create();
+                WorkProcess = p;
             }
-            output.Clear();
-            cancelWork = new CancellationTokenSource();
+            _output.Clear();
+            _cancelWork = new CancellationTokenSource();
             if (Options == null)
             {
                 Options = new ProcessOptions();
             }
 
-            P.StartInfo.FileName = fileName;
-            P.StartInfo.Arguments = arguments;
+            p.StartInfo.FileName = fileName;
+            p.StartInfo.Arguments = arguments;
             CommandWithArgs = $@"""{fileName}"" {arguments}".TrimEnd();
 
             if (OutputType == ProcessOutput.Output)
             {
-                P.OutputDataReceived += OnDataReceived;
+                p.OutputDataReceived += OnDataReceived;
             }
             else if (OutputType == ProcessOutput.Error)
             {
-                P.ErrorDataReceived += OnDataReceived;
+                p.ErrorDataReceived += OnDataReceived;
             }
 
             if (Options.DisplayMode != ProcessDisplayMode.Native)
             {
-                if (Options.DisplayMode == ProcessDisplayMode.Interface && Config.UserInterfaceManager != null)
-                {
-                    Config.UserInterfaceManager.Display(this);
-                }
+                //if (Options.DisplayMode == ProcessDisplayMode.Interface && Config.UserInterfaceManager != null)
+                //{
+                //    Config.UserInterfaceManager.Display(Owner, this);
+                //}
 
-                P.StartInfo.CreateNoWindow = true;
-                P.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                p.StartInfo.CreateNoWindow = true;
+                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 if (OutputType == ProcessOutput.Output)
                 {
-                    P.StartInfo.RedirectStandardOutput = true;
+                    p.StartInfo.RedirectStandardOutput = true;
                 }
                 else if (OutputType == ProcessOutput.Error)
                 {
-                    P.StartInfo.RedirectStandardError = true;
+                    p.StartInfo.RedirectStandardError = true;
                 }
 
-                P.StartInfo.UseShellExecute = false;
+                p.StartInfo.UseShellExecute = false;
             }
 
             ProcessStarted?.Invoke(this, new ProcessStartedEventArgs(this));
 
-            P.Start();
+            p.Start();
             try
             {
-                if (!P.HasExited)
+                if (!p.HasExited)
                 {
-                    P.PriorityClass = Options.Priority;
+                    p.PriorityClass = Options.Priority;
                 }
             }
             catch (System.ComponentModel.Win32Exception) { }
@@ -156,32 +156,32 @@ namespace HanumanInstitute.Encoder
             {
                 if (OutputType == ProcessOutput.Output)
                 {
-                    P.BeginOutputReadLine();
+                    p.BeginOutputReadLine();
                 }
                 else if (OutputType == ProcessOutput.Error)
                 {
-                    P.BeginErrorReadLine();
+                    p.BeginErrorReadLine();
                 }
             }
 
-            bool Timeout = Wait();
+            var timeout = Wait();
 
             // ExitCode is 0 for normal exit. Different value when closing the console.
-            CompletionStatus Result = Timeout ? CompletionStatus.Timeout : cancelWork.IsCancellationRequested ? CompletionStatus.Cancelled : P.ExitCode == 0 ? CompletionStatus.Success : CompletionStatus.Failed;
+            var result = timeout ? CompletionStatus.Timeout : _cancelWork.IsCancellationRequested ? CompletionStatus.Cancelled : p.ExitCode == 0 ? CompletionStatus.Success : CompletionStatus.Failed;
 
-            cancelWork = null;
+            _cancelWork = null;
             // Allow changing CompletionStatus in ProcessCompleted.
-            ProcessCompletedEventArgs CompletedArgs = new ProcessCompletedEventArgs(Result);
-            ProcessCompleted?.Invoke(this, CompletedArgs);
-            Result = CompletedArgs.Status;
-            LastCompletionStatus = Result;
-            if ((Result == CompletionStatus.Failed || Result == CompletionStatus.Timeout) && Options.DisplayMode == ProcessDisplayMode.ErrorOnly)
-            {
-                Config.UserInterfaceManager?.DisplayError(this);
-            }
+            var completedArgs = new ProcessCompletedEventArgs(result);
+            ProcessCompleted?.Invoke(this, completedArgs);
+            result = completedArgs.Status;
+            LastCompletionStatus = result;
+            //if ((result == CompletionStatus.Failed || result == CompletionStatus.Timeout) && Options.DisplayMode == ProcessDisplayMode.ErrorOnly)
+            //{
+            //    Config.UserInterfaceManager?.DisplayError(Owner, this);
+            //}
 
             WorkProcess = null;
-            return Result;
+            return result;
         }
 
         /// <summary>
@@ -190,15 +190,15 @@ namespace HanumanInstitute.Encoder
         /// <returns>Whether a timeout occured.</returns>
         private bool Wait()
         {
-            DateTime StartTime = DateTime.Now;
+            var startTime = DateTime.Now;
             while (!WorkProcess.HasExited)
             {
-                if (cancelWork.Token.IsCancellationRequested && !WorkProcess.HasExited)
+                if (_cancelWork.Token.IsCancellationRequested && !WorkProcess.HasExited)
                 {
                     Config.SoftKill(WorkProcess);
                 }
 
-                if (Options.Timeout > TimeSpan.Zero && DateTime.Now - StartTime > Options.Timeout)
+                if (Options.Timeout > TimeSpan.Zero && DateTime.Now - startTime > Options.Timeout)
                 {
                     Config.SoftKill(WorkProcess);
                     return true;
@@ -214,7 +214,7 @@ namespace HanumanInstitute.Encoder
         /// </summary>
         public void Cancel()
         {
-            cancelWork?.Cancel();
+            _cancelWork?.Cancel();
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace HanumanInstitute.Encoder
         /// </summary>
         protected virtual void OnDataReceived(object sender, DataReceivedEventArgs e)
         {
-            output.AppendLine(e?.Data);
+            _output.AppendLine(e?.Data);
             DataReceived?.Invoke(this, e);
         }
 
@@ -241,17 +241,16 @@ namespace HanumanInstitute.Encoder
         }
 
 
-        private bool disposedValue = false;
-
+        private bool _disposedValue = false;
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
-                    cancelWork.Dispose();
+                    _cancelWork?.Dispose();
                 }
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 

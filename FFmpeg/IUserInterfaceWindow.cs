@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HanumanInstitute.Encoder {
+namespace HanumanInstitute.FFmpeg {
     /// <summary>
     /// Provides an interface that must be implemented by the FFmpeg graphical interface window.
     /// </summary>

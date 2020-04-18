@@ -1,64 +1,73 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using Xunit;
 using Xunit.Abstractions;
+using static System.FormattableString;
 
-namespace EmergenceGuardian.Encoder.IntegrationTests {
-    public class ProcessManagerEncoderTests {
-        private readonly ITestOutputHelper output;
-        private readonly OutputFeeder feed;
-        private IProcessWorkerFactory factory;
+namespace HanumanInstitute.FFmpeg.IntegrationTests
+{
+    public class ProcessManagerEncoderTests
+    {
+        private readonly ITestOutputHelper _output;
+        private readonly OutputFeeder _feed;
+        private IProcessWorkerFactory _factory;
 
-        public ProcessManagerEncoderTests(ITestOutputHelper output) {
-            this.output = output;
-            feed = new OutputFeeder(output);
+        public ProcessManagerEncoderTests(ITestOutputHelper output)
+        {
+            _output = output;
+            _feed = new OutputFeeder(output);
         }
 
-        protected IProcessWorkerEncoder SetupManager() {
-            factory = FactoryConfig.CreateWithConfig();
-            return factory.CreateEncoder(null, feed.RunCallback);
+        protected IProcessWorkerEncoder SetupManager()
+        {
+            _factory = FactoryConfig.CreateWithConfig();
+            return _factory.CreateEncoder(null, null, _feed.RunCallback);
         }
 
         [Theory]
         [InlineData(AppPaths.StreamH264, ".mp4")]
-        public void RunEncoder_AppX264_Success(string videoFile, string destExt) {
-            string SrcVideo = AppPaths.GetInputFile(videoFile);
-            string Dest = AppPaths.PrepareDestPath("RunEncoderX264", videoFile, destExt);
-            string Args = string.Format(@"--preset ultrafast --output ""{1}"" ""{0}""", SrcVideo, Dest);
-            var Manager = SetupManager();
+        public void RunEncoder_AppX264_Success(string videoFile, string destExt)
+        {
+            var srcVideo = AppPaths.GetInputFile(videoFile);
+            var dest = AppPaths.PrepareDestPath("RunEncoderX264", videoFile, destExt);
+            var args = Invariant($@"--preset ultrafast --output ""{dest}"" ""{srcVideo}""");
+            var manager = SetupManager();
 
-            var Result = Manager.RunEncoder(Args, EncoderApp.x264);
+            var result = manager.RunEncoder(args, EncoderApp.x264);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(File.Exists(Dest));
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(File.Exists(dest));
         }
 
         [Theory]
         [InlineData(AppPaths.Avisynth, ".mp4")]
-        public void RunAvisynthToEncoder_AppX264_Success(string videoFile, string destExt) {
-            string SrcVideo = AppPaths.GetInputFile(videoFile);
-            string Dest = AppPaths.PrepareDestPath("RunAvisynthToX264", videoFile, destExt);
-            string Args = string.Format(@"--demuxer y4m --preset ultrafast -o ""{0}"" -", Dest);
-            var Manager = SetupManager();
+        public void RunAvisynthToEncoder_AppX264_Success(string videoFile, string destExt)
+        {
+            var srcVideo = AppPaths.GetInputFile(videoFile);
+            var dest = AppPaths.PrepareDestPath("RunAvisynthToX264", videoFile, destExt);
+            var args = Invariant($@"--demuxer y4m --preset ultrafast -o ""{dest}"" -");
+            var manager = SetupManager();
 
-            var Result = Manager.RunAvisynthToEncoder(SrcVideo, Args, EncoderApp.x264);
+            var result = manager.RunAvisynthToEncoder(srcVideo, args, EncoderApp.x264);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(File.Exists(Dest));
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(File.Exists(dest));
         }
 
         [Theory]
         [InlineData(AppPaths.VapourSynth, ".mp4")]
-        public void RunVapourSynthToEncoder_AppX264_Success(string videoFile, string destExt) {
-            string SrcVideo = AppPaths.GetInputFile(videoFile);
-            string Dest = AppPaths.PrepareDestPath("RunVapourSynthToX264", videoFile, destExt);
-            string Args = string.Format(@"--demuxer y4m --preset ultrafast  -o ""{0}"" -", Dest);
-            var Manager = SetupManager();
+        public void RunVapourSynthToEncoder_AppX264_Success(string videoFile, string destExt)
+        {
+            var srcVideo = AppPaths.GetInputFile(videoFile);
+            var dest = AppPaths.PrepareDestPath("RunVapourSynthToX264", videoFile, destExt);
+            var args = Invariant($@"--demuxer y4m --preset ultrafast  -o ""{dest}"" -");
+            var manager = SetupManager();
 
-            var Result = Manager.RunVapourSynthToEncoder(SrcVideo, Args, EncoderApp.x264);
+            var result = manager.RunVapourSynthToEncoder(srcVideo, args, EncoderApp.x264);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(File.Exists(Dest));
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(File.Exists(dest));
         }
     }
 }

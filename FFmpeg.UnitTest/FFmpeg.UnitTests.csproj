@@ -13,8 +13,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{FCEB2401-817C-41A8-8D90-BC87EB0A4B16}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>EmergenceGuardian.Encoder.UnitTests</RootNamespace>
-    <AssemblyName>Encoder.UnitTests</AssemblyName>
+    <RootNamespace>HanumanInstitute.FFmpeg.UnitTests</RootNamespace>
+    <AssemblyName>FFmpeg.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -103,6 +103,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssertExtensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestDataSource.cs" />
     <Compile Include="Fakes\FakeMediaConfig.cs" />
     <Compile Include="Fakes\FakeEnvironmentService.cs" />
     <Compile Include="Fakes\FakeFileSystemService.cs" />

@@ -1,342 +1,357 @@
 ﻿using System;
+using System.IO;
+using HanumanInstitute.FFmpeg.Services;
 using Moq;
 using Xunit;
-using EmergenceGuardian.Encoder.Services;
-using System.IO;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class ProcessManagerEncoderTests {
-
-        #region Utility Functions
-
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class ProcessManagerEncoderTests
+    {
         protected const string AppFFmpeg = "ffmpeg.exe";
         protected const string AppCmd = "cmd";
         protected const string AvisynthApp = "avs2pipemod.exe";
         protected const string VapourSynthApp = "vspipe.exe";
         protected const string MissingFileName = "MissingFile";
         protected const string TestSource = "source";
-        protected Mock<FakeMediaConfig> config;
+        private Mock<FakeMediaConfig> _config;
 
-        protected IProcessWorkerEncoder SetupManager() {
-            config = new Mock<FakeMediaConfig>() { CallBase = true };
+        protected IProcessWorkerEncoder SetupManager()
+        {
+            _config = new Mock<FakeMediaConfig>() { CallBase = true };
             var parserFactory = new FileInfoParserFactory();
             var factory = new FakeProcessFactory();
             var fileSystem = Mock.Of<FakeFileSystemService>(x =>
                 x.Exists(It.IsAny<string>()) == true && x.Exists(MissingFileName) == false);
-            return new ProcessWorkerEncoder(config.Object, factory, fileSystem, parserFactory);
+            return new ProcessWorkerEncoder(_config.Object, factory, fileSystem, parserFactory, null);
         }
 
-        #endregion
-
-        #region Constructors
-
-        [Fact]
-        public void Constructor_Empty_Success() => new ProcessWorkerEncoder();
 
         [Fact]
         public void Constructor_NullDependencies_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerEncoder(null, null, null, null, null));
 
         [Fact]
-        public void Constructor_Dependencies_Success() => new ProcessWorkerEncoder(new MediaConfig(), new ProcessFactory(), new FileSystemService(), new FileInfoParserFactory(), null);
+        public void Constructor_Dependencies_Success() => new ProcessWorkerEncoder(new MediaConfig(), new ProcessFactory(), new FileSystemService(), new FileInfoParserFactory(), null).Dispose();
 
         [Fact]
-        public void Constructor_OptionFFmpeg_Success() => new ProcessWorkerEncoder(new MediaConfig(), new ProcessFactory(), new FileSystemService(), new FileInfoParserFactory(), new ProcessOptionsEncoder());
+        public void Constructor_OptionFFmpeg_Success() => new ProcessWorkerEncoder(new MediaConfig(), new ProcessFactory(), new FileSystemService(), new FileInfoParserFactory(), new ProcessOptionsEncoder()).Dispose();
 
         [Fact]
-        public void Init_OutputType_ReturnError() {
-            var Manager = SetupManager();
+        public void Init_OutputType_ReturnError()
+        {
+            var manager = SetupManager();
 
-            Assert.Equal(ProcessOutput.Error, Manager.OutputType);
+            Assert.Equal(ProcessOutput.Error, manager.OutputType);
         }
 
-        #endregion
-
-        #region Options
 
         [Fact]
-        public void Options_SetOptionsFFmpeg_ReturnsSame() {
-            var Manager = SetupManager();
-            var Options = new ProcessOptionsEncoder();
+        public void Options_SetOptionsFFmpeg_ReturnsSame()
+        {
+            var manager = SetupManager();
+            var options = new ProcessOptionsEncoder();
 
-            Manager.Options = Options;
+            manager.Options = options;
 
-            Assert.Equal(Options, Manager.Options);
+            Assert.Equal(options, manager.Options);
         }
 
         [Fact]
-        public void Options_SetOptionsBase_ReturnsNullBaseReturnsSame() {
-            var Manager = SetupManager();
-            var ManagerBase = Manager as ProcessWorker;
-            var Options = new ProcessOptions();
+        public void Options_SetOptionsBase_ReturnsNullBaseReturnsSame()
+        {
+            var manager = SetupManager();
+            var managerBase = manager as ProcessWorker;
+            var options = new ProcessOptions();
 
-            ManagerBase.Options = Options;
+            managerBase.Options = options;
 
-            Assert.Null(Manager.Options);
-            Assert.Equal(ManagerBase.Options, Options);
+            Assert.Null(manager.Options);
+            Assert.Equal(managerBase.Options, options);
         }
 
-        #endregion
-
-        #region RunEncoder
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("args")]
-        public void RunEncoder_Valid_CommandContainAppAndArgs(string args) {
-            var Manager = SetupManager();
+        public void RunEncoder_Valid_CommandContainAppAndArgs(string args)
+        {
+            var manager = SetupManager();
 
-            var Result = Manager.RunEncoder(args, EncoderApp.FFmpeg);
+            var result = manager.RunEncoder(args, EncoderApp.FFmpeg);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Contains(AppFFmpeg, Manager.CommandWithArgs);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Contains(AppFFmpeg, manager.CommandWithArgs, StringComparison.InvariantCulture);
             if (!string.IsNullOrEmpty(args))
-                Assert.Contains(args, Manager.CommandWithArgs);
+            {
+                Assert.Contains(args, manager.CommandWithArgs, StringComparison.InvariantCulture);
+            }
         }
 
         [Theory]
         [InlineData(EncoderApp.FFmpeg)]
         [InlineData(EncoderApp.x264)]
         [InlineData(EncoderApp.x265)]
-        public void RunEncoder_Valid_EncodeAppReturnsSpecifiedApp(EncoderApp encoderApp) {
-            var Manager = SetupManager();
+        public void RunEncoder_Valid_EncodeAppReturnsSpecifiedApp(EncoderApp encoderApp)
+        {
+            var manager = SetupManager();
 
-            Manager.RunEncoder(null, encoderApp);
+            manager.RunEncoder(null, encoderApp);
 
-            Assert.Equal(encoderApp.ToString(), Manager.EncoderApp);
+            Assert.Equal(encoderApp.ToString(), manager.EncoderApp);
         }
 
         [Fact]
-        public void RunEncoder_AppNotFound_ThrowsFileNotFoundException() {
-            var Manager = SetupManager();
-            config.Setup(x => x.FFmpegPath).Returns(MissingFileName);
+        public void RunEncoder_AppNotFound_ThrowsFileNotFoundException()
+        {
+            var manager = SetupManager();
+            _config.Setup(x => x.FFmpegPath).Returns(MissingFileName);
 
-            Assert.Throws<FileNotFoundException>(() => Manager.RunEncoder(null, EncoderApp.FFmpeg));
+            Assert.Throws<FileNotFoundException>(() => manager.RunEncoder(null, EncoderApp.FFmpeg));
         }
 
         [Fact]
-        public void RunEncoder_InvalidEncoderApp_ThrowsException() {
-            var Manager = SetupManager();
+        public void RunEncoder_InvalidEncoderApp_ThrowsException()
+        {
+            var manager = SetupManager();
 
-            Assert.Throws<ArgumentException>(() => Manager.RunEncoder(null, null));
+            Assert.Throws<ArgumentException>(() => manager.RunEncoder(null, null));
         }
 
         [Theory]
         [InlineData(OutputSamples.FFmpegEncode1, 100)]
-        public void RunEncoder_OptionFrameCount_ReturnsSpecifiedFrameCount(string output, int frameCount) {
-            var Manager = SetupManager();
-            Manager.Options.FrameCount = frameCount;
-            Manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(Manager, output);
+        public void RunEncoder_OptionFrameCount_ReturnsSpecifiedFrameCount(string output, int frameCount)
+        {
+            var manager = SetupManager();
+            manager.Options.FrameCount = frameCount;
+            manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(manager, output);
 
-            Manager.RunEncoder(null, EncoderApp.FFmpeg);
+            manager.RunEncoder(null, EncoderApp.FFmpeg);
 
-            var Info = Manager.FileInfo as FileInfoFFmpeg;
-            Assert.Equal(frameCount, Info.FrameCount);
+            var info = manager.FileInfo as FileInfoFFmpeg;
+            Assert.Equal(frameCount, info.FrameCount);
         }
 
-        #endregion
-
-        #region RunAvisynthToEncoder
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("args")]
-        public void RunAvisynthToEncoder_Valid_CommandContainsCmdAndSourceAndArgs(string args) {
-            var Manager = SetupManager();
+        public void RunAvisynthToEncoder_Valid_CommandContainsCmdAndSourceAndArgs(string args)
+        {
+            var manager = SetupManager();
 
-            var R = Manager.RunAvisynthToEncoder(TestSource, args, EncoderApp.FFmpeg);
+            var r = manager.RunAvisynthToEncoder(TestSource, args, EncoderApp.FFmpeg);
 
-            Assert.Equal(CompletionStatus.Success, R);
-            Assert.Contains(AppCmd, Manager.CommandWithArgs);
-            Assert.Contains(TestSource, Manager.CommandWithArgs);
+            Assert.Equal(CompletionStatus.Success, r);
+            Assert.Contains(AppCmd, manager.CommandWithArgs, StringComparison.InvariantCulture);
+            Assert.Contains(TestSource, manager.CommandWithArgs, StringComparison.InvariantCulture);
             if (!string.IsNullOrEmpty(args))
-                Assert.Contains(args, Manager.CommandWithArgs);
+            {
+                Assert.Contains(args, manager.CommandWithArgs, StringComparison.InvariantCulture);
+            }
         }
 
         [Fact]
-        public void RunVapourSynthToEncoder_Valid_CommandContainsAvisynth() {
-            var Manager = SetupManager();
+        public void RunVapourSynthToEncoder_Valid_CommandContainsAvisynth()
+        {
+            var manager = SetupManager();
 
-            Manager.RunAvisynthToEncoder(TestSource, null, EncoderApp.FFmpeg);
+            manager.RunAvisynthToEncoder(TestSource, null, EncoderApp.FFmpeg);
 
-            Assert.Contains(AvisynthApp, Manager.CommandWithArgs);
+            Assert.Contains(AvisynthApp, manager.CommandWithArgs, StringComparison.InvariantCulture);
         }
 
         [Theory]
         [InlineData(EncoderApp.FFmpeg)]
         [InlineData(EncoderApp.x264)]
         [InlineData(EncoderApp.x265)]
-        public void RunAvisynthToEncoder_Valid_EncodeAppReturnsSpecifiedApp(EncoderApp encoderApp) {
-            var Manager = SetupManager();
+        public void RunAvisynthToEncoder_Valid_EncodeAppReturnsSpecifiedApp(EncoderApp encoderApp)
+        {
+            var manager = SetupManager();
 
-            Manager.RunAvisynthToEncoder(TestSource, null, encoderApp);
+            manager.RunAvisynthToEncoder(TestSource, null, encoderApp);
 
-            Assert.Equal(encoderApp.ToString(), Manager.EncoderApp);
+            Assert.Equal(encoderApp.ToString(), manager.EncoderApp);
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void RunAvisynthToEncoder_EmptyArg_ThrowsException(string source) {
-            var Manager = SetupManager();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 1, MemberType = typeof(TestDataSource))]
+        public void RunAvisynthToEncoder_EmptyArg_ThrowsException(string source, Type ex)
+        {
+            var manager = SetupManager();
 
-            Assert.Throws<ArgumentException>(() => Manager.RunAvisynthToEncoder(source, null, EncoderApp.FFmpeg));
+            void Act() => manager.RunAvisynthToEncoder(source, null, EncoderApp.FFmpeg);
+
+            Assert.Throws(ex, Act);
         }
 
         [Fact]
-        public void RunAvisynthToEncoder_InvalidEncoderApp_ThrowsException() {
-            var Manager = SetupManager();
+        public void RunAvisynthToEncoder_InvalidEncoderApp_ThrowsException()
+        {
+            var manager = SetupManager();
 
-            Assert.Throws<ArgumentException>(() => Manager.RunAvisynthToEncoder(TestSource, null, null));
+            Assert.Throws<ArgumentException>(() => manager.RunAvisynthToEncoder(TestSource, null, null));
         }
 
-
-        #endregion
-
-        #region RunVapourSynthToEncoder
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("args")]
-        public void RunVapourSynthToEncoder_Valid_CommandContainsCmdAndSourceAndArgs(string args) {
-            var Manager = SetupManager();
+        public void RunVapourSynthToEncoder_Valid_CommandContainsCmdAndSourceAndArgs(string args)
+        {
+            var manager = SetupManager();
 
-            var R = Manager.RunVapourSynthToEncoder(TestSource, args, EncoderApp.FFmpeg);
+            var r = manager.RunVapourSynthToEncoder(TestSource, args, EncoderApp.FFmpeg);
 
-            Assert.Equal(CompletionStatus.Success, R);
-            Assert.Contains(AppCmd, Manager.CommandWithArgs);
-            Assert.Contains(TestSource, Manager.CommandWithArgs);
+            Assert.Equal(CompletionStatus.Success, r);
+            Assert.Contains(AppCmd, manager.CommandWithArgs, StringComparison.InvariantCulture);
+            Assert.Contains(TestSource, manager.CommandWithArgs, StringComparison.InvariantCulture);
             if (!string.IsNullOrEmpty(args))
-                Assert.Contains(args, Manager.CommandWithArgs);
+            {
+                Assert.Contains(args, manager.CommandWithArgs, StringComparison.InvariantCulture);
+            }
         }
 
         [Fact]
-        public void RunVapourSynthToEncoder_Valid_CommandContainsVapourSynth() {
-            var Manager = SetupManager();
+        public void RunVapourSynthToEncoder_Valid_CommandContainsVapourSynth()
+        {
+            var manager = SetupManager();
 
-            Manager.RunVapourSynthToEncoder(TestSource, null, EncoderApp.FFmpeg);
+            manager.RunVapourSynthToEncoder(TestSource, null, EncoderApp.FFmpeg);
 
-            Assert.Contains(VapourSynthApp, Manager.CommandWithArgs);
+            Assert.Contains(VapourSynthApp, manager.CommandWithArgs, StringComparison.InvariantCulture);
         }
 
         [Theory]
         [InlineData(EncoderApp.FFmpeg)]
         [InlineData(EncoderApp.x264)]
         [InlineData(EncoderApp.x265)]
-        public void RunVapourSynthToEncoder_Valid_EncodeAppReturnsSpecifiedApp(EncoderApp encoderApp) {
-            var Manager = SetupManager();
+        public void RunVapourSynthToEncoder_Valid_EncodeAppReturnsSpecifiedApp(EncoderApp encoderApp)
+        {
+            var manager = SetupManager();
 
-            Manager.RunVapourSynthToEncoder(TestSource, null, encoderApp);
+            manager.RunVapourSynthToEncoder(TestSource, null, encoderApp);
 
-            Assert.Equal(encoderApp.ToString(), Manager.EncoderApp);
+            Assert.Equal(encoderApp.ToString(), manager.EncoderApp);
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void RunVapourSynthToEncoder_EmptyArg_ThrowsException(string source) {
-            var Manager = SetupManager();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 1, MemberType = typeof(TestDataSource))]
+        public void RunVapourSynthToEncoder_EmptyArg_ThrowsException(string source, Type ex)
+        {
+            var manager = SetupManager();
 
-            Assert.Throws<ArgumentException>(() => Manager.RunVapourSynthToEncoder(source, null, EncoderApp.FFmpeg));
+            void Act() => manager.RunVapourSynthToEncoder(source, null, EncoderApp.FFmpeg);
+
+            Assert.Throws(ex, Act);
         }
 
         [Fact]
-        public void RunVapourSynthToEncoder_InvalidEncoderApp_ThrowsException() {
-            var Manager = SetupManager();
+        public void RunVapourSynthToEncoder_InvalidEncoderApp_ThrowsException()
+        {
+            var manager = SetupManager();
 
-            Assert.Throws<ArgumentException>(() => Manager.RunVapourSynthToEncoder(TestSource, null, null));
+            Assert.Throws<ArgumentException>(() => manager.RunVapourSynthToEncoder(TestSource, null, null));
         }
 
-        #endregion
-
-        #region RunEncoder InjectFFmpeg
 
         [Theory]
         [InlineData(OutputSamples.FFmpegEncode1)]
         [InlineData(OutputSamples.FFmpegEncode2)]
         [InlineData(OutputSamples.FFmpegEncode3)]
-        public void RunEncoder_InjectFFmpeg_StatusSuccess(string output) {
-            var Manager = SetupManager();
-            Manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(Manager, output);
+        public void RunEncoder_InjectFFmpeg_StatusSuccess(string output)
+        {
+            var manager = SetupManager();
+            manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(manager, output);
 
-            var Result = Manager.RunEncoder(null, EncoderApp.FFmpeg);
+            var result = manager.RunEncoder(null, EncoderApp.FFmpeg);
 
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
         [Theory]
         [InlineData(OutputSamples.FFmpegEncode1, 7163)]
         [InlineData(OutputSamples.FFmpegEncode2, 7164)]
-        public void RunEncoder_InjectFFmpeg_ExpectedFrameCount(string output, int expectedFrameCount) {
-            var Manager = SetupManager();
-            Manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(Manager, output);
+        public void RunEncoder_InjectFFmpeg_ExpectedFrameCount(string output, int expectedFrameCount)
+        {
+            var manager = SetupManager();
+            manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(manager, output);
 
-            var Result = Manager.RunEncoder(null, EncoderApp.FFmpeg);
+            var result = manager.RunEncoder(null, EncoderApp.FFmpeg);
 
-            var Info = Manager.FileInfo as FileInfoFFmpeg;
-            Assert.Equal(expectedFrameCount, Info.FrameCount);
-            Assert.True(Info.FileDuration > TimeSpan.Zero);
+            var info = manager.FileInfo as FileInfoFFmpeg;
+            Assert.Equal(expectedFrameCount, info.FrameCount);
+            Assert.True(info.FileDuration > TimeSpan.Zero);
         }
 
         [Theory]
         [InlineData(OutputSamples.FFmpegEncode1, 29)]
         [InlineData(OutputSamples.FFmpegEncode2, 27)]
         [InlineData(OutputSamples.FFmpegEncode3, 10)]
-        public void RunEncoder_InjectFFmpeg_EventsTriggered(string output, int statusLines) {
-            var Manager = SetupManager();
-            int DataReceivedCalled = 0;
-            Manager.DataReceived += (s, e) => DataReceivedCalled++;
-            int InfoUpdatedCalled = 0;
-            Manager.FileInfoUpdated += (s, e) => InfoUpdatedCalled++;
-            int StatusUpdatedCalled = 0;
-            Manager.ProgressReceived += (s, e) => StatusUpdatedCalled++;
-            Manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(Manager, output);
+        public void RunEncoder_InjectFFmpeg_EventsTriggered(string output, int statusLines)
+        {
+            var manager = SetupManager();
+            var dataReceivedCalled = 0;
+            manager.DataReceived += (s, e) => dataReceivedCalled++;
+            var infoUpdatedCalled = 0;
+            manager.FileInfoUpdated += (s, e) => infoUpdatedCalled++;
+            var statusUpdatedCalled = 0;
+            manager.ProgressReceived += (s, e) => statusUpdatedCalled++;
+            manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(manager, output);
 
-            var Result = Manager.RunEncoder(null, EncoderApp.FFmpeg);
+            var result = manager.RunEncoder(null, EncoderApp.FFmpeg);
 
-            Assert.True(DataReceivedCalled > 0);
-            Assert.Equal(1, InfoUpdatedCalled);
-            Assert.Equal(statusLines, StatusUpdatedCalled);
+            Assert.True(dataReceivedCalled > 0);
+            Assert.Equal(1, infoUpdatedCalled);
+            Assert.Equal(statusLines, statusUpdatedCalled);
         }
 
         [Theory]
         [InlineData(OutputSamples.FFmpegEncode1, "mpeg1video", "mp2")]
-        public void RunEncoder_InjectFFmpeg_ExpectedStreams(string output, string videoFormat, string audioFormat) {
-            var Manager = SetupManager();
-            Manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(Manager, output);
+        public void RunEncoder_InjectFFmpeg_ExpectedStreams(string output, string videoFormat, string audioFormat)
+        {
+            var manager = SetupManager();
+            manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(manager, output);
 
-            var Result = Manager.RunEncoder(null, EncoderApp.FFmpeg);
+            var result = manager.RunEncoder(null, EncoderApp.FFmpeg);
 
-            var Info = Manager.FileInfo as FileInfoFFmpeg;
-            if (videoFormat != null) {
-                Assert.NotNull(Info.VideoStream);
-                Assert.Equal(videoFormat, Info.VideoStream.Format);
-            } else
-                Assert.Null(Info.VideoStream);
-            if (audioFormat != null) {
-                Assert.NotNull(Info.AudioStream);
-                Assert.Equal(audioFormat, Info.AudioStream.Format);
-            } else
-                Assert.Null(Info.AudioStream);
+            var info = manager.FileInfo as FileInfoFFmpeg;
+            if (videoFormat != null)
+            {
+                Assert.NotNull(info.VideoStream);
+                Assert.Equal(videoFormat, info.VideoStream.Format);
+            }
+            else
+            {
+                Assert.Null(info.VideoStream);
+            }
+
+            if (audioFormat != null)
+            {
+                Assert.NotNull(info.AudioStream);
+                Assert.Equal(audioFormat, info.AudioStream.Format);
+            }
+            else
+            {
+                Assert.Null(info.AudioStream);
+            }
         }
 
-        #endregion
-
-        #region RunEncoder InjectX264
 
         [Theory]
         [InlineData(OutputSamples.X264Encode1)]
         [InlineData(OutputSamples.X264Encode2)]
         [InlineData(OutputSamples.X264Encode3)]
-        public void RunEncoder_InjectX264_StatusSuccess(string output) {
-            var Manager = SetupManager();
-            Manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(Manager, output);
+        public void RunEncoder_InjectX264_StatusSuccess(string output)
+        {
+            var manager = SetupManager();
+            manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(manager, output);
 
-            var Result = Manager.RunEncoder(null, EncoderApp.x264);
+            var result = manager.RunEncoder(null, EncoderApp.x264);
 
-            Assert.Equal(CompletionStatus.Success, Result);
+            Assert.Equal(CompletionStatus.Success, result);
         }
 
 
@@ -344,38 +359,37 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         [InlineData(OutputSamples.X264Encode1, 438)]
         [InlineData(OutputSamples.X264Encode2, 0)]
         [InlineData(OutputSamples.X264Encode3, 1000000)]
-        public void RunEncoder_InjectX264_ExpectedFrameCount(string output, int expectedFrameCount) {
-            var Manager = SetupManager();
-            Manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(Manager, output);
+        public void RunEncoder_InjectX264_ExpectedFrameCount(string output, int expectedFrameCount)
+        {
+            var manager = SetupManager();
+            manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(manager, output);
 
-            var Result = Manager.RunEncoder(null, EncoderApp.x264);
+            var result = manager.RunEncoder(null, EncoderApp.x264);
 
-            var Info = Manager.FileInfo as FileInfoX264;
-            Assert.Equal(expectedFrameCount, Info.FrameCount);
+            var info = manager.FileInfo as FileInfoX264;
+            Assert.Equal(expectedFrameCount, info.FrameCount);
         }
 
         [Theory]
         [InlineData(OutputSamples.X264Encode1, 6)]
         [InlineData(OutputSamples.X264Encode2, 10)]
         [InlineData(OutputSamples.X264Encode3, 10)]
-        public void RunEncoder_InjectX264_EventsTriggered(string output, int statusLines) {
-            var Manager = SetupManager();
-            int DataReceivedCalled = 0;
-            Manager.DataReceived += (s, e) => DataReceivedCalled++;
-            int InfoUpdatedCalled = 0;
-            Manager.FileInfoUpdated += (s, e) => InfoUpdatedCalled++;
-            int StatusUpdatedCalled = 0;
-            Manager.ProgressReceived += (s, e) => StatusUpdatedCalled++;
-            Manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(Manager, output);
+        public void RunEncoder_InjectX264_EventsTriggered(string output, int statusLines)
+        {
+            var manager = SetupManager();
+            var dataReceivedCalled = 0;
+            manager.DataReceived += (s, e) => dataReceivedCalled++;
+            var infoUpdatedCalled = 0;
+            manager.FileInfoUpdated += (s, e) => infoUpdatedCalled++;
+            var statusUpdatedCalled = 0;
+            manager.ProgressReceived += (s, e) => statusUpdatedCalled++;
+            manager.ProcessStarted += (s, e) => FakeProcessWorkerFactory.FeedOutputToProcess(manager, output);
 
-            var Result = Manager.RunEncoder(null, EncoderApp.x264);
+            var result = manager.RunEncoder(null, EncoderApp.x264);
 
-            Assert.True(DataReceivedCalled > 0);
-            Assert.Equal(1, InfoUpdatedCalled);
-            Assert.Equal(statusLines, StatusUpdatedCalled);
+            Assert.True(dataReceivedCalled > 0);
+            Assert.Equal(1, infoUpdatedCalled);
+            Assert.Equal(statusLines, statusUpdatedCalled);
         }
-
-        #endregion
-
     }
 }

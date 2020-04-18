@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Represents the method that will handle the GetCustomAppPath event.
@@ -19,7 +19,7 @@ namespace HanumanInstitute.Encoder
 
         public GetPathEventArgs(string app)
         {
-            this.App = app;
+            App = app;
         }
     }
 }

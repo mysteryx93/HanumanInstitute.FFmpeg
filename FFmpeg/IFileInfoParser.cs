@@ -1,5 +1,5 @@
 ﻿
-namespace HanumanInstitute.Encoder {
+namespace HanumanInstitute.FFmpeg {
     /// <summary>
     /// Allows the implementing class to parse encoder console outputs.
     /// </summary>

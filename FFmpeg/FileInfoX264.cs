@@ -2,7 +2,7 @@
 using System.Globalization;
 using static System.FormattableString;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Parses and stores the X264 or X265 console output. Cast this class to IFileInfoX264 to access the file information.
@@ -78,7 +78,7 @@ namespace HanumanInstitute.Encoder
         /// </summary>
         /// <param name="outputText">The raw output line from x264.</param>
         /// <returns>A EncoderStatus object.</returns>
-        public long ParseFrameCount(string outputText)
+        public static long ParseFrameCount(string outputText)
         {
             if (string.IsNullOrEmpty(outputText))
             {
@@ -86,8 +86,8 @@ namespace HanumanInstitute.Encoder
             }
 
             // Get the last line.
-            var Lines = outputText.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            var data = Lines[Lines.Length - 1];
+            var lines = outputText.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            var data = lines[lines.Length - 1];
 
             // Parse this format.
             //[  0.2%]      1/438      9.52  4423.20   0:00:00   0:00:45   18.00 KB    7.70 MB  
@@ -95,8 +95,8 @@ namespace HanumanInstitute.Encoder
             {
                 try
                 {
-                    var Fields = SplitData(data.Substring(8)); // Trim percentage.
-                    return long.Parse(Fields[0].Split('/')[1], CultureInfo.InvariantCulture);
+                    var fields = SplitData(data.Substring(8)); // Trim percentage.
+                    return long.Parse(fields[0].Split('/')[1], CultureInfo.InvariantCulture);
                 }
                 catch (ArgumentNullException) { }
                 catch (FormatException) { }
@@ -112,52 +112,52 @@ namespace HanumanInstitute.Encoder
         /// <returns>A ProgressStatusX264 object with parsed data.</returns>
         public object ParseProgress(string data)
         {
-            var Result = new ProgressStatusX264();
+            var result = new ProgressStatusX264();
             if (string.IsNullOrEmpty(data))
             {
-                return Result;
+                return result;
             }
 
             // 2 possible formats:
             try
             {
-                var LongFormat = IsLongFormat(data);
-                if (LongFormat)
+                var longFormat = IsLongFormat(data);
+                if (longFormat)
                 {
                     data = data.Substring(8); // Trim percentage.
                 }
 
-                var Fields = SplitData(data);
-                if (LongFormat)
+                var fields = SplitData(data);
+                if (longFormat)
                 {
                     //[  0.2%]      1/438      9.52  4423.20   0:00:00   0:00:45   18.00 KB    7.70 MB  
-                    Result.Frame = long.Parse(Fields[0].Split('/')[0], CultureInfo.InvariantCulture);
-                    Result.Fps = float.Parse(Fields[1], CultureInfo.InvariantCulture);
-                    Result.Bitrate = float.Parse(Fields[2], CultureInfo.InvariantCulture);
-                    Result.Time = TimeSpan.Parse(Fields[4], CultureInfo.InvariantCulture);
-                    Result.Size = Invariant($"{Fields[5]} {Fields[6]}");
+                    result.Frame = long.Parse(fields[0].Split('/')[0], CultureInfo.InvariantCulture);
+                    result.Fps = float.Parse(fields[1], CultureInfo.InvariantCulture);
+                    result.Bitrate = float.Parse(fields[2], CultureInfo.InvariantCulture);
+                    result.Time = TimeSpan.Parse(fields[4], CultureInfo.InvariantCulture);
+                    result.Size = Invariant($"{fields[5]} {fields[6]}");
                 }
                 else
                 {
                     //     1   0.10  10985.28    0:00:10    22.35 KB  
-                    Result.Frame = long.Parse(Fields[0], CultureInfo.InvariantCulture);
-                    Result.Fps = float.Parse(Fields[1], CultureInfo.InvariantCulture);
-                    Result.Bitrate = float.Parse(Fields[2], CultureInfo.InvariantCulture);
-                    Result.Size = Invariant($"{Fields[4]} {Fields[5]}");
+                    result.Frame = long.Parse(fields[0], CultureInfo.InvariantCulture);
+                    result.Fps = float.Parse(fields[1], CultureInfo.InvariantCulture);
+                    result.Bitrate = float.Parse(fields[2], CultureInfo.InvariantCulture);
+                    result.Size = Invariant($"{fields[4]} {fields[5]}");
                 }
             }
             catch (ArgumentNullException) { }
             catch (FormatException) { }
             catch (OverflowException) { }
-            return Result;
+            return result;
         }
 
-        private bool IsLongFormat(string data)
+        private static bool IsLongFormat(string data)
         {
             return data.Length > 40 && data[0] == '[' && data[7] == ']';
         }
 
-        private string[] SplitData(string data)
+        private static string[] SplitData(string data)
         {
             return data.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         }

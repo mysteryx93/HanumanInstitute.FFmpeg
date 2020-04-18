@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Provides functions to manage audio and video streams.
     /// </summary>
     public interface IMediaMuxer
     {
+        /// <summary>
+        /// Sets the owner of the process windows.
+        /// </summary>
+        IMediaMuxer SetOwner(object owner);
         /// <summary>
         /// Merges specified audio and video files.
         /// </summary>

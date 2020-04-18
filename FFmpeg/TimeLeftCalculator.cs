@@ -1,19 +1,19 @@
-﻿using HanumanInstitute.Encoder.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using HanumanInstitute.FFmpeg.Services;
 
-namespace HanumanInstitute.Encoder
+namespace HanumanInstitute.FFmpeg
 {
     /// <summary>
     /// Allows calculating the time left during an encoding process.
     /// </summary>
     public class TimeLeftCalculator : ITimeLeftCalculator
     {
-        private readonly KeyValuePair<DateTime, long>[] progressHistory;
-        private int iterator;
-        private bool fullCycle;
-        private long frameCount;
-        private int historyLength;
+        private readonly KeyValuePair<DateTime, long>[] _progressHistory;
+        private int _iterator;
+        private bool _fullCycle;
+        private long _frameCount;
+        private int _historyLength;
         /// <summary>
         /// After calling Calculate, returns the estimated processing time left.
         /// </summary>
@@ -23,7 +23,7 @@ namespace HanumanInstitute.Encoder
         /// </summary>
         public double ResultFps { get; private set; }
 
-        private readonly IEnvironmentService environment;
+        private readonly IEnvironmentService _environment;
 
         /// <summary>
         /// Initializes a new instance of the TimeLeftCalculator class.
@@ -40,26 +40,28 @@ namespace HanumanInstitute.Encoder
         /// <param name="historyLength">The number of status entries to store. The larger the number, the slower the time left will change. Default is 20.</param>
         public TimeLeftCalculator(IEnvironmentService environmentService, long frameCount, int historyLength = 20)
         {
-            environment = environmentService ?? throw new ArgumentNullException(nameof(environmentService));
+            _environment = environmentService ?? throw new ArgumentNullException(nameof(environmentService));
             FrameCount = frameCount;
             HistoryLength = historyLength;
-            progressHistory = new KeyValuePair<DateTime, long>[historyLength];
+            _progressHistory = new KeyValuePair<DateTime, long>[historyLength];
         }
 
         /// <summary>
         /// Gets or sets the total number of frames to encode.
         /// </summary>
-        public long FrameCount {
-            get => frameCount;
-            set => frameCount = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(FrameCount));
+        public long FrameCount
+        {
+            get => _frameCount;
+            set => _frameCount = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(FrameCount));
         }
 
         /// <summary>
         /// Gets or sets the number of status entries to store. The larger the number, the slower the time left will change.
         /// </summary>
-        public int HistoryLength {
-            get => historyLength;
-            set => historyLength = value >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(HistoryLength));
+        public int HistoryLength
+        {
+            get => _historyLength;
+            set => _historyLength = value >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(HistoryLength));
         }
 
         /// <summary>
@@ -70,45 +72,45 @@ namespace HanumanInstitute.Encoder
         {
             if (pos < 0) { return; }
 
-            progressHistory[iterator] = new KeyValuePair<DateTime, long>(environment.Now, pos);
+            _progressHistory[_iterator] = new KeyValuePair<DateTime, long>(_environment.Now, pos);
 
             // Calculate SampleWorkTime and SampleWorkFrame for each host
-            TimeSpan SampleWorkTime = TimeSpan.Zero;
-            long SampleWorkFrame = 0;
-            int PosFirst = -1;
-            if (fullCycle)
+            var sampleWorkTime = TimeSpan.Zero;
+            long sampleWorkFrame = 0;
+            var posFirst = -1;
+            if (_fullCycle)
             {
-                PosFirst = (iterator + 1) % HistoryLength;
+                posFirst = (_iterator + 1) % HistoryLength;
             }
-            else if (iterator > 0)
+            else if (_iterator > 0)
             {
-                PosFirst = 0;
-            }
-
-            if (PosFirst > -1)
-            {
-                SampleWorkTime += progressHistory[iterator].Key - progressHistory[PosFirst].Key;
-                SampleWorkFrame += progressHistory[iterator].Value - progressHistory[PosFirst].Value;
+                posFirst = 0;
             }
 
-            if (SampleWorkTime.TotalSeconds > 0 && SampleWorkFrame >= 0)
+            if (posFirst > -1)
             {
-                ResultFps = SampleWorkFrame / SampleWorkTime.TotalSeconds;
-                long WorkLeft = FrameCount - pos;
-                if (WorkLeft <= 0)
+                sampleWorkTime += _progressHistory[_iterator].Key - _progressHistory[posFirst].Key;
+                sampleWorkFrame += _progressHistory[_iterator].Value - _progressHistory[posFirst].Value;
+            }
+
+            if (sampleWorkTime.TotalSeconds > 0 && sampleWorkFrame >= 0)
+            {
+                ResultFps = sampleWorkFrame / sampleWorkTime.TotalSeconds;
+                var workLeft = FrameCount - pos;
+                if (workLeft <= 0)
                 {
                     ResultTimeLeft = TimeSpan.Zero;
                 }
                 else if (ResultFps > 0)
                 {
-                    ResultTimeLeft = TimeSpan.FromSeconds(WorkLeft / ResultFps);
+                    ResultTimeLeft = TimeSpan.FromSeconds(workLeft / ResultFps);
                 }
             }
 
-            iterator = (iterator + 1) % HistoryLength;
-            if (iterator == 0)
+            _iterator = (_iterator + 1) % HistoryLength;
+            if (_iterator == 0)
             {
-                fullCycle = true;
+                _fullCycle = true;
             }
         }
     }

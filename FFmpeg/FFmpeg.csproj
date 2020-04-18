@@ -1,26 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>HanumanInstitute.Encoder</PackageId>
+    <PackageId>HanumanInstitute.FFmpeg</PackageId>
     <Version>1.0.0</Version>
     <Authors>Etienne Charland</Authors>
-    <Company>Emergence Guardian</Company>
-    <Product>HanumanInstitute.Encoder</Product>
+    <Company>Hanuman Institute</Company>
+    <Product>HanumanInstitute.FFmpeg</Product>
     <Description>.Net wrapper for media encoders such as FFmpeg, X264 and X265, including Avisynth and VapourSynth support.</Description>
-    <Copyright>Copyright 2017-2019, Emergence Guardian</Copyright>
+    <Copyright>Copyright 2017-2020, Hanuman Institute</Copyright>
     <PackageTags>ffmpeg ffmpeg-wrapper video-encoding video library .net</PackageTags>
-    <PackageReleaseNotes>https://github.com/mysteryx93/HanumanInstitute.Encoder/releases</PackageReleaseNotes>
-    <PackageProjectUrl>https://github.com/mysteryx93/HanumanInstitute.Encoder</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/mysteryx93/HanumanInstitute.Encoder/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageReleaseNotes>https://github.com/mysteryx93/HanumanInstitute.FFmpeg/releases</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/mysteryx93/HanumanInstitute.FFmpeg</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/mysteryx93/HanumanInstitute.FFmpeg/blob/master/LICENSE</PackageLicenseUrl>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
-    <RootNamespace>HanumanInstitute.Encoder</RootNamespace>
+    <RootNamespace>HanumanInstitute.FFmpeg</RootNamespace>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
-    <AssemblyName>HanumanInstitute.Encoder</AssemblyName>
+    <AssemblyName>HanumanInstitute.FFmpeg</AssemblyName>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">

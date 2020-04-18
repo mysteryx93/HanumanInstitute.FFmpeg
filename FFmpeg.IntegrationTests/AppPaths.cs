@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace EmergenceGuardian.Encoder.IntegrationTests
+namespace HanumanInstitute.FFmpeg.IntegrationTests
 {
     public static class AppPaths
     {
@@ -33,10 +33,10 @@ namespace EmergenceGuardian.Encoder.IntegrationTests
 
         public static string PrepareDestPath(string prefix, string source, string destExt)
         {
-            string Dest = Path.Combine(AppPaths.OutputDirectory, Path.ChangeExtension(prefix + " " + source, destExt));
-            Directory.CreateDirectory(Path.GetDirectoryName(Dest));
-            File.Delete(Dest);
-            return Dest;
+            var dest = Path.Combine(AppPaths.OutputDirectory, Path.ChangeExtension(prefix + " " + source, destExt));
+            Directory.CreateDirectory(Path.GetDirectoryName(dest));
+            File.Delete(dest);
+            return dest;
         }
     }
 }

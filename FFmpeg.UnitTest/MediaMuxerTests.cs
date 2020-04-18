@@ -1,34 +1,34 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using DjvuNet.Tests.Xunit;
 using Xunit;
 using Xunit.Abstractions;
-using DjvuNet.Tests.Xunit;
+using HanumanInstitute.FFmpeg.Services;
+using Moq;
 
-namespace EmergenceGuardian.Encoder.UnitTests {
-    public class MediaMuxerTests {
-
-        #region Declarations
-
+namespace HanumanInstitute.FFmpeg.UnitTests
+{
+    public class MediaMuxerTests
+    {
         private const string FFMPEG = "ffmpeg.exe", AUDIOCODEC = "-acodec", VIDEOCODEC = "-vcodec", FIXAAC = "aac_adtstoasc", FIXPCM = "pcm_s16le";
-        private FakeProcessWorkerFactory factory;
-        private readonly ITestOutputHelper output;
+        private FakeProcessWorkerFactory _factory;
+        private readonly ITestOutputHelper _output;
 
-        public MediaMuxerTests(ITestOutputHelper output) {
-            this.output = output;
+        public MediaMuxerTests(ITestOutputHelper output)
+        {
+            _output = output;
         }
 
-        #endregion
-
-        #region Utility Functions
 
         /// <summary>
         /// Creates and initializes the MediaMuxer class for testing.
         /// </summary>
-        protected IMediaMuxer SetupMuxer() {
-            factory = new FakeProcessWorkerFactory();
-            FakeFileSystemService FileSystemStub = new FakeFileSystemService();
-            return new MediaMuxer(factory, FileSystemStub, new MediaInfoReader(factory));
+        protected IMediaMuxer SetupMuxer()
+        {
+            _factory = new FakeProcessWorkerFactory();
+            var fileSystemStub = new FakeFileSystemService();
+            return new MediaMuxer(_factory, fileSystemStub, new MediaInfoReader(_factory));
         }
 
         /// <summary>
@@ -37,21 +37,20 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         /// <param name="hasVideo">Whether the command should include a video source.</param>
         /// <param name="hasAudio">Whether the command should include an audio source.</param>
         /// <param name="instanceIndex">The index of the instance created by the IFFmpegProcessManagerFactory to test, or -1 (default) to use the last.</param>
-        private IProcessWorker AssertFFmpegManager(bool hasVideo, bool hasAudio, int instanceIndex = -1) {
-            var Manager = instanceIndex < 0 ? factory.Instances.Last() : factory.Instances[instanceIndex];
-            Assert.NotNull(Manager);
-            output.WriteLine(Manager.CommandWithArgs);
-            Assert.Contains(FFMPEG, Manager.CommandWithArgs);
-            Manager.CommandWithArgs.ContainsOrNot(VIDEOCODEC, hasVideo);
-            Manager.CommandWithArgs.ContainsOrNot(AUDIOCODEC, hasAudio);
-            return Manager;
+        private IProcessWorker AssertFFmpegManager(bool hasVideo, bool hasAudio, int instanceIndex = -1)
+        {
+            var manager = instanceIndex < 0 ? _factory.Instances.Last() : _factory.Instances[instanceIndex];
+            Assert.NotNull(manager);
+            _output.WriteLine(manager.CommandWithArgs);
+            Assert.Contains(FFMPEG, manager.CommandWithArgs, StringComparison.InvariantCulture);
+            manager.CommandWithArgs.ContainsOrNot(VIDEOCODEC, hasVideo);
+            manager.CommandWithArgs.ContainsOrNot(AUDIOCODEC, hasAudio);
+            return manager;
         }
 
-        #endregion
 
-        #region Data Sources
-
-        public static IEnumerable<object[]> GenerateStreamLists_Valid() {
+        public static IEnumerable<object[]> GenerateStreamLists_Valid()
+        {
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("video", 0, "mpeg2", FFmpegStreamType.Video),
@@ -104,49 +103,58 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateStreamLists_EmptyArgs() {
+        public static IEnumerable<object[]> GenerateStreamLists_EmptyArgs()
+        {
             yield return new object[] {
                 null,
-                "dest"
+                "dest",
+                typeof(ArgumentNullException)
             };
             yield return new object[] {
                 new List<MediaStream>() {
                 },
-                "dest"
+                "dest",
+                typeof(ArgumentException)
             };
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("video", 0, "", FFmpegStreamType.None)
                 },
-                "dest"
+                "dest",
+                typeof(ArgumentException)
             };
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("video", 0, "", FFmpegStreamType.Video)
                 },
-                null
+                null,
+                typeof(ArgumentNullException)
             };
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("video", 0, "", FFmpegStreamType.Video)
                 },
-                ""
+                "",
+                typeof(ArgumentException)
             };
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream(null, 0, "", FFmpegStreamType.Video)
                 },
-                "dest"
+                "dest",
+                typeof(ArgumentException)
             };
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("", 0, "", FFmpegStreamType.Video)
                 },
-                "dest"
+                "dest",
+                typeof(ArgumentException)
             };
         }
 
-        public static IEnumerable<object[]> GenerateStreamLists_FixAac() {
+        public static IEnumerable<object[]> GenerateStreamLists_FixAac()
+        {
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("audio.aac", 0, "aac", FFmpegStreamType.Audio),
@@ -163,7 +171,8 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateStreamLists_FixPcm() {
+        public static IEnumerable<object[]> GenerateStreamLists_FixPcm()
+        {
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("audio.wav", 0, "pcm_dvd", FFmpegStreamType.Audio),
@@ -186,7 +195,8 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateStreamLists_DoNotFixAac() {
+        public static IEnumerable<object[]> GenerateStreamLists_DoNotFixAac()
+        {
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("audio.aac", 0, "aac", FFmpegStreamType.Video),
@@ -203,7 +213,8 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateStreamLists_DoNotFixPcm() {
+        public static IEnumerable<object[]> GenerateStreamLists_DoNotFixPcm()
+        {
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("audio.wav", 0, "pcm_dvd", FFmpegStreamType.Video),
@@ -220,7 +231,8 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateStreamLists_SingleValid() {
+        public static IEnumerable<object[]> GenerateStreamLists_SingleValid()
+        {
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("video", 0, "mpeg2", FFmpegStreamType.Video),
@@ -230,7 +242,8 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateStreamLists_H264IntoMkv() {
+        public static IEnumerable<object[]> GenerateStreamLists_H264IntoMkv()
+        {
             yield return new object[] {
                 new List<MediaStream>() {
                     new MediaStream("video.264", 0, "h264", FFmpegStreamType.Video),
@@ -253,7 +266,8 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateConcatenate_Valid() {
+        public static IEnumerable<object[]> GenerateConcatenate_Valid()
+        {
             yield return new object[] {
                 new List<string>() {
                     "file1"
@@ -277,31 +291,37 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateConcatenate_Empty() {
+        public static IEnumerable<object[]> GenerateConcatenate_Empty()
+        {
             yield return new object[] {
                 null,
-                "dest.mkv"
+                "dest.mkv",
+                typeof(ArgumentNullException)
             };
             yield return new object[] {
                 new List<string>() {
                 },
-                "dest.mkv"
-            };
-            yield return new object[] {
-                new List<string>() {
-                    "file1"
-                },
-                null
+                "dest.mkv",
+                typeof(ArgumentException)
             };
             yield return new object[] {
                 new List<string>() {
                     "file1"
                 },
-                ""
+                null,
+                typeof(ArgumentNullException)
+            };
+            yield return new object[] {
+                new List<string>() {
+                    "file1"
+                },
+                "",
+                typeof(ArgumentException)
             };
         }
 
-        public static IEnumerable<object[]> GenerateConcatenate_Single() {
+        public static IEnumerable<object[]> GenerateConcatenate_Single()
+        {
             yield return new object[] {
                 new List<string>() {
                     "file1",
@@ -312,7 +332,8 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         }
 
 
-        public static IEnumerable<object[]> GenerateTruncate_Valid() {
+        public static IEnumerable<object[]> GenerateTruncate_Valid()
+        {
             yield return new object[] {
                 "source",
                 "dest.mkv",
@@ -321,166 +342,173 @@ namespace EmergenceGuardian.Encoder.UnitTests {
             };
         }
 
-        public static IEnumerable<object[]> GenerateTruncate_Empty() {
-            yield return new object[] {
-                null,
-                "dest.mkv",
-                TimeSpan.Zero,
-                TimeSpan.FromSeconds(10)
-            };
-            yield return new object[] {
-                "",
-                "dest.mkv",
-                TimeSpan.Zero,
-                TimeSpan.FromSeconds(10)
-            };
+        //public static IEnumerable<object[]> GenerateTruncate_Empty()
+        //{
+        //    yield return new object[] {
+        //        null,
+        //        "dest.mkv",
+        //        TimeSpan.Zero,
+        //        TimeSpan.FromSeconds(10)
+        //    };
+        //    yield return new object[] {
+        //        "",
+        //        "dest.mkv",
+        //        TimeSpan.Zero,
+        //        TimeSpan.FromSeconds(10)
+        //    };
+        //    yield return new object[] {
+        //        "source",
+        //        null,
+        //        TimeSpan.Zero,
+        //        TimeSpan.FromSeconds(10)
+        //    };
+        //    yield return new object[] {
+        //        "source",
+        //        "",
+        //        TimeSpan.Zero,
+        //        TimeSpan.FromSeconds(10)
+        //    };
+        //}
+
+        public static IEnumerable<object[]> GenerateTruncate_Single()
+        {
             yield return new object[] {
                 "source",
-                null,
-                TimeSpan.Zero,
-                TimeSpan.FromSeconds(10)
-            };
-            yield return new object[] {
-                "source",
-                "",
+                "dest.mkv",
                 TimeSpan.Zero,
                 TimeSpan.FromSeconds(10)
             };
         }
 
-        public static IEnumerable<object[]> GenerateTruncate_Single() {
-            yield return new object[] {
-                "source",
-                "dest.mkv",
-                TimeSpan.Zero,
-                TimeSpan.FromSeconds(10)
-            };
-        }
-
-        #endregion
-
-        #region Constructors
 
         [Fact]
-        public void Constructor_WithFactory_Success() => new MediaMuxer(new FakeProcessWorkerFactory());
+        public void Constructor_WithFactory_Success() => new MediaMuxer(new FakeProcessWorkerFactory(), new FakeFileSystemService(), Mock.Of<IMediaInfoReader>());
 
         [Fact]
-        public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaMuxer(null));
+        public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaMuxer(null, new FakeFileSystemService(), Mock.Of<IMediaInfoReader>()));
 
         [Fact]
-        public void Constructor_NullDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaMuxer(factory, null, null));
+        public void Constructor_NullDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaMuxer(_factory, null, null));
 
-        #endregion
-
-        #region Muxe_StreamList
 
         // DjvuTheory is required to serialize FFmpegStream argument, otherwise we cannot see the list of theory cases.
         [DjvuTheory]
         [MemberData(nameof(GenerateStreamLists_Valid))]
-        public void Muxe_StreamList_Valid_Success(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio) {
-            var Muxer = SetupMuxer();
+        public void Muxe_StreamList_Valid_Success(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Muxe(fileStreams, destination);
+            var result = muxer.Muxe(fileStreams, destination);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Single(factory.Instances);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Single(_factory.Instances);
             AssertFFmpegManager(hasVideo, hasAudio);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateStreamLists_EmptyArgs))]
-        public void Muxe_StreamList_EmptyArgs_ThrowsNullException(IEnumerable<MediaStream> fileStreams, string destination) {
-            var Muxer = SetupMuxer();
+        public void Muxe_StreamList_EmptyArgs_ThrowsNullException(IEnumerable<MediaStream> fileStreams, string destination, Type ex)
+        {
+            var muxer = SetupMuxer();
 
-            Assert.Throws<ArgumentException>(() => Muxer.Muxe(fileStreams, destination));
+            void Act() => muxer.Muxe(fileStreams, destination);
+
+            Assert.Throws(ex, Act);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateStreamLists_FixAac))]
-        public void Muxe_StreamList_WithAudioAac_AddArgumentFixAac(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio) {
+        public void Muxe_StreamList_WithAudioAac_AddArgumentFixAac(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
+        {
             Muxe_StreamList_FixAudio(fileStreams, destination, FIXAAC, hasVideo, hasAudio);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateStreamLists_FixPcm))]
-        public void Muxe_StreamList_WithAudioPcm_AddArgumentFixPcm(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio) {
+        public void Muxe_StreamList_WithAudioPcm_AddArgumentFixPcm(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
+        {
             Muxe_StreamList_FixAudio(fileStreams, destination, FIXPCM, hasVideo, hasAudio);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateStreamLists_DoNotFixAac))]
-        public void Muxe_StreamList_WithNoAudioAac_DoNotAddArgumentFixAac(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio) {
+        public void Muxe_StreamList_WithNoAudioAac_DoNotAddArgumentFixAac(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
+        {
             Muxe_StreamList_FixAudio(fileStreams, destination, FIXAAC, hasVideo, hasAudio, false);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateStreamLists_DoNotFixPcm))]
-        public void Muxe_StreamList_WithNoAudioPcm_DoNotAddArgumentFixPcm(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio) {
+        public void Muxe_StreamList_WithNoAudioPcm_DoNotAddArgumentFixPcm(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
+        {
             Muxe_StreamList_FixAudio(fileStreams, destination, FIXPCM, hasVideo, hasAudio, false);
         }
 
-        private void Muxe_StreamList_FixAudio(IEnumerable<MediaStream> fileStreams, string destination, string fixString, bool hasVideo, bool hasAudio, bool fixStringExpected = true) {
-            var Muxer = SetupMuxer();
+        private void Muxe_StreamList_FixAudio(IEnumerable<MediaStream> fileStreams, string destination, string fixString, bool hasVideo, bool hasAudio, bool fixStringExpected = true)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Muxe(fileStreams, destination);
+            var result = muxer.Muxe(fileStreams, destination);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Single(factory.Instances);
-            var Manager = AssertFFmpegManager(hasVideo, hasAudio);
-            Manager.CommandWithArgs.ContainsOrNot(fixString, fixStringExpected);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Single(_factory.Instances);
+            var manager = AssertFFmpegManager(hasVideo, hasAudio);
+            manager.CommandWithArgs.ContainsOrNot(fixString, fixStringExpected);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateStreamLists_H264IntoMkv))]
-        public void Muxe_StreamsList_H264IntoMkv_MuxeIntoMp4First(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio) {
-            var Muxer = SetupMuxer();
+        public void Muxe_StreamsList_H264IntoMkv_MuxeIntoMp4First(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Muxe(fileStreams, destination, null);
+            var result = muxer.Muxe(fileStreams, destination, null);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.True(factory.Instances.Count > 1);
-            foreach (IProcessWorker manager in factory.Instances) {
-                output.WriteLine(manager.CommandWithArgs);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.True(_factory.Instances.Count > 1);
+            foreach (var manager in _factory.Instances)
+            {
+                _output.WriteLine(manager.CommandWithArgs);
             }
             AssertFFmpegManager(hasVideo, hasAudio);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateStreamLists_SingleValid))]
-        public void Muxe_StreamsList_ParamOptions_ReturnsSame(IEnumerable<MediaStream> fileStreams, string destination) {
-            var Muxer = SetupMuxer();
-            var Options = new ProcessOptionsEncoder();
+        public void Muxe_StreamsList_ParamOptions_ReturnsSame(IEnumerable<MediaStream> fileStreams, string destination)
+        {
+            var muxer = SetupMuxer();
+            var options = new ProcessOptionsEncoder();
 
-            var Result = Muxer.Muxe(fileStreams, destination, Options);
+            muxer.Muxe(fileStreams, destination, options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [DjvuTheory]
         [MemberData(nameof(GenerateStreamLists_SingleValid))]
-        public void Muxe_StreamsList_ParamCallback_CallbackCalled(IEnumerable<MediaStream> fileStreams, string destination) {
-            var Muxer = SetupMuxer();
-            int CallbackCalled = 0;
+        public void Muxe_StreamsList_ParamCallback_CallbackCalled(IEnumerable<MediaStream> fileStreams, string destination)
+        {
+            var muxer = SetupMuxer();
+            var callbackCalled = 0;
 
-            var Result = Muxer.Muxe(fileStreams, destination, null, (s, e) => CallbackCalled++);
+            var result = muxer.Muxe(fileStreams, destination, null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region Muxe_Simple
 
         [Theory]
         [InlineData("video", "audio", "dest")]
         [InlineData("video.mp4", "audio.m4a", "dest.mp4")]
-        public void Muxe_Simple_AudioVideo_Success(string videoFile, string audioFile, string destination) {
-            var Muxer = SetupMuxer();
+        public void Muxe_Simple_AudioVideo_Success(string videoFile, string audioFile, string destination)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Muxe(videoFile, audioFile, destination);
+            var result = muxer.Muxe(videoFile, audioFile, destination);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Equal(3, factory.Instances.Count);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Equal(3, _factory.Instances.Count);
             AssertFFmpegManager(true, true);
         }
 
@@ -490,13 +518,14 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         [InlineData("audio.AAC", "Dest.MKV")]
         [InlineData("\0\"\0\"\0\n", "\0\0\0\n")]
         [InlineData("读写汉字", "学中文")]
-        public void Muxe_Simple_AudioOnly_Success(string audioFile, string destination) {
-            var Muxer = SetupMuxer();
+        public void Muxe_Simple_AudioOnly_Success(string audioFile, string destination)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Muxe(null, audioFile, destination);
+            var result = muxer.Muxe(null, audioFile, destination);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Equal(2, factory.Instances.Count);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Equal(2, _factory.Instances.Count);
             AssertFFmpegManager(false, true);
         }
 
@@ -506,242 +535,251 @@ namespace EmergenceGuardian.Encoder.UnitTests {
         [InlineData("Video.MKV", "Dest.MKV")]
         [InlineData("\0\"\0\"\0\n", "\0\0\0\n")]
         [InlineData("读写汉字", "学中文")]
-        public void Muxe_Simple_VideoOnly_Success(string videoFile, string destination) {
-            var Muxer = SetupMuxer();
+        public void Muxe_Simple_VideoOnly_Success(string videoFile, string destination)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Muxe(videoFile, null, destination);
+            var result = muxer.Muxe(videoFile, null, destination);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Equal(2, factory.Instances.Count);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Equal(2, _factory.Instances.Count);
             AssertFFmpegManager(true, false);
         }
 
         [Theory]
-        [InlineData(null, null, null)]
-        [InlineData("", "", "")]
-        [InlineData("video.mp4", "", "")]
-        [InlineData("", "audio.aac", "")]
-        [InlineData("", "", "dest.mp4")]
-        [InlineData("video.mp4", "audio.aac", null)]
-        public void Muxe_Simple_EmptyArgs_ThrowsException(string videoFile, string audioFile, string destination) {
-            var Muxer = SetupMuxer();
+        [InlineData(null, null, null, typeof(ArgumentNullException))]
+        [InlineData("", "", "", typeof(ArgumentException))]
+        [InlineData("video.mp4", "", "", typeof(ArgumentException))]
+        [InlineData("", "audio.aac", "", typeof(ArgumentException))]
+        [InlineData("", "", "dest.mp4", typeof(ArgumentException))]
+        [InlineData("video.mp4", "audio.aac", null, typeof(ArgumentNullException))]
+        public void Muxe_Simple_EmptyArgs_ThrowsException(string videoFile, string audioFile, string destination, Type ex)
+        {
+            var muxer = SetupMuxer();
 
-            Assert.Throws<ArgumentException>(() => Muxer.Muxe(videoFile, audioFile, destination));
+            void Act() => muxer.Muxe(videoFile, audioFile, destination);
+
+            Assert.Throws(ex, Act);
         }
 
         [Theory]
         [InlineData("video", "audio", "dest")]
-        public void Muxe_Simple_ParamOptions_ReturnsSame(string videoFile, string audioFile, string destination) {
-            var Muxer = SetupMuxer();
-            var Options = new ProcessOptionsEncoder();
+        public void Muxe_Simple_ParamOptions_ReturnsSame(string videoFile, string audioFile, string destination)
+        {
+            var muxer = SetupMuxer();
+            var options = new ProcessOptionsEncoder();
 
-            var Result = Muxer.Muxe(videoFile, audioFile, destination, Options);
+            muxer.Muxe(videoFile, audioFile, destination, options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [Theory]
         [InlineData("video", "audio", "dest")]
-        public void Muxe_Simple_ParamCallback_CallbackCalled(string videoFile, string audioFile, string destination) {
-            var Muxer = SetupMuxer();
-            int CallbackCalled = 0;
+        public void Muxe_Simple_ParamCallback_CallbackCalled(string videoFile, string audioFile, string destination)
+        {
+            var muxer = SetupMuxer();
+            var callbackCalled = 0;
 
-            var Result = Muxer.Muxe(videoFile, audioFile, destination, null, (s, e) => CallbackCalled++);
+            var result = muxer.Muxe(videoFile, audioFile, destination, null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region ExtractAudio
 
         [Theory]
         [InlineData("source", "dest")]
-        public void ExtractAudio_Valid_Success(string source, string destination) {
-            var Muxer = SetupMuxer();
+        public void ExtractAudio_Valid_Success(string source, string destination)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.ExtractAudio(source, destination);
+            var result = muxer.ExtractAudio(source, destination);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Single(factory.Instances);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Single(_factory.Instances);
             AssertFFmpegManager(false, true);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        [InlineData("source", null)]
-        [InlineData("", "dest")]
-        public void ExtractAudio_EmptyArgs_ThrowsException(string source, string destination) {
-            var Muxer = SetupMuxer();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void ExtractAudio_EmptyArgs_ThrowsException(string source, string destination, Type ex)
+        {
+            var muxer = SetupMuxer();
 
-            Assert.Throws<ArgumentException>(() => Muxer.ExtractAudio(source, destination));
+            void Act() => muxer.ExtractAudio(source, destination);
+
+            Assert.Throws(ex, Act);
         }
 
         [Theory]
         [InlineData("source", "dest")]
-        public void ExtractAudio_ParamOptions_ReturnsSame(string source, string destination) {
-            var Muxer = SetupMuxer();
-            var Options = new ProcessOptionsEncoder();
+        public void ExtractAudio_ParamOptions_ReturnsSame(string source, string destination)
+        {
+            var muxer = SetupMuxer();
+            var options = new ProcessOptionsEncoder();
 
-            var Result = Muxer.ExtractAudio(source, destination, Options);
+            muxer.ExtractAudio(source, destination, options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [Theory]
         [InlineData("source", "dest")]
-        public void ExtractAudio_ParamCallback_CallbackCalled(string source, string destination) {
-            var Muxer = SetupMuxer();
-            int CallbackCalled = 0;
+        public void ExtractAudio_ParamCallback_CallbackCalled(string source, string destination)
+        {
+            var muxer = SetupMuxer();
+            var callbackCalled = 0;
 
-            var Result = Muxer.ExtractAudio(source, destination, null, (s, e) => CallbackCalled++);
+            muxer.ExtractAudio(source, destination, null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region ExtractVideo
 
         [Theory]
         [InlineData("source", "dest")]
-        public void ExtractVideo_Valid_Success(string source, string destination) {
-            var Muxer = SetupMuxer();
+        public void ExtractVideo_Valid_Success(string source, string destination)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.ExtractVideo(source, destination);
+            var result = muxer.ExtractVideo(source, destination);
 
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Single(factory.Instances);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Single(_factory.Instances);
             AssertFFmpegManager(true, false);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        [InlineData("source", null)]
-        [InlineData("", "dest")]
-        public void ExtractVideo_EmptyArgs_ThrowsException(string source, string destination) {
-            var Muxer = SetupMuxer();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void ExtractVideo_EmptyArgs_ThrowsException(string source, string destination, Type ex)
+        {
+            var muxer = SetupMuxer();
 
-            Assert.Throws<ArgumentException>(() => Muxer.ExtractVideo(source, destination));
+            void Act() => muxer.ExtractVideo(source, destination);
+
+            Assert.Throws(ex, Act);
         }
 
         [Theory]
         [InlineData("source", "dest")]
-        public void ExtractVideo_ParamOptions_ReturnsSame(string source, string destination) {
-            var Muxer = SetupMuxer();
-            var Options = new ProcessOptionsEncoder();
+        public void ExtractVideo_ParamOptions_ReturnsSame(string source, string destination)
+        {
+            var muxer = SetupMuxer();
+            var options = new ProcessOptionsEncoder();
 
-            var Result = Muxer.ExtractVideo(source, destination, Options);
+            muxer.ExtractVideo(source, destination, options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [Theory]
         [InlineData("source", "dest")]
-        public void ExtractVideo_ParamCallback_CallbackCalled(string source, string destination) {
-            var Muxer = SetupMuxer();
-            int CallbackCalled = 0;
+        public void ExtractVideo_ParamCallback_CallbackCalled(string source, string destination)
+        {
+            var muxer = SetupMuxer();
+            var callbackCalled = 0;
 
-            var Result = Muxer.ExtractVideo(source, destination, null, (s, e) => CallbackCalled++);
+            var result = muxer.ExtractVideo(source, destination, null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region Concatenate
 
         [Theory]
         [MemberData(nameof(GenerateConcatenate_Valid))]
-        public void Concatenate_Valid_Success(IEnumerable<string> files, string destination) {
-            var Muxer = SetupMuxer();
+        public void Concatenate_Valid_Success(IEnumerable<string> files, string destination)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Concatenate(files, destination);
+            var result = muxer.Concatenate(files, destination);
 
-            output.WriteLine(factory.Instances.FirstOrDefault()?.CommandWithArgs);
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Single(factory.Instances);
+            _output.WriteLine(_factory.Instances.FirstOrDefault()?.CommandWithArgs);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Single(_factory.Instances);
         }
 
         [Theory]
         [MemberData(nameof(GenerateConcatenate_Empty))]
-        public void Concatenate_EmptyArgs_ThrowsException(IEnumerable<string> files, string destination) {
-            var Muxer = SetupMuxer();
+        public void Concatenate_EmptyArgs_ThrowsException(IEnumerable<string> files, string destination, Type ex)
+        {
+            var muxer = SetupMuxer();
 
-            Assert.Throws<ArgumentException>(() => Muxer.Concatenate(files, destination));
+            void Act() => muxer.Concatenate(files, destination);
+
+            Assert.Throws(ex, Act);
         }
 
         [Theory]
         [MemberData(nameof(GenerateConcatenate_Single))]
-        public void Concatenate_ParamOptions_ReturnsSame(IEnumerable<string> files, string destination) {
-            var Muxer = SetupMuxer();
-            var Options = new ProcessOptionsEncoder();
+        public void Concatenate_ParamOptions_ReturnsSame(IEnumerable<string> files, string destination)
+        {
+            var muxer = SetupMuxer();
+            var options = new ProcessOptionsEncoder();
 
-            var Result = Muxer.Concatenate(files, destination, Options);
+            muxer.Concatenate(files, destination, options);
 
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
         [Theory]
         [MemberData(nameof(GenerateConcatenate_Single))]
-        public void Concatenate_ParamCallback_CallbackCalled(IEnumerable<string> files, string destination) {
-            var Muxer = SetupMuxer();
-            int CallbackCalled = 0;
+        public void Concatenate_ParamCallback_CallbackCalled(IEnumerable<string> files, string destination)
+        {
+            var muxer = SetupMuxer();
+            var callbackCalled = 0;
 
-            var Result = Muxer.Concatenate(files, destination, null, (s, e) => CallbackCalled++);
+            var result = muxer.Concatenate(files, destination, null, (s, e) => callbackCalled++);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Equal(1, callbackCalled);
         }
 
-        #endregion
-
-        #region Truncate
 
         [Theory]
         [MemberData(nameof(GenerateTruncate_Valid))]
-        public void Truncate_Valid_Success(string source, string destination, TimeSpan? startPos, TimeSpan? duration) {
-            var Muxer = SetupMuxer();
+        public void Truncate_Valid_Success(string source, string destination, TimeSpan? startPos, TimeSpan? duration)
+        {
+            var muxer = SetupMuxer();
 
-            var Result = Muxer.Truncate(source, destination, startPos, duration);
+            var result = muxer.Truncate(source, destination, startPos, duration);
 
-            output.WriteLine(factory.Instances.FirstOrDefault()?.CommandWithArgs);
-            Assert.Equal(CompletionStatus.Success, Result);
-            Assert.Single(factory.Instances);
+            _output.WriteLine(_factory.Instances.FirstOrDefault()?.CommandWithArgs);
+            Assert.Equal(CompletionStatus.Success, result);
+            Assert.Single(_factory.Instances);
         }
 
         [Theory]
-        [MemberData(nameof(GenerateTruncate_Empty))]
-        public void Truncate_EmptyArgs_ThrowsException(string source, string destination, TimeSpan? startPos, TimeSpan? duration) {
-            var Muxer = SetupMuxer();
+        [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
+        public void Truncate_EmptyArgs_ThrowsException(string source, string destination, Type ex)
+        {
+            var muxer = SetupMuxer();
 
-            Assert.Throws<ArgumentException>(() => Muxer.Truncate(source, destination, startPos, duration));
-        }
+            void Act() => muxer.Truncate(source, destination, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 
-        [Theory]
-        [MemberData(nameof(GenerateTruncate_Single))]
-        public void Truncate_ParamOptions_ReturnsSame(string source, string destination, TimeSpan? startPos, TimeSpan? duration) {
-            var Muxer = SetupMuxer();
-            var Options = new ProcessOptionsEncoder();
-
-            var Result = Muxer.Truncate(source, destination, startPos, duration, Options);
-
-            Assert.Same(Options, factory.Instances[0].Options);
+            Assert.Throws(ex, Act);
         }
 
         [Theory]
         [MemberData(nameof(GenerateTruncate_Single))]
-        public void Truncate_ParamCallback_CallbackCalled(string source, string destination, TimeSpan? startPos, TimeSpan? duration) {
-            var Muxer = SetupMuxer();
-            int CallbackCalled = 0;
+        public void Truncate_ParamOptions_ReturnsSame(string source, string destination, TimeSpan? startPos, TimeSpan? duration)
+        {
+            var muxer = SetupMuxer();
+            var options = new ProcessOptionsEncoder();
 
-            var Result = Muxer.Truncate(source, destination, startPos, duration, null, (s, e) => CallbackCalled++);
+            muxer.Truncate(source, destination, startPos, duration, options);
 
-            Assert.Equal(1, CallbackCalled);
+            Assert.Same(options, _factory.Instances[0].Options);
         }
 
-        #endregion
+        [Theory]
+        [MemberData(nameof(GenerateTruncate_Single))]
+        public void Truncate_ParamCallback_CallbackCalled(string source, string destination, TimeSpan? startPos, TimeSpan? duration)
+        {
+            var muxer = SetupMuxer();
+            var callbackCalled = 0;
 
+            muxer.Truncate(source, destination, startPos, duration, null, (s, e) => callbackCalled++);
+
+            Assert.Equal(1, callbackCalled);
+        }
     }
 }
