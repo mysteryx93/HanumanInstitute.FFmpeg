@@ -13,9 +13,9 @@ namespace HanumanInstitute.FFmpeg
     public class GetPathEventArgs : EventArgs
     {
         public string App { get; set; }
-        public string Path { get; set; }
+        public string Path { get; set; } = string.Empty;
 
-        public GetPathEventArgs() { }
+        //public GetPathEventArgs() { }
 
         public GetPathEventArgs(string app)
         {

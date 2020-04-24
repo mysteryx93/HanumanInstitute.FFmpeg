@@ -63,9 +63,9 @@ namespace HanumanInstitute.FFmpeg.Properties {
         /// <summary>
         ///   Looks up a localized string similar to {0} cannot be null or empty..
         /// </summary>
-        internal static string ArgNullOrEmpty {
+        internal static string ArgumentNullOrEmpty {
             get {
-                return ResourceManager.GetString("ArgNullOrEmpty", resourceCulture);
+                return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
             }
         }
         

@@ -17,7 +17,6 @@ namespace HanumanInstitute.FFmpeg
             if (services == null) { throw new ArgumentNullException(nameof(services)); }
 
             // FFmpeg
-            services.Register<IFileInfoFFmpeg, FileInfoFFmpeg>();
             services.Register<IFileInfoParserFactory, FileInfoParserFactory>();
             services.Register<IMediaConfig>(() => new MediaConfig(services.GetInstance<IWindowsApiService>(), services.GetInstance<IFileSystemService>()));
             services.Register<IMediaEncoder, MediaEncoder>();

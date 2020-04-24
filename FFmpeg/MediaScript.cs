@@ -18,11 +18,11 @@ namespace HanumanInstitute.FFmpeg
 
         public MediaScript(IProcessWorkerFactory processFactory, IFileSystemService fileSystemService)
         {
-            _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
-            _fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
+            _factory = processFactory.CheckNotNull(nameof(processFactory));
+            _fileSystem = fileSystemService.CheckNotNull(nameof(fileSystemService));
         }
 
-        private object _owner;
+        private object? _owner;
         /// <summary>
         /// Sets the owner of the process windows.
         /// </summary>
@@ -39,9 +39,10 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus RunAvisynth(string path, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus RunAvisynth(string path, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
-            ArgHelper.ValidateNotNullOrEmpty(path, nameof(path));
+            path.CheckNotNullOrEmpty(nameof(path));
+
             if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
             {
                 throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));
@@ -62,9 +63,10 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus RunVapourSynth(string path, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus RunVapourSynth(string path, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
-            ArgHelper.ValidateNotNullOrEmpty(path, nameof(path));
+            path.CheckNotNullOrEmpty(nameof(path));
+
             if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
             {
                 throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));

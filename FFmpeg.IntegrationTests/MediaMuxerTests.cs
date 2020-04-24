@@ -27,7 +27,7 @@ namespace HanumanInstitute.FFmpeg.IntegrationTests
             return new MediaMuxer(_factory, new FileSystemService(), new MediaInfoReader(_factory));
         }
 
-        private IFileInfoFFmpeg GetFileInfo(string path)
+        private FileInfoFFmpeg GetFileInfo(string path)
         {
             var info = new MediaInfoReader(_factory);
             return info.GetFileInfo(path);

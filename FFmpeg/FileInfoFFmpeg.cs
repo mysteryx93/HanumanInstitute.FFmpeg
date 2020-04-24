@@ -8,7 +8,7 @@ namespace HanumanInstitute.FFmpeg
     /// <summary>
     /// Parses and stores the FFmpeg console output. Cast this class to IFileInfoFFmpeg to access the file information.
     /// </summary>
-    public class FileInfoFFmpeg : IFileInfoFFmpeg, IFileInfoParser
+    public class FileInfoFFmpeg : IFileInfoParser
     {
         /// <summary>
         /// Returns whether ParseFileInfo has been called.
@@ -25,7 +25,7 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Returns information about input streams.
         /// </summary>
-        public List<MediaStreamInfo> FileStreams { get; private set; }
+        public List<MediaStreamInfo> FileStreams { get; private set; } = new List<MediaStreamInfo>();
 
         public FileInfoFFmpeg() { }
 
@@ -33,31 +33,20 @@ namespace HanumanInstitute.FFmpeg
         /// Gets the first video stream from FileStreams.
         /// </summary>
         /// <returns>A FFmpegVideoStreamInfo object.</returns>
-        public MediaVideoStreamInfo VideoStream => GetStream(FFmpegStreamType.Video) as MediaVideoStreamInfo;
+        public MediaVideoStreamInfo? VideoStream => GetStream(FFmpegStreamType.Video) as MediaVideoStreamInfo;
 
         /// <summary>
         /// Gets the first audio stream from FileStreams.
         /// </summary>
         /// <returns>A FFmpegAudioStreamInfo object.</returns>
-        public MediaAudioStreamInfo AudioStream => GetStream(FFmpegStreamType.Audio) as MediaAudioStreamInfo;
+        public MediaAudioStreamInfo? AudioStream => GetStream(FFmpegStreamType.Audio) as MediaAudioStreamInfo;
 
         /// <summary>
         /// Returns the first stream of specified type.
         /// </summary>
         /// <param name="streamType">The type of stream to search for.</param>
         /// <returns>A FFmpegStreamInfo object.</returns>
-        private MediaStreamInfo GetStream(FFmpegStreamType streamType)
-        {
-            if (FileStreams != null && FileStreams.Count > 0)
-            {
-                return FileStreams.FirstOrDefault(f => f.StreamType == streamType);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
+        private MediaStreamInfo? GetStream(FFmpegStreamType streamType) => FileStreams.FirstOrDefault(f => f.StreamType == streamType);
 
 
         // IFileInfoParser
@@ -69,7 +58,7 @@ namespace HanumanInstitute.FFmpeg
         /// <returns>Whether enough information was received to call ParseFileInfo.</returns>
         public bool HasFileInfo(string data)
         {
-            ArgHelper.ValidateNotNull(data, nameof(data));
+            data.CheckNotNull(nameof(data));
             return data.StartsWith("Output ", StringComparison.InvariantCulture) || data.StartsWith("Press [q] to stop", StringComparison.InvariantCulture);
         }
 
@@ -80,7 +69,7 @@ namespace HanumanInstitute.FFmpeg
         /// <returns>Whether the output line is a progress update.</returns>
         public bool IsLineProgressUpdate(string data)
         {
-            ArgHelper.ValidateNotNull(data, nameof(data));
+            data.CheckNotNull(nameof(data));
             return data.StartsWith("frame=", StringComparison.InvariantCulture);
         }
 
@@ -92,7 +81,7 @@ namespace HanumanInstitute.FFmpeg
         {
             IsParsed = true;
             FileDuration = new TimeSpan();
-            FileStreams = new List<MediaStreamInfo>();
+            FileStreams.Clear();
 
             if (string.IsNullOrEmpty(outputText))
             {
@@ -129,7 +118,7 @@ namespace HanumanInstitute.FFmpeg
             }
 
             // Find input streams.
-            MediaStreamInfo itemInfo;
+            MediaStreamInfo? itemInfo;
             for (var i = durationIndex + 1; i < outLines.Length; i++)
             {
                 if (outLines[i].StartsWith("    Stream #0:", StringComparison.InvariantCulture))
@@ -163,7 +152,7 @@ namespace HanumanInstitute.FFmpeg
         /// </summary>
         /// <param name="text">A line of text to parse.</param>
         /// <returns>The stream info, or null if parsing failed.</returns>
-        public static MediaStreamInfo ParseStreamInfo(string text)
+        public static MediaStreamInfo? ParseStreamInfo(string text)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -364,33 +353,28 @@ namespace HanumanInstitute.FFmpeg
         /// <returns>The attribute value.</returns>
         public static string ParseAttribute(string text, string key)
         {
-            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(key))
+            if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(key))
             {
-                return null;
-            }
-
-            var pos = text.IndexOf(key + "=", StringComparison.InvariantCulture);
-            if (pos >= 0)
-            {
-                // Find first non-space character.
-                pos += key.Length + 1;
-                while (pos < text.Length && text[pos] == ' ')
+                var pos = text.IndexOf(key + "=", StringComparison.InvariantCulture);
+                if (pos >= 0)
                 {
-                    pos++;
-                }
-                // Find space after value.
-                var posEnd = text.IndexOf(' ', pos);
-                if (posEnd == -1)
-                {
-                    posEnd = text.Length;
-                }
+                    // Find first non-space character.
+                    pos += key.Length + 1;
+                    while (pos < text.Length && text[pos] == ' ')
+                    {
+                        pos++;
+                    }
+                    // Find space after value.
+                    var posEnd = text.IndexOf(' ', pos);
+                    if (posEnd == -1)
+                    {
+                        posEnd = text.Length;
+                    }
 
-                return text.Substring(pos, posEnd - pos);
+                    return text.Substring(pos, posEnd - pos);
+                }
             }
-            else
-            {
-                return null;
-            }
+            return string.Empty;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using HanumanInstitute.FFmpeg.Properties;
 using HanumanInstitute.FFmpeg.Services;
@@ -25,34 +26,36 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Gets the application being used for encoding.
         /// </summary>
-        public string EncoderApp { get; set; }
+        public string EncoderApp { get; set; } = string.Empty;
         /// <summary>
         /// Gets the class parsing and storing file information.
         /// </summary>
-        protected IFileInfoParser Parser { get; private set; }
+        [NotNull]
+        protected IFileInfoParser? Parser { get; private set; }
         /// <summary>
         /// Gets the file information.
         /// </summary>
-        public object FileInfo => Parser;
+        [NotNull]
+        public object? FileInfo => Parser;
         /// <summary>
         /// Returns the last progress status data received from DataReceived event.
         /// </summary>
-        public object LastProgressReceived { get; private set; }
+        public object? LastProgressReceived { get; private set; }
         /// <summary>
         /// Occurs after stream info is read from the output.
         /// </summary>
-        public event EventHandler FileInfoUpdated;
+        public event EventHandler? FileInfoUpdated;
         /// <summary>
         /// Occurs when progress status update is received through the output stream.
         /// </summary>
-        public event ProgressReceivedEventHandler ProgressReceived;
+        public event ProgressReceivedEventHandler? ProgressReceived;
 
         /// <summary>
         /// Gets or sets the options to control the behaviors of the encoding process.
         /// </summary>
         public new ProcessOptionsEncoder Options
         {
-            get => base.Options as ProcessOptionsEncoder;
+            get => (ProcessOptionsEncoder)base.Options;
             set => base.Options = value;
         }
 
@@ -107,7 +110,7 @@ namespace HanumanInstitute.FFmpeg
         /// <returns>The process completion status.</returns>
         public CompletionStatus RunAvisynthToEncoder(string source, string arguments, string encoderApp)
         {
-            ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
+            source.CheckNotNullOrEmpty(nameof(source));
             if (!_fileSystem.Exists(Config.Avs2PipeMod)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, Config.Avs2PipeMod)); }
             EnsureNotRunning();
             EncoderApp = encoderApp;
@@ -136,7 +139,7 @@ namespace HanumanInstitute.FFmpeg
         /// <returns>The process completion status.</returns>
         public CompletionStatus RunVapourSynthToEncoder(string source, string arguments, string encoderApp)
         {
-            ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
+            source.CheckNotNullOrEmpty(nameof(source));
             if (!_fileSystem.Exists(Config.VsPipePath)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.VsPipePathNotFound, Config.VsPipePath)); }
 
             EnsureNotRunning();
@@ -176,7 +179,7 @@ namespace HanumanInstitute.FFmpeg
 
             base.OnDataReceived(sender, e);
 
-            object progressInfo = null;
+            object? progressInfo = null;
             if (!Parser.IsParsed && Parser.HasFileInfo(e.Data))
             {
                 ParseFileInfo();

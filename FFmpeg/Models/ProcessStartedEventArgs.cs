@@ -14,7 +14,7 @@ namespace HanumanInstitute.FFmpeg
     {
         public IProcessWorker ProcessWorker { get; set; }
 
-        public ProcessStartedEventArgs() { }
+        //public ProcessStartedEventArgs() { }
 
         public ProcessStartedEventArgs(IProcessWorker processWorker)
         {

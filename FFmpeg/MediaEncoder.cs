@@ -19,7 +19,7 @@ namespace HanumanInstitute.FFmpeg
             _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
         }
 
-        private object _owner;
+        private object? _owner;
         /// <summary>
         /// Sets the owner of the process windows.
         /// </summary>
@@ -38,7 +38,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus ConvertToAviUtVideo(string source, string destination, bool audio, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus ConvertToAviUtVideo(string source, string destination, bool audio, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             // -vcodec huffyuv or utvideo, -acodec pcm_s16le
             return EncodeFFmpeg(source, destination, "utvideo", audio ? "pcm_s16le" : null, null, options, callback);
@@ -55,7 +55,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus EncodeFFmpeg(string source, string destination, string videoCodec, string audioCodec, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus EncodeFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return EncodeFFmpegInternal(SourceType.Direct, source, destination, videoCodec, audioCodec, encodeArgs, options, callback);
         }
@@ -86,7 +86,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus EncodeAvisynthToFFmpeg(string source, string destination, string videoCodec, string audioCodec, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus EncodeAvisynthToFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return EncodeFFmpegInternal(SourceType.Avisynth, source, destination, videoCodec, audioCodec, encodeArgs, options, callback);
         }
@@ -102,7 +102,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus EncodeVapourSynthToFFmpeg(string source, string destination, string videoCodec, string audioCodec, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus EncodeVapourSynthToFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return EncodeFFmpegInternal(SourceType.VapourSynth, source, destination, videoCodec, audioCodec, encodeArgs, options, callback);
         }
@@ -116,7 +116,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus EncodeX264(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus EncodeX264(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return EncodeX264Internal(SourceType.Direct, EncoderApp.x264, source, destination, encodeArgs, options, callback);
         }
@@ -130,7 +130,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus EncodeAvisynthToX264(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus EncodeAvisynthToX264(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return EncodeX264Internal(SourceType.Avisynth, EncoderApp.x264, source, destination, encodeArgs, options, callback);
         }
@@ -144,7 +144,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus EncodeVapourSynthToX264(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus EncodeVapourSynthToX264(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return EncodeX264Internal(SourceType.VapourSynth, EncoderApp.x264, source, destination, encodeArgs, options, callback);
         }
@@ -172,7 +172,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus EncodeAvisynthToX265(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus EncodeAvisynthToX265(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return EncodeX264Internal(SourceType.Avisynth, EncoderApp.x265, source, destination, encodeArgs, options, callback);
         }
@@ -186,7 +186,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus EncodeVapourSynthToX265(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus EncodeVapourSynthToX265(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return EncodeX264Internal(SourceType.VapourSynth, EncoderApp.x265, source, destination, encodeArgs, options, callback);
         }
@@ -198,10 +198,10 @@ namespace HanumanInstitute.FFmpeg
         //    return string.IsNullOrEmpty(value) ? null : new string[] { value };
         //}
 
-        private CompletionStatus EncodeFFmpegInternal(SourceType sourceType, string source, string destination, string videoCodec, string audioCodec, string encodeArgs, ProcessOptionsEncoder options, ProcessStartedEventHandler callback)
+        private CompletionStatus EncodeFFmpegInternal(SourceType sourceType, string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options, ProcessStartedEventHandler? callback)
         {
-            ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
-            ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
+            source.CheckNotNullOrEmpty(nameof(source));
+            destination.CheckNotNullOrEmpty(nameof(destination));
             if (string.IsNullOrEmpty(videoCodec) && string.IsNullOrEmpty(audioCodec)) { throw new ArgumentException(Resources.CodecNullOrEmpty); }
 
             File.Delete(destination);
@@ -253,10 +253,10 @@ namespace HanumanInstitute.FFmpeg
             return result;
         }
 
-        private CompletionStatus EncodeX264Internal(SourceType sourceType, EncoderApp encoderApp, string source, string destination, string encodeArgs, ProcessOptionsEncoder options, ProcessStartedEventHandler callback)
+        private CompletionStatus EncodeX264Internal(SourceType sourceType, EncoderApp encoderApp, string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options, ProcessStartedEventHandler? callback)
         {
-            ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
-            ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
+            source.CheckNotNullOrEmpty(nameof(source));
+            destination.CheckNotNullOrEmpty(nameof(destination));
             File.Delete(destination);
 
             var query = new StringBuilder();

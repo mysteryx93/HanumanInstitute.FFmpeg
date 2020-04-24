@@ -9,19 +9,20 @@ namespace HanumanInstitute.FFmpeg
     /// <summary>
     /// Provides helper methods to validate parameters.
     /// </summary>
-    internal static class ArgHelper
+    public static class Preconditions
     {
         /// <summary>
         /// Validates whether specific value is not null, and throws an exception if it is null.
         /// </summary>
         /// <param name="value">The value to validate.</param>
         /// <param name="name">The name of the parameter.</param>
-        internal static void ValidateNotNull(object value, string name)
+        public static T CheckNotNull<T>(this T? value, string name) where T : class
         {
             if (value == null)
             {
                 throw new ArgumentNullException(name);
             }
+            return value;
         }
 
         /// <summary>
@@ -29,13 +30,14 @@ namespace HanumanInstitute.FFmpeg
         /// </summary>
         /// <param name="value">The value to validate.</param>
         /// <param name="name">The name of the parameter.</param>
-        internal static void ValidateNotNullOrEmpty(string value, string name)
+        public static string CheckNotNullOrEmpty(this string? value, string name)
         {
-            ValidateNotNull(value, name);
+            CheckNotNull(value, name);
             if (string.IsNullOrEmpty(value))
             {
                 ThrowArgumentNullOrEmpty(name);
             }
+            return value!;
         }
 
         /// <summary>
@@ -43,22 +45,23 @@ namespace HanumanInstitute.FFmpeg
         /// </summary>
         /// <param name="value">The value to validate.</param>
         /// <param name="name">The name of the parameter.</param>
-        internal static void ValidateListNotNullOrEmpty<T>(IEnumerable<T> value, string name)
+        public static IEnumerable<T> CheckNotNullOrEmpty<T>(this IEnumerable<T>? value, string name)
         {
-            ValidateNotNull(value, name);
+            value.CheckNotNull(name);
             if (!value.Any())
             {
                 ThrowArgumentNullOrEmpty(name);
             }
+            return value!;
         }
 
         /// <summary>
         /// Throws an exception of type ArgumentException saying an argument is null or empty.
         /// </summary>
         /// <param name="name">The name of the parameter.</param>
-        internal static void ThrowArgumentNullOrEmpty(string name)
+        public static void ThrowArgumentNullOrEmpty(this string name)
         {
-            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.VideoFileAndAudioFileNull, name), name);
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.ArgumentNullOrEmpty, name), name);
         }
     }
 }

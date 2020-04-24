@@ -53,11 +53,11 @@ namespace HanumanInstitute.FFmpeg.UnitTests
 
             manager.Options = options;
 
-            Assert.Equal(options, manager.Options);
+            Assert.Same(options, manager.Options);
         }
 
         [Fact]
-        public void Options_SetOptionsBase_ReturnsNullBaseReturnsSame()
+        public void Options_SetOptionsBase_BaseReturnsSameThrowsException()
         {
             var manager = SetupManager();
             var managerBase = manager as ProcessWorker;
@@ -65,8 +65,8 @@ namespace HanumanInstitute.FFmpeg.UnitTests
 
             managerBase.Options = options;
 
-            Assert.Null(manager.Options);
-            Assert.Equal(managerBase.Options, options);
+            Assert.Same(managerBase.Options, options);
+            Assert.Throws<InvalidCastException>(() => manager.Options);
         }
 
 

@@ -27,7 +27,7 @@ namespace HanumanInstitute.FFmpeg {
         /// <returns>Whether the output line is a progress update.</returns>
         bool IsLineProgressUpdate(string data);
         /// <summary>
-        /// Parses a progress update line of output into a EncoderStatus object.
+        /// Parses a progress update line of output.
         /// </summary>
         /// <param name="data">A line of output.</param>
         /// <returns>An object with parsed data.</returns>

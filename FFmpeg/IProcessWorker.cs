@@ -24,19 +24,19 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Gets the process currently being executed.
         /// </summary>
-        IProcess WorkProcess { get; }
+        IProcess? WorkProcess { get; }
         /// <summary>
         /// Gets or sets a method to call after the process has been started.
         /// </summary>
-        event ProcessStartedEventHandler ProcessStarted;
+        event ProcessStartedEventHandler? ProcessStarted;
         /// <summary>
         /// Occurs when the process writes to its output stream.
         /// </summary>
-        event DataReceivedEventHandler DataReceived;
+        event DataReceivedEventHandler? DataReceived;
         /// <summary>
         /// Occurs when the process has terminated its work.
         /// </summary>
-        event ProcessCompletedEventHandler ProcessCompleted;
+        event ProcessCompletedEventHandler? ProcessCompleted;
         /// <summary>
         /// Returns the raw console output.
         /// </summary>
@@ -45,7 +45,7 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Returns the CompletionStatus of the last operation.
         /// </summary>
-        CompletionStatus LastCompletionStatus { get; }
+        CompletionStatus? LastCompletionStatus { get; }
         /// <summary>
         /// Runs the command as 'cmd /c', allowing the use of command line features such as piping.
         /// </summary>

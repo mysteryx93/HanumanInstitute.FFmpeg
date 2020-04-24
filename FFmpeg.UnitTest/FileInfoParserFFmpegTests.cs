@@ -22,7 +22,7 @@ namespace HanumanInstitute.FFmpeg.UnitTests
 
             parser.ParseFileInfo(outputText, null);
 
-            var info = parser as IFileInfoFFmpeg;
+            var info = parser as FileInfoFFmpeg;
             Assert.NotNull(info?.FileStreams);
             Assert.Equal(streamCount, info.FileStreams.Count);
         }
@@ -111,14 +111,14 @@ namespace HanumanInstitute.FFmpeg.UnitTests
         }
 
         [Theory]
-        [InlineData(null, null, null)]
-        [InlineData("", "", null)]
-        [InlineData(" ", "     ", null)]
+        [InlineData(null, null, "")]
+        [InlineData("", "", "")]
+        [InlineData(" ", "     ", "")]
         [InlineData("   =   ", " ", "")]
         [InlineData("mode=1 key=MyKey key=value2 ", "key", "MyKey")]
         [InlineData("mode=1 key2=MyKey key=value2", "key", "value2")]
         [InlineData("mode=1 key2=MyKey key=value2   ", "key", "value2")]
-        [InlineData("mode=1 key2=MyKey key3=value2", "key", null)]
+        [InlineData("mode=1 key2=MyKey key3=value2", "key", "")]
         public void ParseAttribute_Any_ReturnsExpectedValue(string text, string key, string expected)
         {
             var result = FileInfoFFmpeg.ParseAttribute(text, key);

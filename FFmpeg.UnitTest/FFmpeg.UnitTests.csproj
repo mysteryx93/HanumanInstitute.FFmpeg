@@ -103,6 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssertExtensions.cs" />
+    <Compile Include="Fakes\FakeMediaInfoReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestDataSource.cs" />
     <Compile Include="Fakes\FakeMediaConfig.cs" />

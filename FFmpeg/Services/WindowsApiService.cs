@@ -14,7 +14,7 @@ namespace HanumanInstitute.FFmpeg.Services
 
         public bool FreeConsole() => NativeMethods.FreeConsole();
 
-        public bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handlerRoutine, bool add) => NativeMethods.SetConsoleCtrlHandler(handlerRoutine, add);
+        public bool SetConsoleCtrlHandler(ConsoleCtrlDelegate? handlerRoutine, bool add) => NativeMethods.SetConsoleCtrlHandler(handlerRoutine, add);
 
         private static class NativeMethods
         {
@@ -26,7 +26,7 @@ namespace HanumanInstitute.FFmpeg.Services
             [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
             internal static extern bool FreeConsole();
             [DllImport("kernel32.dll")]
-            internal static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handlerRoutine, bool add);
+            internal static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate? handlerRoutine, bool add);
             // Delegate type to be used as the Handler Routine for SCCH
         }
     }

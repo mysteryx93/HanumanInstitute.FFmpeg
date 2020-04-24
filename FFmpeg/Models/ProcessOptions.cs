@@ -15,11 +15,11 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Gets or sets the title to display.
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         /// <summary>
         /// Gets or sets an identifier for the job.
         /// </summary>
-        public object JobId { get; set; }
+        public object? JobId { get; set; }
         /// <summary>
         /// If displaying several tasks in the same UI, gets whether this is the main task being performed.
         /// </summary>

@@ -14,7 +14,7 @@ namespace HanumanInstitute.FFmpeg
     {
         public object Progress { get; set; }
 
-        public ProgressReceivedEventArgs() { }
+        //public ProgressReceivedEventArgs() { }
 
         public ProgressReceivedEventArgs(object progress)
         {

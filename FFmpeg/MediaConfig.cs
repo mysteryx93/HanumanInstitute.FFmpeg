@@ -47,7 +47,7 @@ namespace HanumanInstitute.FFmpeg
         /// Occurs when a process needs to be closed. This needs to be managed manually for Console applications.
         /// See http://stackoverflow.com/a/29274238/3960200
         /// </summary>
-        public event CloseProcessEventHandler CloseProcess;
+        public event CloseProcessEventHandler? CloseProcess;
         /// <summary>
         /// Gets the path of the executing assembly.
         /// </summary>
@@ -84,7 +84,7 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Occurs when running a custom application name to get the path of the application.
         /// </summary>
-        public event GetPathEventHandler GetCustomAppPath;
+        public event GetPathEventHandler? GetCustomAppPath;
 
         /// <summary>
         /// Returns all FFmpeg running processes.
@@ -107,7 +107,7 @@ namespace HanumanInstitute.FFmpeg
             if (process == null) { throw new ArgumentNullException(nameof(process)); }
 
             var args = new CloseProcessEventArgs(process);
-            CloseProcess?.Invoke(null, args);
+            CloseProcess?.Invoke(this, args);
             if (!args.Handled)
             {
                 SoftKillWinApp(process);

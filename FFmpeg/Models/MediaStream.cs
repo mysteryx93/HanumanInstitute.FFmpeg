@@ -7,9 +7,9 @@ namespace HanumanInstitute.FFmpeg
     /// </summary>
     public class MediaStream
     {
-        public string Path { get; set; }
+        public string Path { get; set; } = string.Empty;
         public int Index { get; set; }
-        public string Format { get; set; }
+        public string Format { get; set; } = string.Empty;
         public FFmpegStreamType Type { get; set; }
 
         public MediaStream() { }

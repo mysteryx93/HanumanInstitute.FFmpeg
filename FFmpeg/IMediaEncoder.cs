@@ -22,7 +22,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus ConvertToAviUtVideo(string source, string destination, bool audio, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus ConvertToAviUtVideo(string source, string destination, bool audio, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Encodes a media file using FFmpeg with specified arguments.
         /// </summary>
@@ -34,7 +34,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus EncodeFFmpeg(string source, string destination, string videoCodec, string audioCodec, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus EncodeFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Encodes an Avisynth script file using FFmpeg with specified arguments.
         /// </summary>
@@ -46,7 +46,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus EncodeAvisynthToFFmpeg(string source, string destination, string videoCodec, string audioCodec, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus EncodeAvisynthToFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Encodes a VapourSynth script file using FFmpeg with specified arguments.
         /// </summary>
@@ -58,7 +58,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus EncodeVapourSynthToFFmpeg(string source, string destination, string videoCodec, string audioCodec, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus EncodeVapourSynthToFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Encodes a media file using X264 with specified arguments.
         /// </summary>
@@ -68,7 +68,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus EncodeX264(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus EncodeX264(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Encodes an Avisynth script file using X264 with specified arguments.
         /// </summary>
@@ -78,7 +78,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus EncodeAvisynthToX264(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus EncodeAvisynthToX264(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Encodes a VapourSynth script file using X264 with specified arguments.
         /// </summary>
@@ -88,7 +88,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus EncodeVapourSynthToX264(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus EncodeVapourSynthToX264(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Encodes an Avisynth script file using X265 with specified arguments.
         /// </summary>
@@ -98,7 +98,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus EncodeAvisynthToX265(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus EncodeAvisynthToX265(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Encodes a VapourSynth script file using X265 with specified arguments.
         /// </summary>
@@ -108,6 +108,6 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus EncodeVapourSynthToX265(string source, string destination, string encodeArgs, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus EncodeVapourSynthToX265(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
     }
 }

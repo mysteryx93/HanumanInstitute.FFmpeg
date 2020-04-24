@@ -17,7 +17,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (services == null) { throw new ArgumentNullException(nameof(services)); }
 
             // FFmpeg
-            services.TryAddTransient<IFileInfoFFmpeg, FileInfoFFmpeg>();
             services.TryAddTransient<IFileInfoParserFactory, FileInfoParserFactory>();
             services.TryAddTransient<IMediaConfig, MediaConfig>();
             services.TryAddTransient<IMediaEncoder, MediaEncoder>();

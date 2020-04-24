@@ -15,11 +15,6 @@ namespace HanumanInstitute.FFmpeg
             // FFmpeg
 
             container.Register(
-                Component.For<IFileInfoFFmpeg>()
-                .ImplementedBy<FileInfoFFmpeg>()
-                .LifeStyle.Transient);
-
-            container.Register(
                 Component.For<IFileInfoParserFactory>()
                 .ImplementedBy<FileInfoParserFactory>()
                 .LifeStyle.Transient);

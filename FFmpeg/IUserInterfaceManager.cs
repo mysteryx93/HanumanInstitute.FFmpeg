@@ -12,7 +12,7 @@ namespace HanumanInstitute.FFmpeg
         /// </summary>
         bool AppExited { get; set; }
 
-        void AttachProcessWorker(object owner, IProcessWorker worker, ProcessOptions options);
+        void AttachProcessWorker(object? owner, IProcessWorker worker, ProcessOptions options);
         /// <summary>
         /// Starts a user interface that will receive all tasks with the specified jobId.
         /// </summary>

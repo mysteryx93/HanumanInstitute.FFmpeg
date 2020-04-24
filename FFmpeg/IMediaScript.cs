@@ -18,7 +18,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus RunAvisynth(string path, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus RunAvisynth(string path, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Runs vspipe with specified source file. The output will be discarded.
         /// </summary>
@@ -26,6 +26,6 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus RunVapourSynth(string path, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus RunVapourSynth(string path, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
     }
 }

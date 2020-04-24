@@ -33,11 +33,11 @@ namespace HanumanInstitute.FFmpeg.UnitTests
         }
 
         [Fact]
-        public void Init_CommandWithArgs_ReturnsNull()
+        public void Init_CommandWithArgs_ReturnsEmpty()
         {
             var manager = SetupManager();
 
-            Assert.Null(manager.CommandWithArgs);
+            Assert.Empty(manager.CommandWithArgs);
         }
 
 

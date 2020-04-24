@@ -21,7 +21,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus Muxe(string videoFile, string audioFile, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus Muxe(string? videoFile, string? audioFile, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Merges the specified list of file streams.
         /// </summary>
@@ -30,7 +30,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus Muxe(IEnumerable<MediaStream> fileStreams, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus Muxe(IEnumerable<MediaStream> fileStreams, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Extracts the video stream from specified file.
         /// </summary>
@@ -39,7 +39,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus ExtractVideo(string source, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus ExtractVideo(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Extracts the audio stream from specified file.
         /// </summary>
@@ -48,7 +48,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus ExtractAudio(string source, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus ExtractAudio(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Concatenates (merges) all specified files.
         /// </summary>
@@ -57,7 +57,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus Concatenate(IEnumerable<string> files, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus Concatenate(IEnumerable<string> files, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Truncates a media file from specified start position with specified duration. This can result in data loss or corruption if not splitting exactly on a framekey.
         /// </summary>
@@ -68,6 +68,6 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        CompletionStatus Truncate(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        CompletionStatus Truncate(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
     }
 }

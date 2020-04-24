@@ -16,7 +16,7 @@ namespace HanumanInstitute.FFmpeg
         /// </summary>
         public bool AppExited { get; set; } = false;
 
-        public void AttachProcessWorker(object owner, IProcessWorker worker, ProcessOptions options)
+        public void AttachProcessWorker(object? owner, IProcessWorker worker, ProcessOptions options)
         {
             if (worker == null) { throw new ArgumentNullException(nameof(worker)); }
 
@@ -43,9 +43,9 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="owner">The owner to set for the window.</param>
         /// <param name="jobId">The jobId associated with this interface.</param>
         /// <param name="title">The title to display.</param>
-        public void Start(object owner, object jobId, string title)
+        public void Start(object? owner, object jobId, string title)
         {
-            ArgHelper.ValidateNotNull(jobId, nameof(jobId));
+            jobId.CheckNotNull(nameof(jobId));
 
             if (!AppExited)
             {
@@ -74,12 +74,12 @@ namespace HanumanInstitute.FFmpeg
         /// </summary>
         /// <param name="owner">The owner to set for the window.</param>
         /// <param name="host">The process worker to display.</param>
-        public void Display(object owner, IProcessWorker host)
+        public void Display(object? owner, IProcessWorker host)
         {
-            ArgHelper.ValidateNotNull(host, nameof(host));
+            host.CheckNotNull(nameof(host));
             if (!AppExited)
             {
-                UIItem ui = null;
+                UIItem? ui = null;
                 if (host.Options.JobId != null)
                 {
                     ui = _uiList.FirstOrDefault(u => u.JobId.Equals(host.Options.JobId));
@@ -104,20 +104,20 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="title">The title to display.</param>
         /// <param name="autoClose">Whether to automatically close the window after the main task is completed.</param>
         /// <returns>The newly created user interface window.</returns>
-        public abstract IUserInterfaceWindow CreateUI(object owner, string title, bool autoClose);
+        public abstract IUserInterfaceWindow CreateUI(object? owner, string title, bool autoClose);
         /// <summary>
         /// When implemented in a derived class, displays an error window.
         /// </summary>
         /// <param name="owner">The owner to set for the window.</param>
         /// <param name="host">The task throwing the error.</param>
-        public abstract void DisplayError(object owner, IProcessWorker host);
+        public abstract void DisplayError(object? owner, IProcessWorker host);
 
         private class UIItem
         {
             public object JobId { get; set; }
             public IUserInterfaceWindow Value { get; set; }
 
-            public UIItem() { }
+            //public UIItem() { }
 
             public UIItem(object jobId, IUserInterfaceWindow ui)
             {

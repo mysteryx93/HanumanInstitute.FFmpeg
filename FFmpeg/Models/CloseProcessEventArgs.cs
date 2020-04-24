@@ -16,9 +16,7 @@ namespace HanumanInstitute.FFmpeg
         public IProcess Process { get; set; }
         public bool Handled { get; set; } = false;
 
-        public CloseProcessEventArgs()
-        {
-        }
+        //public CloseProcessEventArgs() { }
 
         public CloseProcessEventArgs(IProcess process)
         {

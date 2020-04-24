@@ -93,7 +93,7 @@ namespace HanumanInstitute.FFmpegExampleApplication.ViewModels
 
         private void FFmpeg_InfoUpdated(object sender, EventArgs e)
         {
-            var fileInfo = _hostFFmpeg.FileInfo as IFileInfoFFmpeg;
+            var fileInfo = _hostFFmpeg.FileInfo as FileInfoFFmpeg;
             ProgressBarMax = fileInfo.FrameCount + ResumePos;
             _timeCalc = new TimeLeftCalculator(fileInfo.FrameCount + _hostFFmpeg?.Options.ResumePos ?? 0);
         }

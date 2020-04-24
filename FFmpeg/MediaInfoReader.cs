@@ -14,7 +14,7 @@ namespace HanumanInstitute.FFmpeg
             _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
         }
 
-        private object _owner;
+        private object? _owner;
         /// <summary>
         /// Sets the owner of the process windows.
         /// </summary>
@@ -30,7 +30,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>A IFFmpegProcess object containing the version information.</returns>
-        public string GetVersion(ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public string GetVersion(ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             var worker = _factory.CreateEncoder(_owner, options, callback);
             worker.OutputType = ProcessOutput.Output;
@@ -45,20 +45,20 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>A IFFmpegProcess object containing the file information.</returns>
-        public IFileInfoFFmpeg GetFileInfo(string source, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public FileInfoFFmpeg GetFileInfo(string source, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
-            ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
+            source.CheckNotNullOrEmpty(nameof(source));
 
             var worker = _factory.CreateEncoder(_owner, options, callback);
             worker.ProcessCompleted += (s, e) =>
             {
-                if (e.Status == CompletionStatus.Failed && (worker.FileInfo as IFileInfoFFmpeg)?.FileStreams != null)
+                if (e.Status == CompletionStatus.Failed && (worker.FileInfo as FileInfoFFmpeg)?.FileStreams != null)
                 {
                     e.Status = CompletionStatus.Success;
                 }
             };
             worker.RunEncoder($@"-i ""{source}""", EncoderApp.FFmpeg);
-            return worker.FileInfo as IFileInfoFFmpeg;
+            return (FileInfoFFmpeg)worker.FileInfo;
         }
 
         /// <summary>
@@ -68,16 +68,16 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The number of frames in the video.</returns>
-        public long GetFrameCount(string source, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public long GetFrameCount(string source, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
-            ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
+            source.CheckNotNullOrEmpty(nameof(source));
 
             long result = 0;
             var worker = _factory.CreateEncoder(_owner, options, callback);
             worker.ProgressReceived += (sender, e) =>
             {
                 // Read all status lines and keep the last one.
-                result = (e.Progress as ProgressStatusFFmpeg).Frame;
+                result = ((ProgressStatusFFmpeg)e.Progress).Frame;
             };
             worker.RunEncoder($@"-i ""{source}"" -f null /dev/null", EncoderApp.FFmpeg);
             return result;

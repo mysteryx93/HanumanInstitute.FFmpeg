@@ -10,6 +10,6 @@ namespace HanumanInstitute.FFmpeg.Services
         bool GenerateConsoleCtrlEvent();
         bool AttachConsole(uint processId);
         bool FreeConsole();
-        bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handlerRoutine, bool add);
+        bool SetConsoleCtrlHandler(ConsoleCtrlDelegate? handlerRoutine, bool add);
     }
 }

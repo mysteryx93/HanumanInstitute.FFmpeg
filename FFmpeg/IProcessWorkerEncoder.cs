@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HanumanInstitute.FFmpeg
 {
@@ -18,19 +19,20 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Gets the file information.
         /// </summary>
-        object FileInfo { get; }
+        [NotNull]
+        object? FileInfo { get; }
         /// <summary>
         /// Returns the last progress status data received from DataReceived event.
         /// </summary>
-        object LastProgressReceived { get; }
+        object? LastProgressReceived { get; }
         /// <summary>
         /// Occurs after stream info is read from the output.
         /// </summary>
-        event EventHandler FileInfoUpdated;
+        event EventHandler? FileInfoUpdated;
         /// <summary>
         /// Occurs when progress status update is received through the output stream.
         /// </summary>
-        event ProgressReceivedEventHandler ProgressReceived;
+        event ProgressReceivedEventHandler? ProgressReceived;
         /// <summary>
         /// Runs an encoder process with specified arguments.
         /// </summary>

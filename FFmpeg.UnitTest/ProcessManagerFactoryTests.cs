@@ -43,7 +43,7 @@ namespace HanumanInstitute.FFmpeg.UnitTests
 
             Assert.NotNull(result);
             Assert.IsType<ProcessWorker>(result);
-            Assert.Equal(_config, result.Config);
+            Assert.Same(_config, result.Config);
         }
 
         [Fact]
@@ -52,9 +52,9 @@ namespace HanumanInstitute.FFmpeg.UnitTests
             var factory = SetupFactory();
             var options = new ProcessOptions();
 
-            var result = factory.Create(options);
+            var result = factory.Create(null, options);
 
-            Assert.Equal(options, result.Options);
+            Assert.Same(options, result.Options);
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace HanumanInstitute.FFmpeg.UnitTests
 
             Assert.NotNull(result);
             Assert.IsType<ProcessWorkerEncoder>(result);
-            Assert.Equal(_config, result.Config);
+            Assert.Same(_config, result.Config);
         }
 
         [Fact]
@@ -75,9 +75,9 @@ namespace HanumanInstitute.FFmpeg.UnitTests
             var factory = SetupFactory();
             var options = new ProcessOptionsEncoder();
 
-            var result = factory.CreateEncoder(options);
+            var result = factory.CreateEncoder(null, options);
 
-            Assert.Equal(options, result.Options);
+            Assert.Same(options, result.Options);
         }
     }
 }

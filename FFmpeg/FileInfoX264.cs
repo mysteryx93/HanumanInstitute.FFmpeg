@@ -7,7 +7,7 @@ namespace HanumanInstitute.FFmpeg
     /// <summary>
     /// Parses and stores the X264 or X265 console output. Cast this class to IFileInfoX264 to access the file information.
     /// </summary>
-    public class FileInfoX264 : IFileInfoParserX264, IFileInfoParser
+    public class FileInfoX264 : IFileInfoParser
     {
         /// <summary>
         /// Returns whether ParseFileInfo has been called.

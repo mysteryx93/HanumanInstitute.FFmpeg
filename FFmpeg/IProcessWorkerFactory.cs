@@ -14,7 +14,7 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Gets or sets a class deriving from IUserInterfaceManager to manage FFmpeg UI.
         /// </summary>
-        IUserInterfaceManager UiManager { get; set; }
+        IUserInterfaceManager? UiManager { get; set; }
         /// <summary>
         /// Creates a new process manager with specified options.
         /// </summary>
@@ -22,7 +22,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The newly created process manager.</returns>
-        IProcessWorker Create(object owner, ProcessOptions options = null, ProcessStartedEventHandler callback = null);
+        IProcessWorker Create(object? owner = null, ProcessOptions? options = null, ProcessStartedEventHandler? callback = null);
         /// <summary>
         /// Creates a new process worker to run an encoder with specified options.
         /// </summary>
@@ -30,6 +30,6 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The newly created encoder process manager.</returns>
-        IProcessWorkerEncoder CreateEncoder(object owner, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null);
+        IProcessWorkerEncoder CreateEncoder(object? owner = null, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
     }
 }

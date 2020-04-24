@@ -26,7 +26,7 @@ namespace HanumanInstitute.FFmpeg.IntegrationTests
             return new MediaEncoder(_factory);
         }
 
-        private IFileInfoFFmpeg GetFileInfo(string path)
+        private FileInfoFFmpeg GetFileInfo(string path)
         {
             var info = new MediaInfoReader(_factory);
             return info.GetFileInfo(path);
@@ -35,7 +35,7 @@ namespace HanumanInstitute.FFmpeg.IntegrationTests
         private void AssertMedia(string dest, int streamCount)
         {
             Assert.True(File.Exists(dest));
-            var fileInfo = GetFileInfo(dest) as IFileInfoFFmpeg;
+            var fileInfo = GetFileInfo(dest) as FileInfoFFmpeg;
             Assert.Equal(streamCount, fileInfo.FileStreams.Count);
         }
 

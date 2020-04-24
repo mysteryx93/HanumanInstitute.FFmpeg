@@ -32,7 +32,7 @@ namespace HanumanInstitute.FFmpeg
         /// Occurs when a process needs to be closed. This needs to be managed manually for Console applications.
         /// See http://stackoverflow.com/a/29274238/3960200
         /// </summary>
-        event CloseProcessEventHandler CloseProcess;
+        event CloseProcessEventHandler? CloseProcess;
         /// <summary>
         /// Gets the path of the executing assembly.
         /// </summary>
@@ -46,7 +46,7 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Occurs when running a custom application name to get the path of the application.
         /// </summary>
-        event GetPathEventHandler GetCustomAppPath;
+        event GetPathEventHandler? GetCustomAppPath;
 
         /// <summary>
         /// Returns the absolute path of FFmpeg as defined in settings.

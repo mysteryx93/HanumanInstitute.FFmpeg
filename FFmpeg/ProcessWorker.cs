@@ -27,19 +27,19 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Gets the process currently being executed.
         /// </summary>
-        public IProcess WorkProcess { get; private set; }
+        public IProcess? WorkProcess { get; private set; }
         /// <summary>
         /// Gets or sets a method to call after the process has been started.
         /// </summary>
-        public event ProcessStartedEventHandler ProcessStarted;
+        public event ProcessStartedEventHandler? ProcessStarted;
         /// <summary>
         /// Occurs when the process writes to its output stream.
         /// </summary>
-        public event DataReceivedEventHandler DataReceived;
+        public event DataReceivedEventHandler? DataReceived;
         /// <summary>
         /// Occurs when the process has terminated its work.
         /// </summary>
-        public event ProcessCompletedEventHandler ProcessCompleted;
+        public event ProcessCompletedEventHandler? ProcessCompleted;
         /// <summary>
         /// Returns the raw console output.
         /// </summary>
@@ -47,20 +47,20 @@ namespace HanumanInstitute.FFmpeg
         /// <summary>
         /// Returns the CompletionStatus of the last operation.
         /// </summary>
-        public CompletionStatus LastCompletionStatus { get; private set; }
+        public CompletionStatus? LastCompletionStatus { get; private set; }
         /// <summary>
         /// Returns the full command with arguments being run.
         /// </summary>
-        public string CommandWithArgs { get; private set; }
+        public string CommandWithArgs { get; private set; } = string.Empty;
 
         private readonly StringBuilder _output = new StringBuilder();
-        private CancellationTokenSource _cancelWork;
         private readonly IProcessFactory _factory;
         protected object LockToken { get; private set; } = new object();
+        private CancellationTokenSource? _cancelWork;
 
         //public ProcessWorker() : this(new MediaConfig(), new ProcessFactory(), null) { }
 
-        public ProcessWorker(IMediaConfig config, IProcessFactory processFactory, ProcessOptions options)
+        public ProcessWorker(IMediaConfig config, IProcessFactory processFactory, ProcessOptions? options = null)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
@@ -75,7 +75,7 @@ namespace HanumanInstitute.FFmpeg
         /// <returns>The process completion status.</returns>
         public CompletionStatus RunAsCommand(string cmd)
         {
-            ArgHelper.ValidateNotNullOrEmpty(cmd, nameof(cmd));
+            cmd.CheckNotNullOrEmpty(nameof(cmd));
             return Run("cmd", $@"/c "" {cmd} """);
         }
 
@@ -89,7 +89,7 @@ namespace HanumanInstitute.FFmpeg
         /// <exception cref="InvalidOperationException">Occurs when this class instance is already running another process.</exception>
         public virtual CompletionStatus Run(string fileName, string arguments)
         {
-            ArgHelper.ValidateNotNullOrEmpty(fileName, nameof(fileName));
+            fileName.CheckNotNullOrEmpty(nameof(fileName));
 
             IProcess p;
             lock (LockToken)
@@ -191,9 +191,9 @@ namespace HanumanInstitute.FFmpeg
         private bool Wait()
         {
             var startTime = DateTime.Now;
-            while (!WorkProcess.HasExited)
+            while (!WorkProcess!.HasExited)
             {
-                if (_cancelWork.Token.IsCancellationRequested && !WorkProcess.HasExited)
+                if (_cancelWork!.Token.IsCancellationRequested && !WorkProcess.HasExited)
                 {
                     Config.SoftKill(WorkProcess);
                 }

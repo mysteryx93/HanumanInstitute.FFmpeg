@@ -7,9 +7,9 @@ namespace HanumanInstitute.FFmpeg
     /// </summary>
     public abstract class MediaStreamInfo
     {
-        public string RawText { get; set; }
+        public string RawText { get; set; } = string.Empty;
         public int Index { get; set; }
-        public string Format { get; set; } = "";
+        public string Format { get; set; } = string.Empty;
 
         /// <summary>
         /// Returns the stream type based on the derived class type.

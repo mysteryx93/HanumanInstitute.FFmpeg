@@ -27,7 +27,7 @@ namespace HanumanInstitute.FFmpeg
             _infoReader = infoReader ?? throw new ArgumentNullException(nameof(infoReader));
         }
 
-        private object _owner;
+        private object? _owner;
         /// <summary>
         /// Sets the owner of the process windows.
         /// </summary>
@@ -46,16 +46,16 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus Muxe(string videoFile, string audioFile, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus Muxe(string? videoFile, string? audioFile, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
-            if (string.IsNullOrEmpty(audioFile)) { ArgHelper.ValidateNotNullOrEmpty(videoFile, nameof(videoFile)); }
-            ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
+            if (string.IsNullOrEmpty(audioFile)) { videoFile.CheckNotNullOrEmpty(nameof(videoFile)); }
+            destination.CheckNotNullOrEmpty(nameof(destination));
 
             var inputStreamList = new List<MediaStream>();
-            MediaStream inputStream;
+            MediaStream? inputStream;
             if (!string.IsNullOrEmpty(videoFile))
             {
-                inputStream = GetStreamInfo(videoFile, FFmpegStreamType.Video, options);
+                inputStream = GetStreamInfo(videoFile!, FFmpegStreamType.Video, options);
                 if (inputStream != null)
                 {
                     inputStreamList.Add(inputStream);
@@ -63,7 +63,7 @@ namespace HanumanInstitute.FFmpeg
             }
             if (!string.IsNullOrEmpty(audioFile))
             {
-                inputStream = GetStreamInfo(audioFile, FFmpegStreamType.Audio, options);
+                inputStream = GetStreamInfo(audioFile!, FFmpegStreamType.Audio, options);
                 if (inputStream != null)
                 {
                     inputStreamList.Add(inputStream);
@@ -88,11 +88,11 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus Muxe(IEnumerable<MediaStream> fileStreams, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus Muxe(IEnumerable<MediaStream> fileStreams, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
-            ArgHelper.ValidateNotNull(fileStreams, nameof(fileStreams));
-            ArgHelper.ValidateListNotNullOrEmpty(fileStreams, nameof(fileStreams));
-            ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
+            fileStreams.CheckNotNull(nameof(fileStreams));
+            fileStreams.CheckNotNullOrEmpty(nameof(fileStreams));
+            destination.CheckNotNullOrEmpty(nameof(destination));
 
             var result = CompletionStatus.Success;
             var tempFiles = new List<string>();
@@ -103,7 +103,7 @@ namespace HanumanInstitute.FFmpeg
             {
                 if (string.IsNullOrEmpty(item.Path) && item.Type != FFmpegStreamType.None)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.ArgNullOrEmpty, "FFmpegStream.Path"));
+                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.ArgumentNullOrEmpty, "FFmpegStream.Path"));
                 }
                 if (item.Type == FFmpegStreamType.Video && (item.Format == "h264" || item.Format == "h265") && destination.EndsWith(".mkv", StringComparison.InvariantCulture))
                 {
@@ -158,7 +158,7 @@ namespace HanumanInstitute.FFmpeg
                 }
                 if (!hasVideo && !hasAudio)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.ArgNullOrEmpty, nameof(fileStreams)), nameof(fileStreams));
+                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.ArgumentNullOrEmpty, nameof(fileStreams)), nameof(fileStreams));
                 }
 
                 if (hasVideo)
@@ -201,7 +201,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="streamType">The type of media stream to query.</param>
         /// <param name="options">The options for starting the process.</param>
         /// <returns>A FFmpegStream object.</returns>
-        private MediaStream GetStreamInfo(string path, FFmpegStreamType streamType, ProcessOptionsEncoder options)
+        private MediaStream? GetStreamInfo(string path, FFmpegStreamType streamType, ProcessOptionsEncoder? options)
         {
             var fileInfo = _infoReader.GetFileInfo(path, options);
             var streamInfo = fileInfo.FileStreams?.FirstOrDefault(x => x.StreamType == streamType);
@@ -215,10 +215,7 @@ namespace HanumanInstitute.FFmpeg
                     Type = streamType
                 };
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         /// <summary>
@@ -229,7 +226,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus ExtractVideo(string source, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus ExtractVideo(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return ExtractStream(@"-y -i ""{0}"" -vcodec copy -an ""{1}""", source, destination, options, callback);
         }
@@ -242,7 +239,7 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus ExtractAudio(string source, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus ExtractAudio(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
             return ExtractStream(@"-y -i ""{0}"" -vn -acodec copy ""{1}""", source, destination, options, callback);
         }
@@ -256,10 +253,10 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        private CompletionStatus ExtractStream(string args, string source, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        private CompletionStatus ExtractStream(string args, string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
-            ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
-            ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
+            source.CheckNotNullOrEmpty(nameof(source));
+            destination.CheckNotNullOrEmpty(nameof(destination));
 
             _fileSystem.Delete(destination);
             var worker = _factory.CreateEncoder(_owner, options, callback);
@@ -275,11 +272,11 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus Concatenate(IEnumerable<string> files, string destination, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus Concatenate(IEnumerable<string> files, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
-            ArgHelper.ValidateNotNull(files, nameof(files));
-            ArgHelper.ValidateListNotNullOrEmpty(files, nameof(files));
-            ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
+            files.CheckNotNull(nameof(files));
+            files.CheckNotNullOrEmpty(nameof(files));
+            destination.CheckNotNullOrEmpty(nameof(destination));
 
             var result = CompletionStatus.None;
 
@@ -312,10 +309,10 @@ namespace HanumanInstitute.FFmpeg
         /// <param name="options">The options for starting the process.</param>
         /// <param name="callback">A method that will be called after the process has been started.</param>
         /// <returns>The process completion status.</returns>
-        public CompletionStatus Truncate(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+        public CompletionStatus Truncate(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
         {
-            ArgHelper.ValidateNotNullOrEmpty(source, nameof(source));
-            ArgHelper.ValidateNotNullOrEmpty(destination, nameof(destination));
+            source.CheckNotNullOrEmpty(nameof(source));
+            destination.CheckNotNullOrEmpty(nameof(destination));
 
             _fileSystem.Delete(destination);
             var worker = _factory.CreateEncoder(_owner, options, callback);
