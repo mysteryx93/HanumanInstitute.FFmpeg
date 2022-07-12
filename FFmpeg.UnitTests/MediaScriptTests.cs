@@ -5,7 +5,7 @@ public class MediaScriptTests
     protected const string AppAvs2PipeMod = "avs2pipemod.exe";
     protected const string AppVsPipe = "vspipe.exe";
     protected const string MissingFileName = "MissingFile";
-    private Mock<FakeMediaConfig> _config;
+    private Mock<FakeProcessManager> _config;
     private readonly FakeProcessService _factory = new FakeProcessService();
     private readonly ITestOutputHelper _output;
 
@@ -16,7 +16,7 @@ public class MediaScriptTests
 
     protected IMediaScript SetupScript()
     {
-        _config = new Mock<FakeMediaConfig>() { CallBase = true };
+        _config = new Mock<FakeProcessManager>() { CallBase = true };
         _factory.Processes = _config.Object;
         var fileSystem = Mock.Of<FakeFileSystemService>(x =>
             x.Exists(It.IsAny<string>()) == true && x.Exists(MissingFileName) == false);

@@ -6,7 +6,7 @@ namespace HanumanInstitute.FFmpeg.UnitTests;
 public class FakeProcessService : ProcessService
 {
 
-    public FakeProcessService() : base(new FakeMediaConfig(), null, new FileInfoParserFactory(), new FakeProcessFactory(), new FakeFileSystemService())
+    public FakeProcessService() : base(new FakeProcessManager(null), null, new FileInfoParserFactory(), new FakeProcessFactory(), new FakeFileSystemService())
     {
     }
 

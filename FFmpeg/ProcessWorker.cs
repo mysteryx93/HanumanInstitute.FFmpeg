@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using HanumanInstitute.FFmpeg.Services;
 
 namespace HanumanInstitute.FFmpeg;
@@ -48,7 +49,15 @@ public class ProcessWorker : IProcessWorker, IDisposable
     public CompletionStatus RunAsCommand(string cmd)
     {
         cmd.CheckNotNullOrEmpty(nameof(cmd));
-        return Run("cmd", $@"/c "" {cmd} """);
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return Run("cmd", $@"/c "" {cmd} """);
+        }
+        else // Linux, MacOS
+        {
+            cmd = cmd.Replace("\"", "\\\"");
+            return Run("/bin/bash", $@"-c "" {cmd} """);
+        }
     }
 
     /// <inheritdoc />

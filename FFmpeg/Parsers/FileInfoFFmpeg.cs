@@ -59,8 +59,9 @@ public class FileInfoFFmpeg : IFileInfoParser
     }
 
     /// <inheritdoc />
-    public void ParseFileInfo(string outputText, ProcessOptionsEncoder options)
+    public void ParseFileInfo(string outputText, ProcessOptionsEncoder? options = null)
     {
+        options ??= new ProcessOptionsEncoder();
         IsParsed = true;
         FileDuration = new TimeSpan();
         FileStreams.Clear();
@@ -102,7 +103,7 @@ public class FileInfoFFmpeg : IFileInfoParser
         // Find input streams.
         for (var i = durationIndex + 1; i < outLines.Length; i++)
         {
-            if (outLines[i].StartsWith("    Stream #0:", StringComparison.InvariantCulture))
+            if (outLines[i].TrimStart().StartsWith("Stream #0:", StringComparison.InvariantCulture))
             {
                 // Parse input stream.
                 var itemInfo = ParseStreamInfo(outLines[i]);
@@ -140,7 +141,7 @@ public class FileInfoFFmpeg : IFileInfoParser
             return null;
         }
 
-        text = text.TrimEnd();
+        text = text.Trim();
         var rawText = text;
         // Within parenthesis, replace ',' with ';' to be able to split properly.
         var itemChars = text.ToCharArray();
@@ -163,7 +164,7 @@ public class FileInfoFFmpeg : IFileInfoParser
         }
         text = new string(itemChars);
 
-        var posStart = 14;
+        var posStart = 10;
         var posEnd = -1;
         for (var i = posStart; i < text.Length; i++)
         {
@@ -280,7 +281,10 @@ public class FileInfoFFmpeg : IFileInfoParser
             {
                 v.SampleRate = int.Parse(streamInfo[1].Split(' ')[0], CultureInfo.InvariantCulture);
                 v.Channels = streamInfo[2];
-                v.BitDepth = streamInfo[3];
+                if (streamInfo.Length > 3)
+                {
+                    v.BitDepth = streamInfo[3];
+                }
                 if (streamInfo.Length > 4 && streamInfo[4].Contains(" kb/s"))
                 {
                     v.Bitrate = int.Parse(streamInfo[4].Split(' ')[0], CultureInfo.InvariantCulture);

@@ -41,8 +41,9 @@ public class FileInfoX264 : IFileInfoParser
     }
 
     /// <inheritdoc />
-    public void ParseFileInfo(string outputText, ProcessOptionsEncoder options)
+    public void ParseFileInfo(string outputText, ProcessOptionsEncoder? options = null)
     {
+        options ??= new ProcessOptionsEncoder();
         IsParsed = true;
         FrameCount = options.FrameCount > 0 ?
             options.FrameCount :

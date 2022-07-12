@@ -8,11 +8,11 @@ public class ProcessManagerEncoderTests
     protected const string VapourSynthApp = "vspipe.exe";
     protected const string MissingFileName = "MissingFile";
     protected const string TestSource = "source";
-    private Mock<FakeMediaConfig> _config;
+    private Mock<FakeProcessManager> _config;
 
     protected IProcessWorkerEncoder SetupManager()
     {
-        _config = new Mock<FakeMediaConfig>() { CallBase = true };
+        _config = new Mock<FakeProcessManager>() { CallBase = true };
         var parserFactory = new FileInfoParserFactory();
         var factory = new FakeProcessFactory();
         var fileSystem = Mock.Of<FakeFileSystemService>(x =>

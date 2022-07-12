@@ -84,7 +84,7 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
 
         EnsureNotRunning();
         EncoderApp = encoderApp;
-        var query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" --y4m ""{1}"" - | ""{2}"" {3}", Processes.Paths.VsPipePath, source, Processes.GetAppPath(encoderApp), arguments);
+        var query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" -c y4m ""{1}"" - | ""{2}"" {3}", Processes.Paths.VsPipePath, source, Processes.GetAppPath(encoderApp), arguments);
         return RunAsCommand(query);
     }
 

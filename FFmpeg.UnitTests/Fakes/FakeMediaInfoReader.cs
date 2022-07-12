@@ -19,5 +19,5 @@ public class FakeMediaInfoReader : IMediaInfoReader
 
     public string GetVersion(ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null) => "Version number";
 
-    public IMediaInfoReader SetOwner(object owner) => this;
+    public object Owner { get; set; }
 }

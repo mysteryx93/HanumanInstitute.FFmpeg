@@ -2,12 +2,12 @@
 
 public class ProcessManagerFactoryTests
 {
-    private FakeMediaConfig _config;
+    private FakeProcessManager _config;
 
     protected IProcessService SetupFactory()
     {
         var moq = new MockRepository(MockBehavior.Strict);
-        _config = new FakeMediaConfig();
+        _config = new FakeProcessManager();
         var parserFactory = new FileInfoParserFactory();
         var processFactory = moq.Create<IProcessFactory>();
         var fileSystem = moq.Create<IFileSystemService>();

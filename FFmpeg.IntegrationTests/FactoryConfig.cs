@@ -1,5 +1,7 @@
-﻿
-// ReSharper disable StringLiteralTypo
+﻿// ReSharper disable StringLiteralTypo
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
@@ -7,15 +9,13 @@ public static class FactoryConfig
 {
     public static IProcessService CreateWithConfig()
     {
+        var builder = new ConfigurationBuilder()
+            .AddJsonFile($"appsettings.json", true, true);
+        var config = builder.Build();
+        var paths = config.GetSection("AppPaths").Get<FFmpeg.AppPaths>();
+
         return new ProcessService(
-            new ProcessManager(new WindowsApiService(), new FileSystemService())
-            {
-                FFmpegPath = "ffmpeg", // Properties.Settings.Default.FFmpegPath,
-                X264Path = "x264", // Properties.Settings.Default.X264Path,
-                X265Path = "x265", // Properties.Settings.Default.X265Path,
-                Avs2PipeMod = "avs2pipemod", // Properties.Settings.Default.Avs2PipeMod,
-                VsPipePath = "vspipe" // Properties.Settings.Default.VsPipePath
-            }, 
+            new ProcessManager(Options.Create(paths), new WindowsApiService(), new FileSystemService()),
             null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService());
     }
 }
