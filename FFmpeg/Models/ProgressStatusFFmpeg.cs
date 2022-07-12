@@ -1,18 +1,36 @@
-﻿using System;
+﻿namespace HanumanInstitute.FFmpeg;
 
-namespace HanumanInstitute.FFmpeg
+/// <summary>
+/// Contains progress information returned from FFmpeg's output.
+/// </summary>
+public class ProgressStatusFFmpeg
 {
     /// <summary>
-    /// Contains progress information returned from FFmpeg's output.
+    /// The position of the last frame that was processed.
     /// </summary>
-    public class ProgressStatusFFmpeg
-    {
-        public long Frame { get; set; }
-        public float Fps { get; set; }
-        public float Quantizer { get; set; }
-        public string Size { get; set; } = "";
-        public TimeSpan Time { get; set; }
-        public string Bitrate { get; set; } = "";
-        public float Speed { get; set; }
-    }
+    public long Frame { get; set; }
+    /// <summary>
+    /// The encoding speed in frames per second.
+    /// </summary>
+    public float Fps { get; set; }
+    /// <summary>
+    /// The encoding quantizer.
+    /// </summary>
+    public float Quantizer { get; set; }
+    /// <summary>
+    /// The size of the encoded file so far.
+    /// </summary>
+    public string Size { get; set; } = "";
+    /// <summary>
+    /// The time left.
+    /// </summary>
+    public TimeSpan Time { get; set; }
+    /// <summary>
+    /// The rate of data being read from source.
+    /// </summary>
+    public string Bitrate { get; set; } = "";
+    /// <summary>
+    /// The encoding speed compared to normal playback.
+    /// </summary>
+    public float Speed { get; set; }
 }

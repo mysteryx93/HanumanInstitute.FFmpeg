@@ -1,25 +1,22 @@
-﻿using System;
+﻿namespace HanumanInstitute.FFmpeg;
 
-namespace HanumanInstitute.FFmpeg
+/// <summary>
+/// Represents the method that will handle the GetCustomAppPath event.
+/// </summary>
+public delegate void GetPathEventHandler(object sender, GetPathEventArgs e);
+
+/// <summary>
+/// Provides progress information for the GetCustomAppPath event.
+/// </summary>
+public class GetPathEventArgs : EventArgs
 {
-    /// <summary>
-    /// Represents the method that will handle the GetCustomAppPath event.
-    /// </summary>
-    public delegate void GetPathEventHandler(object sender, GetPathEventArgs e);
+    public string App { get; set; }
+    public string Path { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Provides progress information for the GetCustomAppPath event.
-    /// </summary>
-    public class GetPathEventArgs : EventArgs
+    //public GetPathEventArgs() { }
+
+    public GetPathEventArgs(string app)
     {
-        public string App { get; set; }
-        public string Path { get; set; } = string.Empty;
-
-        //public GetPathEventArgs() { }
-
-        public GetPathEventArgs(string app)
-        {
-            App = app;
-        }
+        App = app;
     }
 }

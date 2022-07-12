@@ -1,16 +1,28 @@
-﻿using System;
+﻿namespace HanumanInstitute.FFmpeg;
 
-namespace HanumanInstitute.FFmpeg
+/// <summary>
+/// Contains progress information returned from x264's output.
+/// </summary>
+public class ProgressStatusX264
 {
     /// <summary>
-    /// Contains progress information returned from x264's output.
+    /// The position of the last frame that was processed.
     /// </summary>
-    public class ProgressStatusX264
-    {
-        public long Frame { get; set; }
-        public float Fps { get; set; }
-        public float Bitrate { get; set; }
-        public TimeSpan Time { get; set; }
-        public string Size { get; set; } = "";
-    }
+    public long Frame { get; set; }
+    /// <summary>
+    /// The encoding speed in frames per second.
+    /// </summary>
+    public float Fps { get; set; }
+    /// <summary>
+    /// The rate of data being read from source.
+    /// </summary>
+    public float Bitrate { get; set; }
+    /// <summary>
+    /// The time left.
+    /// </summary>
+    public TimeSpan Time { get; set; }
+    /// <summary>
+    /// The size of the encoded file so far.
+    /// </summary>
+    public string Size { get; set; } = "";
 }

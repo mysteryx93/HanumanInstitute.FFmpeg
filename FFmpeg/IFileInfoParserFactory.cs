@@ -1,17 +1,14 @@
-﻿using System;
+﻿namespace HanumanInstitute.FFmpeg;
 
-namespace HanumanInstitute.FFmpeg
+/// <summary>
+/// Creates new instances of IFileInfoParser.
+/// </summary>
+public interface IFileInfoParserFactory
 {
     /// <summary>
-    /// Creates new instances of IFileInfoParser.
+    /// Creates a new IFileInfoParser for specified application.
     /// </summary>
-    public interface IFileInfoParserFactory
-    {
-        /// <summary>
-        /// Creates a new IFileInfoParser for specified application.
-        /// </summary>
-        /// <param name="encoderApp">The application to parse.</param>
-        /// <returns>A new IFileInfoParser.</returns>
-        IFileInfoParser Create(string encoderApp);
-    }
+    /// <param name="encoderApp">The application to parse.</param>
+    /// <returns>A new IFileInfoParser.</returns>
+    IFileInfoParser Create(string encoderApp);
 }

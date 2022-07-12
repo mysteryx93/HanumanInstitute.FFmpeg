@@ -1,33 +1,30 @@
-﻿using System;
-using System.Globalization;
-using HanumanInstitute.FFmpeg.Properties;
+﻿using HanumanInstitute.FFmpeg.Properties;
 
-namespace HanumanInstitute.FFmpeg
+namespace HanumanInstitute.FFmpeg;
+
+/// <summary>
+/// Creates new instances of IFileInfoParser.
+/// </summary>
+public class FileInfoParserFactory : IFileInfoParserFactory
 {
     /// <summary>
-    /// Creates new instances of IFileInfoParser.
+    /// Creates a new IFileInfoParser for specified application.
     /// </summary>
-    public class FileInfoParserFactory : IFileInfoParserFactory
+    /// <param name="encodeApp">The application to parse.</param>
+    /// <returns>A new IFileInfoParser.</returns>
+    public virtual IFileInfoParser Create(string encodeApp)
     {
-        /// <summary>
-        /// Creates a new IFileInfoParser for specified application.
-        /// </summary>
-        /// <param name="encodeApp">The application to parse.</param>
-        /// <returns>A new IFileInfoParser.</returns>
-        public virtual IFileInfoParser Create(string encodeApp)
+        if (encodeApp == EncoderApp.FFmpeg.ToString())
         {
-            if (encodeApp == EncoderApp.FFmpeg.ToString())
-            {
-                return new FileInfoFFmpeg();
-            }
-            else if (encodeApp == EncoderApp.x264.ToString() || encodeApp == EncoderApp.x265.ToString())
-            {
-                return new FileInfoX264();
-            }
-            else
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.EncodeAppInvalid, encodeApp));
-            }
+            return new FileInfoFFmpeg();
+        }
+        else if (encodeApp == EncoderApp.x264.ToString() || encodeApp == EncoderApp.x265.ToString())
+        {
+            return new FileInfoX264();
+        }
+        else
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.EncodeAppInvalid, encodeApp));
         }
     }
 }

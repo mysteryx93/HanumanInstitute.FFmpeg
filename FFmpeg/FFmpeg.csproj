@@ -1,35 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>default</LangVersion>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>HanumanInstitute.FFmpeg</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>Etienne Charland</Authors>
     <Company>Hanuman Institute</Company>
     <Product>HanumanInstitute.FFmpeg</Product>
     <Description>.Net wrapper for media encoders such as FFmpeg, X264 and X265, including Avisynth and VapourSynth support.</Description>
-    <Copyright>Copyright 2017-2020, Hanuman Institute</Copyright>
+    <Copyright>Copyright 2017-2022, Hanuman Institute</Copyright>
     <PackageTags>ffmpeg ffmpeg-wrapper video-encoding video library .net</PackageTags>
     <PackageReleaseNotes>https://github.com/mysteryx93/HanumanInstitute.FFmpeg/releases</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/mysteryx93/HanumanInstitute.FFmpeg</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/mysteryx93/HanumanInstitute.FFmpeg/blob/master/LICENSE</PackageLicenseUrl>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>2.0</OldToolsVersion>
     <RootNamespace>HanumanInstitute.FFmpeg</RootNamespace>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <AssemblyName>HanumanInstitute.FFmpeg</AssemblyName>
     <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DocumentationFile>bin\Release\netstandard2.0\FFmpeg.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DocumentationFile>bin\Debug\netstandard2.0\FFmpeg.xml</DocumentationFile>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Nullable" Version="1.2.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -47,5 +44,8 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="FFmpeg.csproj.DotSettings" />
   </ItemGroup>
 </Project>

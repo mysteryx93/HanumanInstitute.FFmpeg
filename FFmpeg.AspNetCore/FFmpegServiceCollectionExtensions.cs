@@ -4,35 +4,34 @@ using Microsoft.Extensions.DependencyInjection;
 using HanumanInstitute.FFmpeg;
 using HanumanInstitute.FFmpeg.Services;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+public static class FFmpegServiceCollectionExtensions
 {
-    public static class FFmpegServiceCollectionExtensions
+    /// <summary>
+    /// Registers FFmpeg classes into the IoC container.
+    /// </summary>
+    /// <param name="services">The IoC services container.</param>
+    public static IServiceCollection AddFFmpeg(this IServiceCollection services)
     {
-        /// <summary>
-        /// Registers FFmpeg classes into the IoC container.
-        /// </summary>
-        /// <param name="services">The IoC services container.</param>
-        public static IServiceCollection AddFFmpeg(this IServiceCollection services)
-        {
-            if (services == null) { throw new ArgumentNullException(nameof(services)); }
+        if (services == null) { throw new ArgumentNullException(nameof(services)); }
 
-            // FFmpeg
-            services.TryAddTransient<IFileInfoParserFactory, FileInfoParserFactory>();
-            services.TryAddTransient<IMediaConfig, MediaConfig>();
-            services.TryAddTransient<IMediaEncoder, MediaEncoder>();
-            services.TryAddTransient<IMediaInfoReader, MediaInfoReader>();
-            services.TryAddTransient<IMediaMuxer, MediaMuxer>();
-            services.TryAddTransient<IMediaScript, MediaScript>();
-            services.TryAddTransient<IProcessWorkerFactory, ProcessWorkerFactory>();
-            services.TryAddTransient<ITimeLeftCalculatorFactory, TimeLeftCalculatorFactory>();
+        // FFmpeg
+        services.TryAddTransient<IFileInfoParserFactory, FileInfoParserFactory>();
+        services.TryAddTransient<IMediaConfig, MediaConfig>();
+        services.TryAddTransient<IMediaEncoder, MediaEncoder>();
+        services.TryAddTransient<IMediaInfoReader, MediaInfoReader>();
+        services.TryAddTransient<IMediaMuxer, MediaMuxer>();
+        services.TryAddTransient<IMediaScript, MediaScript>();
+        services.TryAddTransient<IProcessWorkerFactory, ProcessWorkerFactory>();
+        services.TryAddTransient<ITimeLeftCalculatorFactory, TimeLeftCalculatorFactory>();
 
-            // Services
-            services.TryAddTransient<IEnvironmentService, EnvironmentService>();
-            services.TryAddTransient<IFileSystemService, FileSystemService>();
-            services.TryAddTransient<IProcessFactory, ProcessFactory>();
-            services.TryAddTransient<IWindowsApiService, WindowsApiService>();
+        // Services
+        services.TryAddTransient<IEnvironmentService, EnvironmentService>();
+        services.TryAddTransient<IFileSystemService, FileSystemService>();
+        services.TryAddTransient<IProcessFactory, ProcessFactory>();
+        services.TryAddTransient<IWindowsApiService, WindowsApiService>();
 
-            return services;
-        }
+        return services;
     }
 }

@@ -1,25 +1,14 @@
-﻿using System;
+﻿namespace HanumanInstitute.FFmpeg.Services;
 
-namespace HanumanInstitute.FFmpeg.Services
+/// <inheritdoc />
+public class EnvironmentService : IEnvironmentService
 {
-    /// <summary>
-    /// Provides information about the application, environment and operating system.
-    /// </summary>
-    public class EnvironmentService : IEnvironmentService
-    {
-        /// <summary>
-        /// Gets the current date and time expressed as local time.
-        /// </summary>
-        public DateTime Now => DateTime.Now;
+    /// <inheritdoc />
+    public DateTime Now => DateTime.Now;
 
-        /// <summary>
-        /// Gets the current date and time expressed as Universal Standard Time.
-        /// </summary>
-        public DateTime UtcNow => DateTime.UtcNow;
+    /// <inheritdoc />
+    public DateTime UtcNow => DateTime.UtcNow;
 
-        /// <summary>
-        /// Gets the newline string defined for this environment.
-        /// </summary>
-        public string NewLine => Environment.NewLine;
-    }
+    /// <inheritdoc />
+    public string NewLine => Environment.NewLine;
 }

@@ -1,24 +1,26 @@
-﻿using System;
+﻿namespace HanumanInstitute.FFmpeg;
 
-namespace HanumanInstitute.FFmpeg
+/// <summary>
+/// Represents the method that will handle the ProcessStarted event.
+/// </summary>
+public delegate void ProcessStartedEventHandler(object sender, ProcessStartedEventArgs e);
+
+/// <summary>
+/// Provides job information for the ProcessStarted event.
+/// </summary>
+public class ProcessStartedEventArgs : EventArgs
 {
     /// <summary>
-    /// Represents the method that will handle the ProcessStarted event.
+    /// Gets the <see cref="IProcessWorker"/> that just started.
     /// </summary>
-    public delegate void ProcessStartedEventHandler(object sender, ProcessStartedEventArgs e);
+    public IProcessWorker ProcessWorker { get; set; }
 
     /// <summary>
-    /// Provides job information for the ProcessStarted event.
+    /// Initializes a new instance of the ProcessStartedEventArgs class with specified process worker.
     /// </summary>
-    public class ProcessStartedEventArgs : EventArgs
+    /// <param name="processWorker">The <see cref="IProcessWorker"/> that just started.</param>
+    public ProcessStartedEventArgs(IProcessWorker processWorker)
     {
-        public IProcessWorker ProcessWorker { get; set; }
-
-        //public ProcessStartedEventArgs() { }
-
-        public ProcessStartedEventArgs(IProcessWorker processWorker)
-        {
-            ProcessWorker = processWorker;
-        }
+        ProcessWorker = processWorker;
     }
 }

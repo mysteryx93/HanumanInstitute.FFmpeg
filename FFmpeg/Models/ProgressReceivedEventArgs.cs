@@ -1,24 +1,26 @@
-﻿using System;
+﻿namespace HanumanInstitute.FFmpeg;
 
-namespace HanumanInstitute.FFmpeg
+/// <summary>
+/// Represents the method that will handle the StatusUpdated event.
+/// </summary>
+public delegate void ProgressReceivedEventHandler(object sender, ProgressReceivedEventArgs e);
+
+/// <summary>
+/// Provides progress information for the ProgressReceived event.
+/// </summary>
+public class ProgressReceivedEventArgs : EventArgs
 {
     /// <summary>
-    /// Represents the method that will handle the StatusUpdated event.
+    /// Gets progress data. The data type depends on the application that was started.
     /// </summary>
-    public delegate void ProgressReceivedEventHandler(object sender, ProgressReceivedEventArgs e);
+    public object Progress { get; set; }
 
     /// <summary>
-    /// Provides progress information for the ProgressReceived event.
+    /// Initializes a new instance of the ProgressReceivedEventArgs class with specified progress data.
     /// </summary>
-    public class ProgressReceivedEventArgs : EventArgs
+    /// <param name="progress">Gets progress data. The data type depends on the application that was started.</param>
+    public ProgressReceivedEventArgs(object progress)
     {
-        public object Progress { get; set; }
-
-        //public ProgressReceivedEventArgs() { }
-
-        public ProgressReceivedEventArgs(object progress)
-        {
-            Progress = progress;
-        }
+        Progress = progress;
     }
 }

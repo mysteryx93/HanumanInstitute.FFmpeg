@@ -1,14 +1,20 @@
-﻿using System;
+﻿namespace HanumanInstitute.FFmpeg;
 
-namespace HanumanInstitute.FFmpeg
+/// <summary>
+/// Represents which process output to read.
+/// </summary>
+public enum ProcessOutput
 {
     /// <summary>
-    /// Represents which process output to read.
+    /// Don't read process output.
     /// </summary>
-    public enum ProcessOutput
-    {
-        None,
-        Output,
-        Error
-    }
+    None,
+    /// <summary>
+    /// Read the process' standard output.
+    /// </summary>
+    Output,
+    /// <summary>
+    /// Read the process' error output.
+    /// </summary>
+    Error
 }

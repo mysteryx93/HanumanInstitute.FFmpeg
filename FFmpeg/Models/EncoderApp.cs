@@ -1,14 +1,21 @@
-﻿using System;
+﻿// ReSharper disable InconsistentNaming
+namespace HanumanInstitute.FFmpeg;
 
-namespace HanumanInstitute.FFmpeg
+/// <summary>
+/// Represents the application to use for encoding.
+/// </summary>
+public enum EncoderApp
 {
     /// <summary>
-    /// Represents the application to use for encoding.
+    /// Run FFmpeg encoder.
     /// </summary>
-    public enum EncoderApp
-    {
-        FFmpeg,
-        x264,
-        x265
-    }
+    FFmpeg,
+    /// <summary>
+    /// Run x264 encoder.
+    /// </summary>
+    x264,
+    /// <summary>
+    /// Run x265 encoder.
+    /// </summary>
+    x265
 }
