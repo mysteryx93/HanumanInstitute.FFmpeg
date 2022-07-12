@@ -8,7 +8,7 @@ public interface IMediaMuxer
     /// <summary>
     /// Sets the owner of the process windows.
     /// </summary>
-    IMediaMuxer SetOwner(object owner);
+    object? Owner { get; set; }
     /// <summary>
     /// Merges specified audio and video files.
     /// </summary>

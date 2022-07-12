@@ -10,7 +10,14 @@ public interface IUserInterfaceManager
     /// </summary>
     bool AppExited { get; set; }
 
+    /// <summary>
+    /// Binds <see cref="IProcessWorker"/> events to the UI.
+    /// </summary>
+    /// <param name="owner">The owner to set for the window.</param>
+    /// <param name="worker">The IProcessWorker to bind.</param>
+    /// <param name="options">Options to control the behaviors of a process.</param>
     void AttachProcessWorker(object? owner, IProcessWorker worker, ProcessOptions options);
+    
     /// <summary>
     /// Starts a user interface that will receive all tasks with the specified jobId.
     /// </summary>
@@ -18,17 +25,20 @@ public interface IUserInterfaceManager
     /// <param name="jobId">The jobId associated with this interface.</param>
     /// <param name="title">The title to display.</param>
     void Start(object owner, object jobId, string title);
+    
     /// <summary>
     /// Closes the user interface for specified jobId.
     /// </summary>
     /// <param name="jobId">The jobId to close.</param>
     void Close(object jobId);
+    
     /// <summary>
     /// Displays a process to the user.
     /// </summary>
     /// <param name="owner">The owner to set for the window.</param>
     /// <param name="host">The process worker to display.</param>
     void Display(object owner, IProcessWorker host);
+    
     /// <summary>
     /// When implemented in a derived class, creates the graphical interface window.
     /// </summary>
@@ -36,7 +46,9 @@ public interface IUserInterfaceManager
     /// <param name="title">The title to display.</param>
     /// <param name="autoClose">Whether to automatically close the window after the main task is completed.</param>
     /// <returns>The newly created user interface window.</returns>
+    // ReSharper disable once InconsistentNaming
     IUserInterfaceWindow CreateUI(object owner, string title, bool autoClose);
+    
     /// <summary>
     /// When implemented in a derived class, displays an error window.
     /// </summary>

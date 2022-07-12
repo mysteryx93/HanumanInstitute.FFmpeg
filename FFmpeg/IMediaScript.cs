@@ -1,4 +1,5 @@
-﻿namespace HanumanInstitute.FFmpeg;
+﻿// ReSharper disable CommentTypo
+namespace HanumanInstitute.FFmpeg;
 
 /// <summary>
 /// Provides methods to execute Avisynth or VapourSynth media script files.
@@ -6,9 +7,9 @@
 public interface IMediaScript
 {
     /// <summary>
-    /// Sets the owner of the process windows.
+    /// Gets or sets the owner of the process windows.
     /// </summary>
-    IMediaScript SetOwner(object owner);
+    object? Owner { get; set; }
     /// <summary>
     /// Runs avs2pipemod with specified source file. The output will be discarded.
     /// </summary>

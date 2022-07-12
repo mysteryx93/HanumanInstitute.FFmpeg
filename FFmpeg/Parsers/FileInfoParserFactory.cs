@@ -1,17 +1,12 @@
-﻿using HanumanInstitute.FFmpeg.Properties;
+﻿
+// ReSharper disable ClassWithVirtualMembersNeverInherited.Global
 
 namespace HanumanInstitute.FFmpeg;
 
-/// <summary>
-/// Creates new instances of IFileInfoParser.
-/// </summary>
+/// <inheritdoc />
 public class FileInfoParserFactory : IFileInfoParserFactory
 {
-    /// <summary>
-    /// Creates a new IFileInfoParser for specified application.
-    /// </summary>
-    /// <param name="encodeApp">The application to parse.</param>
-    /// <returns>A new IFileInfoParser.</returns>
+    /// <inheritdoc />
     public virtual IFileInfoParser Create(string encodeApp)
     {
         if (encodeApp == EncoderApp.FFmpeg.ToString())

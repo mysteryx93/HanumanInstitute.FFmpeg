@@ -18,7 +18,7 @@ public class ProgressStatusX264
     /// </summary>
     public float Bitrate { get; set; }
     /// <summary>
-    /// The time left.
+    /// The time elapsed.
     /// </summary>
     public TimeSpan Time { get; set; }
     /// <summary>

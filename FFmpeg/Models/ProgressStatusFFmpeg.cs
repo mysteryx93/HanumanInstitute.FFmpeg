@@ -22,7 +22,7 @@ public class ProgressStatusFFmpeg
     /// </summary>
     public string Size { get; set; } = "";
     /// <summary>
-    /// The time left.
+    /// The time elapsed.
     /// </summary>
     public TimeSpan Time { get; set; }
     /// <summary>

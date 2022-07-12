@@ -6,9 +6,9 @@
 public interface IMediaEncoder
 {
     /// <summary>
-    /// Sets the owner of the process windows.
+    /// Gets or sets the owner of the process windows.
     /// </summary>
-    IMediaEncoder SetOwner(object owner);
+    object? Owner { get; set; }
     /// <summary>
     /// Converts specified file into AVI UT Video format.
     /// </summary>

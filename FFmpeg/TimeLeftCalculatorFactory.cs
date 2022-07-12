@@ -5,11 +5,9 @@ namespace HanumanInstitute.FFmpeg;
 /// <summary>
 /// Allows calculating the time left for a FFmpeg process.
 /// </summary>
-internal class TimeLeftCalculatorFactory : ITimeLeftCalculatorFactory
+public class TimeLeftCalculatorFactory : ITimeLeftCalculatorFactory
 {
     private readonly IEnvironmentService _environment;
-
-    //public TimeLeftCalculatorFactory() : this(new EnvironmentService()) { }
 
     internal TimeLeftCalculatorFactory(IEnvironmentService environmentService)
     {
@@ -22,6 +20,7 @@ internal class TimeLeftCalculatorFactory : ITimeLeftCalculatorFactory
     /// <param name="frameCount">The total number of frames to encode.</param>
     /// <returns>The new TimeLeftCalculator instance.</returns>
     public ITimeLeftCalculator Create(long frameCount) => new TimeLeftCalculator(_environment, frameCount);
+    
     /// <summary>
     /// Creates a new instance of the TimeLeftCalculator class.
     /// </summary>

@@ -1,79 +1,49 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using HanumanInstitute.FFmpeg.Properties;
 using HanumanInstitute.FFmpeg.Services;
 
 namespace HanumanInstitute.FFmpeg;
 
-/// <summary>
-/// Executes commands through a media encoder process
-/// </summary>
+/// <inheritdoc cref="IProcessWorkerEncoder" />
 public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
 {
     private readonly IFileSystemService _fileSystem;
     private readonly IFileInfoParserFactory _parserFactory;
 
     internal ProcessWorkerEncoder(IProcessManager config, IProcessFactory processFactory, IFileSystemService fileSystemService, IFileInfoParserFactory parserFactory, ProcessOptionsEncoder options)
-        : base(config, processFactory, options ?? new ProcessOptionsEncoder())
+        : base(config, processFactory, options)
     {
-        _fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
-        _parserFactory = parserFactory ?? throw new ArgumentNullException(nameof(parserFactory));
+        _fileSystem = fileSystemService.CheckNotNull(nameof(fileSystemService));
+        _parserFactory = parserFactory.CheckNotNull(nameof(parserFactory));
         OutputType = ProcessOutput.Error;
     }
 
-    /// <summary>
-    /// Gets the application being used for encoding.
-    /// </summary>
+    /// <inheritdoc />
     public string EncoderApp { get; set; } = string.Empty;
     /// <summary>
     /// Gets the class parsing and storing file information.
     /// </summary>
-    [NotNull]
-    protected IFileInfoParser? Parser { get; private set; }
-    /// <summary>
-    /// Gets the file information.
-    /// </summary>
-    [NotNull]
-    public object? FileInfo => Parser;
-    /// <summary>
-    /// Returns the last progress status data received from DataReceived event.
-    /// </summary>
+    protected IFileInfoParser Parser { get; private set; } = default!;
+    /// <inheritdoc />
+    public object FileInfo => Parser;
+    /// <inheritdoc />
     public object? LastProgressReceived { get; private set; }
-    /// <summary>
-    /// Occurs after stream info is read from the output.
-    /// </summary>
+    /// <inheritdoc />
     public event EventHandler? FileInfoUpdated;
-    /// <summary>
-    /// Occurs when progress status update is received through the output stream.
-    /// </summary>
+    /// <inheritdoc />
     public event ProgressReceivedEventHandler? ProgressReceived;
 
-    /// <summary>
-    /// Gets or sets the options to control the behaviors of the encoding process.
-    /// </summary>
+    /// <inheritdoc />
     public new ProcessOptionsEncoder Options
     {
         get => (ProcessOptionsEncoder)base.Options;
         set => base.Options = value;
     }
 
-    /// <summary>
-    /// Runs an encoder process with specified arguments.
-    /// </summary>
-    /// <param name="arguments">The startup arguments.</param>
-    /// <param name="encoderApp">The encoder application to run.</param>
-    /// <returns>The process completion status.</returns>
-    public CompletionStatus RunEncoder(string arguments, EncoderApp encoderApp)
-    {
-        return RunEncoder(arguments, encoderApp.ToString());
-    }
+    /// <inheritdoc />
+    public CompletionStatus RunEncoder(string arguments, EncoderApp encoderApp) =>
+        RunEncoder(arguments, encoderApp.ToString());
 
-    /// <summary>
-    /// Runs an encoder process with specified arguments.
-    /// </summary>
-    /// <param name="arguments">The startup arguments.</param>
-    /// <param name="encoderApp">A custom application name to run.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
     public CompletionStatus RunEncoder(string arguments, string encoderApp)
     {
         var appPath = Processes.GetAppPath(encoderApp);
@@ -87,25 +57,11 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
         return Run(appPath, arguments);
     }
 
-    /// <summary>
-    /// Runs an Avisynth script and encodes it in an encoder process with specified arguments.
-    /// </summary>
-    /// <param name="source">The path of the source Avisynth script file.</param>
-    /// <param name="arguments">The encoder startup arguments.</param>
-    /// <param name="encoderApp">The encoder application to run.</param>
-    /// <returns>The process completion status.</returns>
-    public CompletionStatus RunAvisynthToEncoder(string source, string arguments, EncoderApp encoderApp)
-    {
-        return RunAvisynthToEncoder(source, arguments, encoderApp.ToString());
-    }
+    /// <inheritdoc />
+    public CompletionStatus RunAvisynthToEncoder(string source, string arguments, EncoderApp encoderApp) =>
+        RunAvisynthToEncoder(source, arguments, encoderApp.ToString());
 
-    /// <summary>
-    /// Runs an Avisynth script and encodes it in an encoder process with specified arguments.
-    /// </summary>
-    /// <param name="source">The path of the source Avisynth script file.</param>
-    /// <param name="arguments">The encoder startup arguments.</param>
-    /// <param name="encoderApp">A custom application name to run.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
     public CompletionStatus RunAvisynthToEncoder(string source, string arguments, string encoderApp)
     {
         source.CheckNotNullOrEmpty(nameof(source));
@@ -116,25 +72,11 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
         return RunAsCommand(query);
     }
 
-    /// <summary>
-    /// Runs a VapourSynth script and encodes it in an encoder process with specified arguments.
-    /// </summary>
-    /// <param name="source">The path of the source VapourSynth script file.</param>
-    /// <param name="arguments">The encoder startup arguments.</param>
-    /// <param name="encoderApp">The encoder application to run.</param>
-    /// <returns>The process completion status.</returns>
-    public CompletionStatus RunVapourSynthToEncoder(string source, string arguments, EncoderApp encoderApp)
-    {
-        return RunVapourSynthToEncoder(source, arguments, encoderApp.ToString());
-    }
+    /// <inheritdoc />
+    public CompletionStatus RunVapourSynthToEncoder(string source, string arguments, EncoderApp encoderApp) =>
+        RunVapourSynthToEncoder(source, arguments, encoderApp.ToString());
 
-    /// <summary>
-    /// Runs a VapourSynth script and encodes it in an encoder process with specified arguments.
-    /// </summary>
-    /// <param name="source">The path of the source VapourSynth script file.</param>
-    /// <param name="arguments">The encoder startup arguments.</param>
-    /// <param name="encoderApp">A custom application name to run.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
     public CompletionStatus RunVapourSynthToEncoder(string source, string arguments, string encoderApp)
     {
         source.CheckNotNullOrEmpty(nameof(source));
@@ -146,14 +88,7 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
         return RunAsCommand(query);
     }
 
-    /// <summary>
-    /// Runs specified process with specified arguments.
-    /// </summary>
-    /// <param name="fileName">The application to start.</param>
-    /// <param name="arguments">The set of arguments to use when starting the application.</param>
-    /// <returns>The process completion status.</returns>
-    /// <exception cref="System.IO.FileNotFoundException">Occurs when the file to run is not found.</exception>
-    /// <exception cref="InvalidOperationException">Occurs when this class instance is already running another process.</exception>
+    /// <inheritdoc />
     public override CompletionStatus Run(string fileName, string arguments)
     {
         EnsureNotRunning();
@@ -166,7 +101,7 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
     /// </summary>
     protected override void OnDataReceived(object sender, DataReceivedEventArgs e)
     {
-        if (e == null || e.Data == null)
+        if (e.Data == null)
         {
             if (!Parser.IsParsed)
             {
@@ -201,6 +136,6 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
     private void ParseFileInfo()
     {
         Parser.ParseFileInfo(Output, Options);
-        FileInfoUpdated?.Invoke(this, new EventArgs());
+        FileInfoUpdated?.Invoke(this, EventArgs.Empty);
     }
 }

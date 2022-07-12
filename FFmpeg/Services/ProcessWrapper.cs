@@ -238,10 +238,7 @@ public class ProcessWrapper : IProcess, IDisposable
     public override string ToString() => _process.ToString();
 
     private bool _disposed;
-    /// <summary>
-    /// Disposes of this class and associated resources.
-    /// </summary>
-    /// <param name="disposing">True if called explicitly, false if called from destructor.</param>
+    /// <inheritdoc cref="IDisposable" />
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed)
@@ -255,9 +252,7 @@ public class ProcessWrapper : IProcess, IDisposable
         _disposed = true;
     }
 
-    /// <summary>
-    /// Disposes of this class and associated resources.
-    /// </summary>
+    /// <inheritdoc cref="IDisposable" />
     public void Dispose()
     {
         Dispose(true);

@@ -1,58 +1,38 @@
 ﻿using System.Diagnostics;
-using HanumanInstitute.FFmpeg.Properties;
 using HanumanInstitute.FFmpeg.Services;
 
 namespace HanumanInstitute.FFmpeg;
 
-/// <summary>
-/// Executes an application and manages its process.
-/// </summary>
+/// <inheritdoc cref="IProcessWorker"/>
 public class ProcessWorker : IProcessWorker, IDisposable
 {
-    /// <summary>
-    /// Gets or sets the process manager.
-    /// </summary>
+    /// <inheritdoc />
     public IProcessManager Processes { get; set; }
-    /// <summary>
-    /// Gets or sets the options to control the behaviors of the process.
-    /// </summary>
+    /// <inheritdoc />
     public ProcessOptions Options { get; set; }
-    /// <summary>
-    /// Gets or sets the console output to read.
-    /// </summary>
+    /// <inheritdoc />
     public ProcessOutput OutputType { get; set; }
-    /// <summary>
-    /// Gets the process currently being executed.
-    /// </summary>
+    /// <inheritdoc />
     public IProcess? WorkProcess { get; private set; }
-    /// <summary>
-    /// Gets or sets a method to call after the process has been started.
-    /// </summary>
+    /// <inheritdoc />
     public event ProcessStartedEventHandler? ProcessStarted;
-    /// <summary>
-    /// Occurs when the process writes to its output stream.
-    /// </summary>
+    /// <inheritdoc />
     public event DataReceivedEventHandler? DataReceived;
-    /// <summary>
-    /// Occurs when the process has terminated its work.
-    /// </summary>
+    /// <inheritdoc />
     public event ProcessCompletedEventHandler? ProcessCompleted;
-    /// <summary>
-    /// Returns the raw console output.
-    /// </summary>
+    /// <inheritdoc />
     public string Output => _output.ToString();
-    /// <summary>
-    /// Returns the CompletionStatus of the last operation.
-    /// </summary>
+    /// <inheritdoc />
     public CompletionStatus? LastCompletionStatus { get; private set; }
-    /// <summary>
-    /// Returns the full command with arguments being run.
-    /// </summary>
+    /// <inheritdoc />
     public string CommandWithArgs { get; private set; } = string.Empty;
 
     private readonly StringBuilder _output = new StringBuilder();
     private readonly IProcessFactory _factory;
-    protected object LockToken { get; private set; } = new object();
+    /// <summary>
+    /// A token to lock access to WorkProcess from various threads.
+    /// </summary>
+    protected object WorkProcessLock { get; private set; } = new object();
     private CancellationTokenSource? _cancelWork;
 
     //public ProcessWorker() : this(new MediaConfig(), new ProcessFactory(), null) { }
@@ -64,32 +44,20 @@ public class ProcessWorker : IProcessWorker, IDisposable
         Options = options ?? new ProcessOptions();
     }
 
-    /// <summary>
-    /// Runs the command as 'cmd /c', allowing the use of command line features such as piping.
-    /// </summary>
-    /// <param name="cmd">The full command to be executed with arguments.</param>
-    /// <param name="encoder">The application being run, which alters parsing.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
     public CompletionStatus RunAsCommand(string cmd)
     {
         cmd.CheckNotNullOrEmpty(nameof(cmd));
         return Run("cmd", $@"/c "" {cmd} """);
     }
 
-    /// <summary>
-    /// Runs specified process with specified arguments.
-    /// </summary>
-    /// <param name="fileName">The process to start.</param>
-    /// <param name="arguments">The set of arguments to use when starting the process.</param>
-    /// <returns>The process completion status.</returns>
-    /// <exception cref="System.IO.FileNotFoundException">Occurs when the file to run is not found.</exception>
-    /// <exception cref="InvalidOperationException">Occurs when this class instance is already running another process.</exception>
+    /// <inheritdoc />
     public virtual CompletionStatus Run(string fileName, string arguments)
     {
         fileName.CheckNotNullOrEmpty(nameof(fileName));
 
         IProcess p;
-        lock (LockToken)
+        lock (WorkProcessLock)
         {
             if (WorkProcess != null) { throw new InvalidOperationException(Resources.ProcessWorkerBusy); }
             p = _factory.Create();
@@ -97,10 +65,6 @@ public class ProcessWorker : IProcessWorker, IDisposable
         }
         _output.Clear();
         _cancelWork = new CancellationTokenSource();
-        if (Options == null)
-        {
-            Options = new ProcessOptions();
-        }
 
         p.StartInfo.FileName = fileName;
         p.StartInfo.Arguments = arguments;
@@ -164,7 +128,9 @@ public class ProcessWorker : IProcessWorker, IDisposable
         var timeout = Wait();
 
         // ExitCode is 0 for normal exit. Different value when closing the console.
-        var result = timeout ? CompletionStatus.Timeout : _cancelWork.IsCancellationRequested ? CompletionStatus.Cancelled : p.ExitCode == 0 ? CompletionStatus.Success : CompletionStatus.Failed;
+        var result = timeout ? CompletionStatus.Timeout :
+            _cancelWork.IsCancellationRequested ? CompletionStatus.Cancelled :
+            p.ExitCode == 0 ? CompletionStatus.Success : CompletionStatus.Failed;
 
         _cancelWork = null;
         // Allow changing CompletionStatus in ProcessCompleted.
@@ -206,20 +172,15 @@ public class ProcessWorker : IProcessWorker, IDisposable
         return false;
     }
 
-    /// <summary>
-    /// Cancels the currently running job and terminate its process.
-    /// </summary>
-    public void Cancel()
-    {
-        _cancelWork?.Cancel();
-    }
+    /// <inheritdoc />
+    public void Cancel() => _cancelWork?.Cancel();
 
     /// <summary>
     /// Occurs when data is received from the executing process.
     /// </summary>
     protected virtual void OnDataReceived(object sender, DataReceivedEventArgs e)
     {
-        _output.AppendLine(e?.Data);
+        _output.AppendLine(e.Data);
         DataReceived?.Invoke(this, e);
     }
 
@@ -228,17 +189,20 @@ public class ProcessWorker : IProcessWorker, IDisposable
     /// </summary>
     protected void EnsureNotRunning()
     {
-        lock (LockToken)
+        if (WorkProcess != null)
         {
-            if (WorkProcess != null)
+            lock (WorkProcessLock)
             {
-                throw new InvalidOperationException(Resources.ProcessWorkerBusy);
+                if (WorkProcess != null)
+                {
+                    throw new InvalidOperationException(Resources.ProcessWorkerBusy);
+                }
             }
         }
     }
 
-
-    private bool _disposedValue = false;
+    private bool _disposedValue;
+    /// <inheritdoc cref="IDisposable" />
     protected virtual void Dispose(bool disposing)
     {
         if (!_disposedValue)
@@ -251,6 +215,7 @@ public class ProcessWorker : IProcessWorker, IDisposable
         }
     }
 
+    /// <inheritdoc cref="IDisposable" />
     public void Dispose()
     {
         Dispose(true);

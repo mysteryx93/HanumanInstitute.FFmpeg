@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace HanumanInstitute.FFmpeg;
 
 /// <summary>
@@ -18,8 +17,7 @@ public interface IProcessWorkerEncoder : IProcessWorker
     /// <summary>
     /// Gets the file information.
     /// </summary>
-    [NotNull]
-    object? FileInfo { get; }
+    object FileInfo { get; }
     /// <summary>
     /// Returns the last progress status data received from DataReceived event.
     /// </summary>

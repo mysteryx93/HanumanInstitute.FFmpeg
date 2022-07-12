@@ -23,7 +23,7 @@ public static class FFmpegServiceCollectionExtensions
         services.TryAddTransient<IMediaInfoReader, MediaInfoReader>();
         services.TryAddTransient<IMediaMuxer, MediaMuxer>();
         services.TryAddTransient<IMediaScript, MediaScript>();
-        services.TryAddTransient<IProcessWorkerFactory, ProcessWorkerFactory>();
+        services.TryAddTransient<IProcessService, ProcessService>();
         services.TryAddTransient<ITimeLeftCalculatorFactory, TimeLeftCalculatorFactory>();
 
         // Services

@@ -1,64 +1,51 @@
-﻿using HanumanInstitute.FFmpeg.Properties;
+﻿using System.Diagnostics.CodeAnalysis;
 using HanumanInstitute.FFmpeg.Services;
-using static System.FormattableString;
+// ReSharper disable StringLiteralTypo
 
 namespace HanumanInstitute.FFmpeg;
 
-/// <summary>
-/// Provides functions to manage audio and video streams.
-/// </summary>
+/// <inheritdoc />
 public class MediaMuxer : IMediaMuxer
 {
-    private readonly IProcessWorkerFactory _factory;
+    private readonly IProcessService _factory;
     private readonly IFileSystemService _fileSystem;
     private readonly IMediaInfoReader _infoReader;
 
-    public MediaMuxer(IProcessWorkerFactory processFactory) : this(processFactory, new FileSystemService(), new MediaInfoReader(processFactory)) { }
+    /// <summary>
+    /// Initializes a new instance of the MediaMuxer class
+    /// </summary>
+    /// <param name="processFactory">The Factory responsible for creating processes.</param>
+    public MediaMuxer(IProcessService processFactory) : this(processFactory, new FileSystemService(), new MediaInfoReader(processFactory)) { }
 
-    internal MediaMuxer(IProcessWorkerFactory processFactory, IFileSystemService fileSystemService, IMediaInfoReader infoReader)
+    internal MediaMuxer(IProcessService processFactory, IFileSystemService fileSystemService, IMediaInfoReader infoReader)
     {
-        _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
-        _fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
-        _infoReader = infoReader ?? throw new ArgumentNullException(nameof(infoReader));
+        _factory = processFactory.CheckNotNull(nameof(processFactory));
+        _fileSystem = fileSystemService.CheckNotNull(nameof(fileSystemService));
+        _infoReader = infoReader.CheckNotNull(nameof(infoReader));
     }
 
-    private object? _owner;
-    /// <summary>
-    /// Sets the owner of the process windows.
-    /// </summary>
-    public IMediaMuxer SetOwner(object owner)
-    {
-        _owner = owner;
-        return this;
-    }
+    /// <inheritdoc />
+    public object? Owner { get; set; }
 
-    /// <summary>
-    /// Merges specified audio and video files.
-    /// </summary>
-    /// <param name="videoFile">The file containing the video.</param>
-    /// <param name="audioFile">The file containing the audio.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
     public CompletionStatus Muxe(string? videoFile, string? audioFile, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
-        if (string.IsNullOrEmpty(audioFile)) { videoFile.CheckNotNullOrEmpty(nameof(videoFile)); }
+        if (!audioFile.HasValue()) { videoFile.CheckNotNullOrEmpty(nameof(videoFile)); }
         destination.CheckNotNullOrEmpty(nameof(destination));
 
         var inputStreamList = new List<MediaStream>();
         MediaStream? inputStream;
-        if (!string.IsNullOrEmpty(videoFile))
+        if (videoFile.HasValue())
         {
-            inputStream = GetStreamInfo(videoFile!, FFmpegStreamType.Video, options);
+            inputStream = GetStreamInfo(videoFile, FFmpegStreamType.Video, options);
             if (inputStream != null)
             {
                 inputStreamList.Add(inputStream);
             }
         }
-        if (!string.IsNullOrEmpty(audioFile))
+        if (audioFile.HasValue())
         {
-            inputStream = GetStreamInfo(audioFile!, FFmpegStreamType.Audio, options);
+            inputStream = GetStreamInfo(audioFile, FFmpegStreamType.Audio, options);
             if (inputStream != null)
             {
                 inputStreamList.Add(inputStream);
@@ -75,17 +62,10 @@ public class MediaMuxer : IMediaMuxer
         }
     }
 
-    /// <summary>
-    /// Merges the specified list of file streams.
-    /// </summary>
-    /// <param name="fileStreams">The list of file streams to include in the output.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public CompletionStatus Muxe(IEnumerable<MediaStream> fileStreams, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
-        fileStreams.CheckNotNull(nameof(fileStreams));
         fileStreams.CheckNotNullOrEmpty(nameof(fileStreams));
         destination.CheckNotNullOrEmpty(nameof(destination));
 
@@ -96,11 +76,11 @@ public class MediaMuxer : IMediaMuxer
         // FFMPEG fails to muxe H264 into MKV container. Converting to MP4 and then muxing with the audio, however, works.
         foreach (var item in fileStreams)
         {
-            if (string.IsNullOrEmpty(item.Path) && item.Type != FFmpegStreamType.None)
+            if (!item.Path.HasValue() && item.Type != FFmpegStreamType.None)
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.ArgumentNullOrEmpty, "FFmpegStream.Path"));
+                throw new ArgumentException(Resources.ArgumentNullOrEmpty.FormatInvariant("FFmpegStream.Path"));
             }
-            if (item.Type == FFmpegStreamType.Video && (item.Format == "h264" || item.Format == "h265") && destination.EndsWith(".mkv", StringComparison.InvariantCulture))
+            if (item.Type == FFmpegStreamType.Video && item.Format is "h264" or "h265" && destination.EndsWith(".mkv", StringComparison.InvariantCulture))
             {
                 var newFile = item.Path.Substring(0, item.Path.LastIndexOf('.')) + ".mp4";
                 result = Muxe(new List<MediaStream>() { item }, newFile, options);
@@ -176,7 +156,7 @@ public class MediaMuxer : IMediaMuxer
             query.Append("\"");
             query.Append(destination);
             query.Append("\"");
-            var worker = _factory.CreateEncoder(_owner, options, callback);
+            var worker = _factory.CreateEncoder(Owner, options, callback);
 
             result = worker.RunEncoder(query.ToString(), EncoderApp.FFmpeg);
         }
@@ -199,33 +179,19 @@ public class MediaMuxer : IMediaMuxer
     private MediaStream? GetStreamInfo(string path, FFmpegStreamType streamType, ProcessOptionsEncoder? options)
     {
         var fileInfo = _infoReader.GetFileInfo(path, options);
-        var streamInfo = fileInfo.FileStreams?.FirstOrDefault(x => x.StreamType == streamType);
+        var streamInfo = fileInfo.FileStreams.FirstOrDefault(x => x.StreamType == streamType);
         return streamInfo != null ? 
             new MediaStream(path, streamInfo.Index, streamInfo.Format, streamType) : 
             null;
     }
 
-    /// <summary>
-    /// Extracts the video stream from specified file.
-    /// </summary>
-    /// <param name="source">The media file to extract from.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
     public CompletionStatus ExtractVideo(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
         return ExtractStream(@"-y -i ""{0}"" -vcodec copy -an ""{1}""", source, destination, options, callback);
     }
 
-    /// <summary>
-    /// Extracts the audio stream from specified file.
-    /// </summary>
-    /// <param name="source">The media file to extract from.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
     public CompletionStatus ExtractAudio(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
         return ExtractStream(@"-y -i ""{0}"" -vn -acodec copy ""{1}""", source, destination, options, callback);
@@ -246,26 +212,17 @@ public class MediaMuxer : IMediaMuxer
         destination.CheckNotNullOrEmpty(nameof(destination));
 
         _fileSystem.Delete(destination);
-        var worker = _factory.CreateEncoder(_owner, options, callback);
+        var worker = _factory.CreateEncoder(Owner, options, callback);
 
         return worker.RunEncoder(string.Format(CultureInfo.InvariantCulture, args, source, destination), EncoderApp.FFmpeg);
     }
 
-    /// <summary>
-    /// Concatenates (merges) all specified files.
-    /// </summary>
-    /// <param name="files">The files to merge.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public CompletionStatus Concatenate(IEnumerable<string> files, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
-        files.CheckNotNull(nameof(files));
         files.CheckNotNullOrEmpty(nameof(files));
         destination.CheckNotNullOrEmpty(nameof(destination));
-
-        var result = CompletionStatus.None;
 
         // Write temp file.
         var tempFile = _fileSystem.GetTempFile();
@@ -278,31 +235,22 @@ public class MediaMuxer : IMediaMuxer
 
         var query = Invariant($@"-y -f concat -fflags +genpts -async 1 -safe 0 -i ""{tempFile}"" -c copy ""{destination}""");
 
-        var worker = _factory.CreateEncoder(_owner, options, callback);
+        var worker = _factory.CreateEncoder(Owner, options, callback);
 
-        result = worker.RunEncoder(query.ToString(CultureInfo.InvariantCulture), EncoderApp.FFmpeg);
+        var result = worker.RunEncoder(query.ToString(CultureInfo.InvariantCulture), EncoderApp.FFmpeg);
 
         _fileSystem.Delete(tempFile);
         return result;
     }
 
-    /// <summary>
-    /// Truncates a media file from specified start position with specified duration. This can result in data loss or corruption if not splitting exactly on a framekey.
-    /// </summary>
-    /// <param name="source">The source file to truncate.</param>
-    /// <param name="destination">The output file to write.</param>
-    /// <param name="startPos">The position where to start copying. Anything before this position will be ignored. TimeSpan.Zero or null to start from beginning.</param>
-    /// <param name="duration">The duration after which to stop copying. Anything after this duration will be ignored. TimeSpan.Zero or null to copy until the end.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
-    /// <returns>The process completion status.</returns>
+    /// <inheritdoc />
     public CompletionStatus Truncate(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
         source.CheckNotNullOrEmpty(nameof(source));
         destination.CheckNotNullOrEmpty(nameof(destination));
 
         _fileSystem.Delete(destination);
-        var worker = _factory.CreateEncoder(_owner, options, callback);
+        var worker = _factory.CreateEncoder(Owner, options, callback);
 
         var args = string.Format(CultureInfo.InvariantCulture, @"-i ""{0}"" -vcodec copy -acodec copy {1}{2}""{3}""", source,
             startPos.HasValue && startPos > TimeSpan.Zero ? $"-ss {startPos:c} " : "",

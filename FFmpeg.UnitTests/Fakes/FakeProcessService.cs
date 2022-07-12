@@ -8,10 +8,10 @@ using Moq;
 
 namespace HanumanInstitute.FFmpeg.UnitTests;
 
-public class FakeProcessWorkerFactory : ProcessWorkerFactory
+public class FakeProcessService : ProcessService
 {
 
-    public FakeProcessWorkerFactory() : base(new FakeMediaConfig(), null, new FileInfoParserFactory(), new FakeProcessFactory(), new FakeFileSystemService())
+    public FakeProcessService() : base(new FakeMediaConfig(), null, new FileInfoParserFactory(), new FakeProcessFactory(), new FakeFileSystemService())
     {
     }
 
@@ -20,9 +20,9 @@ public class FakeProcessWorkerFactory : ProcessWorkerFactory
     /// </summary>
     public List<IProcessWorker> Instances { get; private set; } = new List<IProcessWorker>();
 
-    public override IProcessWorker Create(object owner, ProcessOptions options = null, ProcessStartedEventHandler callback = null)
+    public override IProcessWorker CreateProcess(object owner, ProcessOptions options = null, ProcessStartedEventHandler callback = null)
     {
-        var result = base.Create(owner, options, callback);
+        var result = base.CreateProcess(owner, options, callback);
         Instances.Add(result);
         return result;
     }

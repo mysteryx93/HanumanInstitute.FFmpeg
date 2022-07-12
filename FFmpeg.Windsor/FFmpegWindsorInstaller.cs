@@ -45,8 +45,8 @@ public class FFmpegWindsorInstaller : IWindsorInstaller
                 .LifeStyle.Transient);
 
         container.Register(
-            Component.For<IProcessWorkerFactory>()
-                .ImplementedBy<ProcessWorkerFactory>()
+            Component.For<IProcessService>()
+                .ImplementedBy<ProcessService>()
                 .LifeStyle.Transient);
 
         container.Register(

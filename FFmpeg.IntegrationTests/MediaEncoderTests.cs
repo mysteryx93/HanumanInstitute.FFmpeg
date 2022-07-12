@@ -8,7 +8,7 @@ namespace HanumanInstitute.FFmpeg.IntegrationTests;
 public class MediaEncoderTests
 {
 
-    private IProcessWorkerFactory _factory;
+    private IProcessService _factory;
     private readonly ITestOutputHelper _output;
     private readonly OutputFeeder _feed;
     private const string AviExt = ".avi";

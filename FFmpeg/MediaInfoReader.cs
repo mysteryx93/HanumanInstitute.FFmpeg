@@ -1,26 +1,19 @@
 ﻿namespace HanumanInstitute.FFmpeg;
 
-/// <summary>
-/// Provides functions to get information on media files.
-/// </summary>
+/// <inheritdoc />
 public class MediaInfoReader : IMediaInfoReader
 {
-    private readonly IProcessWorkerFactory _factory;
+    private readonly IProcessService _factory;
 
-    public MediaInfoReader(IProcessWorkerFactory processFactory)
-    {
-        _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
-    }
-
-    private object? _owner;
     /// <summary>
-    /// Sets the owner of the process windows.
+    /// Initializes a new instance of the MediaInfoReader class
     /// </summary>
-    public IMediaInfoReader SetOwner(object owner)
-    {
-        _owner = owner;
-        return this;
-    }
+    /// <param name="processFactory">The Factory responsible for creating processes.</param>
+    public MediaInfoReader(IProcessService processFactory) =>
+        _factory = processFactory.CheckNotNull(nameof(processFactory));
+
+    /// <inheritdoc />
+    public object? Owner { get; set; }
 
     /// <summary>
     /// Returns the version information from FFmpeg.
@@ -30,7 +23,7 @@ public class MediaInfoReader : IMediaInfoReader
     /// <returns>A IFFmpegProcess object containing the version information.</returns>
     public string GetVersion(ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
-        var worker = _factory.CreateEncoder(_owner, options, callback);
+        var worker = _factory.CreateEncoder(Owner, options, callback);
         worker.OutputType = ProcessOutput.Output;
         worker.RunEncoder("-version", EncoderApp.FFmpeg);
         return worker.Output;
@@ -47,7 +40,7 @@ public class MediaInfoReader : IMediaInfoReader
     {
         source.CheckNotNullOrEmpty(nameof(source));
 
-        var worker = _factory.CreateEncoder(_owner, options, callback);
+        var worker = _factory.CreateEncoder(Owner, options, callback);
         worker.ProcessCompleted += (s, e) =>
         {
             if (e.Status == CompletionStatus.Failed && (worker.FileInfo as FileInfoFFmpeg)?.FileStreams != null)
@@ -71,7 +64,7 @@ public class MediaInfoReader : IMediaInfoReader
         source.CheckNotNullOrEmpty(nameof(source));
 
         long result = 0;
-        var worker = _factory.CreateEncoder(_owner, options, callback);
+        var worker = _factory.CreateEncoder(Owner, options, callback);
         worker.ProgressReceived += (sender, e) =>
         {
             // Read all status lines and keep the last one.

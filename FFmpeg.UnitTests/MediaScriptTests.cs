@@ -13,7 +13,7 @@ public class MediaScriptTests
     protected const string AppVsPipe = "vspipe.exe";
     protected const string MissingFileName = "MissingFile";
     private Mock<FakeMediaConfig> _config;
-    private readonly FakeProcessWorkerFactory _factory = new FakeProcessWorkerFactory();
+    private readonly FakeProcessService _factory = new FakeProcessService();
     private readonly ITestOutputHelper _output;
 
     public MediaScriptTests(ITestOutputHelper output)
@@ -43,7 +43,7 @@ public class MediaScriptTests
     public void Constructor_WithFactory_Success() => new MediaEncoder(_factory);
 
     [Fact]
-    public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>((Func<object>)(() => new MediaEncoder((IProcessWorkerFactory)null)));
+    public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>((Func<object>)(() => new MediaEncoder((IProcessService)null)));
 
     [Fact]
     public void Constructor_NullDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaScript(_factory, null));

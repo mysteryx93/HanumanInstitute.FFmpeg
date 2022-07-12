@@ -14,7 +14,7 @@
     <PackageTags>ffmpeg ffmpeg-wrapper video-encoding video library .net</PackageTags>
     <PackageReleaseNotes>https://github.com/mysteryx93/HanumanInstitute.FFmpeg/releases</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/mysteryx93/HanumanInstitute.FFmpeg</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/mysteryx93/HanumanInstitute.FFmpeg/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RootNamespace>HanumanInstitute.FFmpeg</RootNamespace>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <AssemblyName>HanumanInstitute.FFmpeg</AssemblyName>

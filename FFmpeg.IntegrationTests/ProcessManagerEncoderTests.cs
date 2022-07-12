@@ -11,7 +11,7 @@ public class ProcessManagerEncoderTests
 {
     private readonly ITestOutputHelper _output;
     private readonly OutputFeeder _feed;
-    private IProcessWorkerFactory _factory;
+    private IProcessService _factory;
 
     public ProcessManagerEncoderTests(ITestOutputHelper output)
     {

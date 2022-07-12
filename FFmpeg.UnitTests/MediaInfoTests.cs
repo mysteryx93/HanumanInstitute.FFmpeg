@@ -7,7 +7,7 @@ namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class MediaInfoTests
 {
-    private FakeProcessWorkerFactory _factory;
+    private FakeProcessService _factory;
     private readonly ITestOutputHelper _output;
     private const string TestFile = "test";
 
@@ -19,7 +19,7 @@ public class MediaInfoTests
 
     protected IMediaInfoReader SetupInfo()
     {
-        _factory = new FakeProcessWorkerFactory();
+        _factory = new FakeProcessService();
         return new MediaInfoReader(_factory);
     }
 
@@ -33,7 +33,7 @@ public class MediaInfoTests
 
 
     [Fact]
-    public void Constructor_WithFactory_Success() => new MediaInfoReader(new FakeProcessWorkerFactory());
+    public void Constructor_WithFactory_Success() => new MediaInfoReader(new FakeProcessService());
 
     [Fact]
     public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaInfoReader(null));
@@ -125,7 +125,7 @@ public class MediaInfoTests
     public void GetFrameCount_Valid_ReturnsFrameCount(string output, int expected)
     {
         var info = SetupInfo();
-        void Callback(object s, ProcessStartedEventArgs e) => FakeProcessWorkerFactory.FeedOutputToProcess(e.ProcessWorker, output);
+        void Callback(object s, ProcessStartedEventArgs e) => FakeProcessService.FeedOutputToProcess(e.ProcessWorker, output);
 
         var result = info.GetFrameCount(TestFile, null, Callback);
 

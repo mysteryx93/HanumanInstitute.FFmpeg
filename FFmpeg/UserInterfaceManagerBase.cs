@@ -1,29 +1,26 @@
 ﻿namespace HanumanInstitute.FFmpeg;
 
-/// <summary>
-/// Base class to implement a user interface for running processes.
-/// </summary>
+/// <inheritdoc />
 public abstract class UserInterfaceManagerBase : IUserInterfaceManager
 {
-    private readonly List<UIItem> _uiList = new List<UIItem>();
+    private readonly List<UiItem> _uiList = new List<UiItem>();
 
-    /// <summary>
-    /// Gets or sets whether the application has exited.
-    /// </summary>
+    /// <inheritdoc />
     public bool AppExited { get; set; } = false;
 
+    /// <inheritdoc />
     public void AttachProcessWorker(object? owner, IProcessWorker worker, ProcessOptions options)
     {
         if (worker == null) { throw new ArgumentNullException(nameof(worker)); }
 
-        worker.ProcessStarted += (s, e) =>
+        worker.ProcessStarted += (_, _) =>
         {
             if (options.DisplayMode == ProcessDisplayMode.Interface)
             {
                 Display(owner, worker);
             }
         };
-        worker.ProcessCompleted += (s, e) =>
+        worker.ProcessCompleted += (_, e) =>
         {
             if ((e.Status == CompletionStatus.Failed || e.Status == CompletionStatus.Timeout) && 
                 (options.DisplayMode == ProcessDisplayMode.ErrorOnly || options.DisplayMode == ProcessDisplayMode.Interface))
@@ -33,12 +30,7 @@ public abstract class UserInterfaceManagerBase : IUserInterfaceManager
         };
     }
 
-    /// <summary>
-    /// Starts a user interface that will receive all tasks with the specified jobId.
-    /// </summary>
-    /// <param name="owner">The owner to set for the window.</param>
-    /// <param name="jobId">The jobId associated with this interface.</param>
-    /// <param name="title">The title to display.</param>
+    /// <inheritdoc />
     public void Start(object? owner, object jobId, string title)
     {
         jobId.CheckNotNull(nameof(jobId));
@@ -47,15 +39,12 @@ public abstract class UserInterfaceManagerBase : IUserInterfaceManager
         {
             if (!_uiList.Any(u => u.JobId.Equals(jobId)))
             {
-                _uiList.Add(new UIItem(jobId, CreateUI(owner, title, false)));
+                _uiList.Add(new UiItem(jobId, CreateUI(owner, title, false)));
             }
         }
     }
 
-    /// <summary>
-    /// Closes the user interface for specified jobId.
-    /// </summary>
-    /// <param name="jobId">The jobId to close.</param>
+    /// <inheritdoc />
     public void Close(object jobId)
     {
         foreach (var item in _uiList.Where(u => u.JobId.Equals(jobId)).ToArray())
@@ -65,17 +54,13 @@ public abstract class UserInterfaceManagerBase : IUserInterfaceManager
         }
     }
 
-    /// <summary>
-    /// Displays a process to the user.
-    /// </summary>
-    /// <param name="owner">The owner to set for the window.</param>
-    /// <param name="host">The process worker to display.</param>
+    /// <inheritdoc />
     public void Display(object? owner, IProcessWorker host)
     {
         host.CheckNotNull(nameof(host));
         if (!AppExited)
         {
-            UIItem? ui = null;
+            UiItem? ui = null;
             if (host.Options.JobId != null)
             {
                 ui = _uiList.FirstOrDefault(u => u.JobId.Equals(host.Options.JobId));
@@ -93,29 +78,19 @@ public abstract class UserInterfaceManagerBase : IUserInterfaceManager
         }
     }
 
-    /// <summary>
-    /// When implemented in a derived class, creates the graphical interface window.
-    /// </summary>
-    /// <param name="owner">The owner to set for the window.</param>
-    /// <param name="title">The title to display.</param>
-    /// <param name="autoClose">Whether to automatically close the window after the main task is completed.</param>
-    /// <returns>The newly created user interface window.</returns>
+    /// <inheritdoc />
     public abstract IUserInterfaceWindow CreateUI(object? owner, string title, bool autoClose);
-    /// <summary>
-    /// When implemented in a derived class, displays an error window.
-    /// </summary>
-    /// <param name="owner">The owner to set for the window.</param>
-    /// <param name="host">The task throwing the error.</param>
+    /// <inheritdoc />
     public abstract void DisplayError(object? owner, IProcessWorker host);
 
-    private class UIItem
+    private class UiItem
     {
         public object JobId { get; set; }
         public IUserInterfaceWindow Value { get; set; }
 
         //public UIItem() { }
 
-        public UIItem(object jobId, IUserInterfaceWindow ui)
+        public UiItem(object jobId, IUserInterfaceWindow ui)
         {
             JobId = jobId;
             Value = ui;

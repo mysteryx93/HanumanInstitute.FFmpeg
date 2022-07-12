@@ -190,8 +190,8 @@ public class ProcessManagerTests
         manager.ProcessStarted += (s, e) =>
         {
             var pMock = Mock.Get<IProcess>(e.ProcessWorker.WorkProcess);
-            pMock.Raise(x => x.OutputDataReceived += null, FakeProcessWorkerFactory.CreateMockDataReceivedEventArgs(OutputDataStream));
-            pMock.Raise(x => x.ErrorDataReceived += null, FakeProcessWorkerFactory.CreateMockDataReceivedEventArgs(ErrorDataStream));
+            pMock.Raise(x => x.OutputDataReceived += null, FakeProcessService.CreateMockDataReceivedEventArgs(OutputDataStream));
+            pMock.Raise(x => x.ErrorDataReceived += null, FakeProcessService.CreateMockDataReceivedEventArgs(ErrorDataStream));
         };
         manager.DataReceived += (s, e) =>
         {

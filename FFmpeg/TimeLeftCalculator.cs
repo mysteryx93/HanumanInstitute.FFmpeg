@@ -2,9 +2,7 @@
 
 namespace HanumanInstitute.FFmpeg;
 
-/// <summary>
-/// Allows calculating the time left during an encoding process.
-/// </summary>
+/// <inheritdoc />
 public class TimeLeftCalculator : ITimeLeftCalculator
 {
     private readonly KeyValuePair<DateTime, long>[] _progressHistory;
@@ -12,13 +10,9 @@ public class TimeLeftCalculator : ITimeLeftCalculator
     private bool _fullCycle;
     private long _frameCount;
     private int _historyLength;
-    /// <summary>
-    /// After calling Calculate, returns the estimated processing time left.
-    /// </summary>
+    /// <inheritdoc />
     public TimeSpan ResultTimeLeft { get; private set; }
-    /// <summary>
-    /// After calling Calculate, returns the estimated processing rate per second.
-    /// </summary>
+    /// <inheritdoc />
     public double ResultFps { get; private set; }
 
     private readonly IEnvironmentService _environment;
@@ -44,28 +38,21 @@ public class TimeLeftCalculator : ITimeLeftCalculator
         _progressHistory = new KeyValuePair<DateTime, long>[historyLength];
     }
 
-    /// <summary>
-    /// Gets or sets the total number of frames to encode.
-    /// </summary>
+    /// <inheritdoc />
     public long FrameCount
     {
         get => _frameCount;
         set => _frameCount = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(FrameCount));
     }
 
-    /// <summary>
-    /// Gets or sets the number of status entries to store. The larger the number, the slower the time left will change.
-    /// </summary>
+    /// <inheritdoc />
     public int HistoryLength
     {
         get => _historyLength;
         set => _historyLength = value >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(HistoryLength));
     }
 
-    /// <summary>
-    /// Calculates the time left and fps. Result will be in ResultTimeLeft and ResultFps.
-    /// </summary>
-    /// <param name="pos">The current frame position.</param>
+    /// <inheritdoc />
     public void Calculate(long pos)
     {
         if (pos < 0) { return; }

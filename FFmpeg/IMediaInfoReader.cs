@@ -6,9 +6,9 @@
 public interface IMediaInfoReader
 {
     /// <summary>
-    /// Sets the owner of the process windows.
+    /// Gets or sets the owner of the process windows.
     /// </summary>
-    IMediaInfoReader SetOwner(object owner);
+    object? Owner { get; set; }
     /// <summary>
     /// Returns the version information from FFmpeg.
     /// </summary>

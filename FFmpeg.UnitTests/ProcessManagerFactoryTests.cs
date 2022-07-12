@@ -9,37 +9,37 @@ public class ProcessManagerFactoryTests
 {
     private FakeMediaConfig _config;
 
-    protected IProcessWorkerFactory SetupFactory()
+    protected IProcessService SetupFactory()
     {
         var moq = new MockRepository(MockBehavior.Strict);
         _config = new FakeMediaConfig();
         var parserFactory = new FileInfoParserFactory();
         var processFactory = moq.Create<IProcessFactory>();
         var fileSystem = moq.Create<IFileSystemService>();
-        return new ProcessWorkerFactory(_config, null, parserFactory, processFactory.Object, fileSystem.Object);
+        return new ProcessService(_config, null, parserFactory, processFactory.Object, fileSystem.Object);
     }
 
     [Fact]
-    public void Constructor_NoParam_Success() => new ProcessWorkerFactory().Create(null);
+    public void Constructor_NoParam_Success() => new ProcessService().CreateProcess(null);
 
     [Fact]
-    public void Constructor_Config_Success() => new ProcessWorkerFactory(new ProcessManager(), null).Create(null);
+    public void Constructor_Config_Success() => new ProcessService(new ProcessManager(), null).CreateProcess(null);
 
     [Fact]
-    public void Constructor_InjectDependencies_Success() => new ProcessWorkerFactory(new ProcessManager(), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()).Create(null);
+    public void Constructor_InjectDependencies_Success() => new ProcessService(new ProcessManager(), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()).CreateProcess(null);
 
     [Fact]
-    public void Constructor_NullDependencies_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerFactory(null, null, null, null, null));
+    public void Constructor_NullDependencies_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessService(null, null, null, null, null));
 
     [Fact]
-    public void Constructor_InjectOneDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerFactory(new ProcessManager(), null, null, null, null));
+    public void Constructor_InjectOneDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessService(new ProcessManager(), null, null, null, null));
 
     [Fact]
     public void Create_NoParam_ReturnsProcessManager()
     {
         var factory = SetupFactory();
 
-        var result = factory.Create(null);
+        var result = factory.CreateProcess(null);
 
         Assert.NotNull(result);
         Assert.IsType<ProcessWorker>(result);
@@ -52,7 +52,7 @@ public class ProcessManagerFactoryTests
         var factory = SetupFactory();
         var options = new ProcessOptions();
 
-        var result = factory.Create(null, options);
+        var result = factory.CreateProcess(null, options);
 
         Assert.Same(options, result.Options);
     }

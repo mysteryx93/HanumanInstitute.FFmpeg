@@ -1,39 +1,25 @@
-﻿using static System.FormattableString;
-
-namespace HanumanInstitute.FFmpeg;
+﻿namespace HanumanInstitute.FFmpeg;
 
 /// <summary>
 /// Parses and stores the X264 or X265 console output. Cast this class to IFileInfoX264 to access the file information.
 /// </summary>
 public class FileInfoX264 : IFileInfoParser
 {
-    /// <summary>
-    /// Returns whether ParseFileInfo has been called.
-    /// </summary>
+    /// <inheritdoc />
     public bool IsParsed { get; private set; }
     /// <summary>
     /// Returns the estimated frame count of input file.
     /// </summary>
     public long FrameCount { get; private set; }
 
-    public FileInfoX264() { }
-
 
     // IFileInfoParser
 
-    /// <summary>
-    /// Returns whether enough information has been received to parse file information.
-    /// </summary>
-    /// <param name="data">The last line of output received.</param>
-    /// <returns>Whether enough information was received to call ParseFileInfo.</returns>
+    /// <inheritdoc />
     public bool HasFileInfo(string data) => IsLineProgressUpdate(data);
 
-    /// <summary>
-    /// Returns whether specified line of output is a progress update.
-    /// </summary>
-    /// <param name="data">A line of output.</param>
-    /// <returns>Whether the output line is a progress update.</returns>
-    public bool IsLineProgressUpdate(string data)
+    /// <inheritdoc />
+    public bool IsLineProgressUpdate(string? data)
     {
         if (data == null || data.TrimStart().Length < 40)
         {
@@ -54,21 +40,13 @@ public class FileInfoX264 : IFileInfoParser
         return false;
     }
 
-    /// <summary>
-    /// Parses the output of X264 or X265 to return the info of all input streams.
-    /// </summary>
-    /// <param name="outputText">The text containing the file information to parse.</param>
+    /// <inheritdoc />
     public void ParseFileInfo(string outputText, ProcessOptionsEncoder options)
     {
         IsParsed = true;
-        if (options?.FrameCount > 0)
-        {
-            FrameCount = options.FrameCount;
-        }
-        else
-        {
-            FrameCount = ParseFrameCount(outputText);
-        }
+        FrameCount = options.FrameCount > 0 ?
+            options.FrameCount :
+            ParseFrameCount(outputText);
     }
 
     /// <summary>
@@ -76,15 +54,15 @@ public class FileInfoX264 : IFileInfoParser
     /// </summary>
     /// <param name="outputText">The raw output line from x264.</param>
     /// <returns>A EncoderStatus object.</returns>
-    public static long ParseFrameCount(string outputText)
+    private static long ParseFrameCount(string outputText)
     {
-        if (string.IsNullOrEmpty(outputText))
+        if (!outputText.HasValue())
         {
             return 0;
         }
 
         // Get the last line.
-        var lines = outputText.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+        var lines = outputText.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
         var data = lines[lines.Length - 1];
 
         // Parse this format.
@@ -103,11 +81,7 @@ public class FileInfoX264 : IFileInfoParser
         return 0;
     }
 
-    /// <summary>
-    /// Parses a progress update line of output into a ProgressStatusX264 object.
-    /// </summary>
-    /// <param name="data">A line of output.</param>
-    /// <returns>A ProgressStatusX264 object with parsed data.</returns>
+    /// <inheritdoc />
     public object ParseProgress(string data)
     {
         var result = new ProgressStatusX264();
@@ -157,6 +131,6 @@ public class FileInfoX264 : IFileInfoParser
 
     private static string[] SplitData(string data)
     {
-        return data.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        return data.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
     }
 }

@@ -12,7 +12,7 @@ namespace HanumanInstitute.FFmpeg.UnitTests;
 public class MediaMuxerTests
 {
     private const string FFMPEG = "ffmpeg.exe", AUDIOCODEC = "-acodec", VIDEOCODEC = "-vcodec", FIXAAC = "aac_adtstoasc", FIXPCM = "pcm_s16le";
-    private FakeProcessWorkerFactory _factory;
+    private FakeProcessService _factory;
     private readonly ITestOutputHelper _output;
 
     public MediaMuxerTests(ITestOutputHelper output)
@@ -26,7 +26,7 @@ public class MediaMuxerTests
     /// </summary>
     protected IMediaMuxer SetupMuxer()
     {
-        _factory = new FakeProcessWorkerFactory();
+        _factory = new FakeProcessService();
         var fileSystemStub = new FakeFileSystemService();
         return new MediaMuxer(_factory, fileSystemStub, new FakeMediaInfoReader());
     }
@@ -382,7 +382,7 @@ public class MediaMuxerTests
 
 
     [Fact]
-    public void Constructor_WithFactory_Success() => new MediaMuxer(new FakeProcessWorkerFactory(), new FakeFileSystemService(), Mock.Of<IMediaInfoReader>());
+    public void Constructor_WithFactory_Success() => new MediaMuxer(new FakeProcessService(), new FakeFileSystemService(), Mock.Of<IMediaInfoReader>());
 
     [Fact]
     public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaMuxer(null, new FakeFileSystemService(), Mock.Of<IMediaInfoReader>()));

@@ -6,9 +6,9 @@ namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public static class FactoryConfig
 {
-    public static IProcessWorkerFactory CreateWithConfig()
+    public static IProcessService CreateWithConfig()
     {
-        return new ProcessWorkerFactory(
+        return new ProcessService(
             new ProcessManager(new WindowsApiService(), new FileSystemService())
             {
                 FFmpegPath = "ffmpeg", // Properties.Settings.Default.FFmpegPath,

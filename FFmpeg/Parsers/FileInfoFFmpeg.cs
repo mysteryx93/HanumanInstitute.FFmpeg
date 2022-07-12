@@ -1,13 +1,12 @@
-﻿namespace HanumanInstitute.FFmpeg;
+﻿// ReSharper disable CommentTypo
+namespace HanumanInstitute.FFmpeg;
 
 /// <summary>
 /// Parses and stores the FFmpeg console output. Cast this class to IFileInfoFFmpeg to access the file information.
 /// </summary>
 public class FileInfoFFmpeg : IFileInfoParser
 {
-    /// <summary>
-    /// Returns whether ParseFileInfo has been called.
-    /// </summary>
+    /// <inheritdoc />
     public bool IsParsed { get; private set; }
     /// <summary>
     /// Returns the estimated frame count of input file.
@@ -44,32 +43,22 @@ public class FileInfoFFmpeg : IFileInfoParser
 
     // IFileInfoParser
 
-    /// <summary>
-    /// Returns whether enough information has been received to parse file information.
-    /// </summary>
-    /// <param name="data">The last line of output received.</param>
-    /// <returns>Whether enough information was received to call ParseFileInfo.</returns>
+    /// <inheritdoc />
     public bool HasFileInfo(string data)
     {
         data.CheckNotNull(nameof(data));
-        return data.StartsWith("Output ", StringComparison.InvariantCulture) || data.StartsWith("Press [q] to stop", StringComparison.InvariantCulture);
+        return data.StartsWith("Output ", StringComparison.InvariantCulture) ||
+               data.StartsWith("Press [q] to stop", StringComparison.InvariantCulture);
     }
 
-    /// <summary>
-    /// Returns whether specified line of output is a progress update.
-    /// </summary>
-    /// <param name="data">A line of output.</param>
-    /// <returns>Whether the output line is a progress update.</returns>
+    /// <inheritdoc />
     public bool IsLineProgressUpdate(string data)
     {
         data.CheckNotNull(nameof(data));
         return data.StartsWith("frame=", StringComparison.InvariantCulture);
     }
 
-    /// <summary>
-    /// Parses the output of FFmpeg to return the info of all input streams.
-    /// </summary>
-    /// <param name="outputText">The text containing the file information to parse.</param>
+    /// <inheritdoc />
     public void ParseFileInfo(string outputText, ProcessOptionsEncoder options)
     {
         IsParsed = true;
@@ -81,7 +70,7 @@ public class FileInfoFFmpeg : IFileInfoParser
             return;
         }
 
-        var outLines = outputText.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+        var outLines = outputText.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
         // Find duration line.
         var durationIndex = -1;
@@ -91,7 +80,7 @@ public class FileInfoFFmpeg : IFileInfoParser
             {
                 durationIndex = i;
                 // Parse duration line.
-                var durationInfo = outLines[i].Trim().Split(new string[] { ", " }, StringSplitOptions.None);
+                var durationInfo = outLines[i].Trim().Split(new[] { ", " }, StringSplitOptions.None);
                 var durationString = durationInfo[0].Split(' ')[1];
                 if (durationString == "N/A")
                 {
@@ -111,13 +100,12 @@ public class FileInfoFFmpeg : IFileInfoParser
         }
 
         // Find input streams.
-        MediaStreamInfo? itemInfo;
         for (var i = durationIndex + 1; i < outLines.Length; i++)
         {
             if (outLines[i].StartsWith("    Stream #0:", StringComparison.InvariantCulture))
             {
                 // Parse input stream.
-                itemInfo = ParseStreamInfo(outLines[i]);
+                var itemInfo = ParseStreamInfo(outLines[i]);
                 if (itemInfo != null)
                 {
                     FileStreams.Add(itemInfo);
@@ -130,7 +118,7 @@ public class FileInfoFFmpeg : IFileInfoParser
         }
 
         // Calculate FrameCount.
-        if (options?.FrameCount > 0)
+        if (options.FrameCount > 0)
         {
             FrameCount = options.FrameCount;
         }
@@ -145,7 +133,7 @@ public class FileInfoFFmpeg : IFileInfoParser
     /// </summary>
     /// <param name="text">A line of text to parse.</param>
     /// <returns>The stream info, or null if parsing failed.</returns>
-    public static MediaStreamInfo? ParseStreamInfo(string text)
+    private static MediaStreamInfo? ParseStreamInfo(string text)
     {
         if (string.IsNullOrEmpty(text))
         {
@@ -199,7 +187,7 @@ public class FileInfoFFmpeg : IFileInfoParser
         var streamType = text.Substring(posStart, posEnd - posStart);
         // Split stream data
         posStart = posEnd + 2;
-        var streamInfo = text.Substring(posStart).Split(new string[] { ", " }, StringSplitOptions.None);
+        var streamInfo = text.Substring(posStart).Split(new[] { ", " }, StringSplitOptions.None);
         if (!streamInfo.Any())
         {
             return null;
@@ -222,7 +210,7 @@ public class FileInfoFFmpeg : IFileInfoParser
                 v.ColorSpace = colorSpaceValues[0];
                 if (colorSpaceValues.Length > 1)
                 {
-                    var colorRange = colorSpaceValues[1].Split(new string[] { "; " }, StringSplitOptions.RemoveEmptyEntries);
+                    var colorRange = colorSpaceValues[1].Split(new[] { "; " }, StringSplitOptions.RemoveEmptyEntries);
                     if (colorRange.Any(c => c == "tv"))
                     {
                         v.ColorRange = "tv";
@@ -238,7 +226,7 @@ public class FileInfoFFmpeg : IFileInfoParser
                         v.ColorMatrix = colorMatrix;
                     }
                 }
-                var size = streamInfo[2].Split(new string[] { "x", " [", ":", " ", "]" }, StringSplitOptions.None);
+                var size = streamInfo[2].Split(new[] { "x", " [", ":", " ", "]" }, StringSplitOptions.None);
                 v.Width = int.Parse(size[0], CultureInfo.InvariantCulture);
                 v.Height = int.Parse(size[1], CultureInfo.InvariantCulture);
                 if (size.Length > 2 && size[2] == "SAR")
@@ -258,7 +246,7 @@ public class FileInfoFFmpeg : IFileInfoParser
                     }
                 }
                 var fps = streamInfo.FirstOrDefault(s => s.EndsWith("fps", StringComparison.InvariantCulture));
-                if (fps != null && fps.Length > 4)
+                if (fps is { Length: > 4 })
                 {
                     fps = fps.Substring(0, fps.Length - 4);
                     if (fps != "1k") // sometimes it returns 1k ?
@@ -267,7 +255,7 @@ public class FileInfoFFmpeg : IFileInfoParser
                     }
                 }
                 var bitrate = streamInfo.FirstOrDefault(s => s.EndsWith("kb/s", StringComparison.InvariantCulture));
-                if (bitrate != null && bitrate.Length > 5)
+                if (bitrate is { Length: > 5 })
                 {
                     bitrate = bitrate.Substring(0, bitrate.Length - 5);
                     v.Bitrate = int.Parse(bitrate, CultureInfo.InvariantCulture);
@@ -306,11 +294,7 @@ public class FileInfoFFmpeg : IFileInfoParser
         return null;
     }
 
-    /// <summary>
-    /// Parses a progress update line of output into a ProgressStatusFFmpeg object.
-    /// </summary>
-    /// <param name="data">A line of output.</param>
-    /// <returns>A ProgressStatusFFmpeg object with parsed data.</returns>
+    /// <inheritdoc />
     public object ParseProgress(string text)
     {
         var result = new ProgressStatusFFmpeg();

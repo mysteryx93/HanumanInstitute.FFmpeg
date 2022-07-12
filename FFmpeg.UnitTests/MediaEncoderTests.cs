@@ -8,7 +8,7 @@ namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class MediaEncoderTests
 {
-    private readonly FakeProcessWorkerFactory _factory = new FakeProcessWorkerFactory();
+    private readonly FakeProcessService _factory = new FakeProcessService();
     private const string SourcePath = "source", DestPath = "dest";
     private readonly ITestOutputHelper _output;
 

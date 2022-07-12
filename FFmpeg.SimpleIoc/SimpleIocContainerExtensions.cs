@@ -23,7 +23,7 @@ public static class SimpleIocContainerExtensions
         services.Register<IMediaInfoReader, MediaInfoReader>();
         services.Register<IMediaMuxer, MediaMuxer>();
         services.Register<IMediaScript, MediaScript>();
-        services.Register<IProcessWorkerFactory>(() => new ProcessWorkerFactory(services.GetInstance<IProcessManager>(), services.GetInstance<IUserInterfaceManager>()));
+        services.Register<IProcessService>(() => new ProcessService(services.GetInstance<IProcessManager>(), services.GetInstance<IUserInterfaceManager>()));
         services.Register<ITimeLeftCalculatorFactory, TimeLeftCalculatorFactory>();
 
         // Services
