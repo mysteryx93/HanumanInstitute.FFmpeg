@@ -24,7 +24,7 @@ public class MediaScriptTests
     protected IMediaScript SetupScript()
     {
         _config = new Mock<FakeMediaConfig>() { CallBase = true };
-        _factory.Config = _config.Object;
+        _factory.Processes = _config.Object;
         var fileSystem = Mock.Of<FakeFileSystemService>(x =>
             x.Exists(It.IsAny<string>()) == true && x.Exists(MissingFileName) == false);
         return new MediaScript(_factory, fileSystem);

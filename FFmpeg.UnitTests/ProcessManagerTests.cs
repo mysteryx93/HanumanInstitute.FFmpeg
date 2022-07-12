@@ -12,11 +12,11 @@ public class ProcessManagerTests
     protected const string AppCmd = "cmd";
     protected const string ErrorDataStream = "data_error";
     protected const string OutputDataStream = "data_output";
-    private Mock<IMediaConfig> _config;
+    private Mock<IProcessManager> _config;
 
     public IProcessWorker SetupManager()
     {
-        _config = new Mock<IMediaConfig>();
+        _config = new Mock<IProcessManager>();
         var factory = new FakeProcessFactory();
         var fileSystem = Mock.Of<FakeFileSystemService>(x =>
             x.Exists(It.IsAny<string>()) == true && x.Exists(MissingFileName) == false);

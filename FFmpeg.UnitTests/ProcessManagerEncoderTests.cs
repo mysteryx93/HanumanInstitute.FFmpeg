@@ -31,10 +31,10 @@ public class ProcessManagerEncoderTests
     public void Constructor_NullDependencies_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerEncoder(null, null, null, null, null));
 
     [Fact]
-    public void Constructor_Dependencies_Success() => new ProcessWorkerEncoder(new MediaConfig(), new ProcessFactory(), new FileSystemService(), new FileInfoParserFactory(), null).Dispose();
+    public void Constructor_Dependencies_Success() => new ProcessWorkerEncoder(new ProcessManager(), new ProcessFactory(), new FileSystemService(), new FileInfoParserFactory(), null).Dispose();
 
     [Fact]
-    public void Constructor_OptionFFmpeg_Success() => new ProcessWorkerEncoder(new MediaConfig(), new ProcessFactory(), new FileSystemService(), new FileInfoParserFactory(), new ProcessOptionsEncoder()).Dispose();
+    public void Constructor_OptionFFmpeg_Success() => new ProcessWorkerEncoder(new ProcessManager(), new ProcessFactory(), new FileSystemService(), new FileInfoParserFactory(), new ProcessOptionsEncoder()).Dispose();
 
     [Fact]
     public void Init_OutputType_ReturnError()

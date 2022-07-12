@@ -1,4 +1,5 @@
 ﻿using HanumanInstitute.FFmpeg.Services;
+using Microsoft.Extensions.Options;
 
 namespace HanumanInstitute.FFmpeg;
 
@@ -10,7 +11,7 @@ public class ProcessWorkerFactory : IProcessWorkerFactory
     /// <summary>
     /// Gets or sets the configuration settings.
     /// </summary>
-    public IMediaConfig Config { get; set; }
+    public IProcessManager Processes { get; set; }
     /// <summary>
     /// Gets or sets a class deriving from IUserInterfaceManager to manage FFmpeg UI.
     /// </summary>
@@ -19,19 +20,19 @@ public class ProcessWorkerFactory : IProcessWorkerFactory
     private readonly IProcessFactory _processFactory;
     private readonly IFileSystemService _fileSystemService;
 
-    public ProcessWorkerFactory() : this(new MediaConfig(), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()) { }
+    public ProcessWorkerFactory(IOptions<AppPaths>? appPaths = null) : this(new ProcessManager(appPaths), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()) { }
 
-    public ProcessWorkerFactory(IMediaConfig config, IUserInterfaceManager? uiManager) : this(config, uiManager, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()) { }
+    public ProcessWorkerFactory(IProcessManager config, IUserInterfaceManager? uiManager = null) : this(config, uiManager, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()) { }
 
-    public ProcessWorkerFactory(IMediaConfig config, IUserInterfaceManager? uiManager, IFileInfoParserFactory parserFactory, IProcessFactory processFactory, IFileSystemService fileSystemService)
+    internal ProcessWorkerFactory(IProcessManager config, IUserInterfaceManager? uiManager, IFileInfoParserFactory parserFactory, IProcessFactory processFactory, IFileSystemService fileSystemService)
     {
-        Config = config ?? throw new ArgumentNullException(nameof(config));
+        Processes = config ?? throw new ArgumentNullException(nameof(config));
         UiManager = uiManager;
         _parserFactory = parserFactory ?? throw new ArgumentNullException(nameof(parserFactory));
         _processFactory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
         _fileSystemService = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
     }
-
+    
     /// <summary>
     /// Creates a new process worker with specified options.
     /// </summary>
@@ -42,7 +43,7 @@ public class ProcessWorkerFactory : IProcessWorkerFactory
     public virtual IProcessWorker Create(object? owner, ProcessOptions? options = null, ProcessStartedEventHandler? callback = null)
     {
         options ??= new ProcessOptions();
-        var worker = new ProcessWorker(Config, _processFactory, options);
+        var worker = new ProcessWorker(Processes, _processFactory, options);
         if (callback != null)
         {
             worker.ProcessStarted += callback;
@@ -62,7 +63,7 @@ public class ProcessWorkerFactory : IProcessWorkerFactory
     public virtual IProcessWorkerEncoder CreateEncoder(object? owner = null, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
         options ??= new ProcessOptionsEncoder();
-        var worker = new ProcessWorkerEncoder(Config, _processFactory, _fileSystemService, _parserFactory, options);
+        var worker = new ProcessWorkerEncoder(Processes, _processFactory, _fileSystemService, _parserFactory, options);
         if (callback != null)
         {
             worker.ProcessStarted += callback;

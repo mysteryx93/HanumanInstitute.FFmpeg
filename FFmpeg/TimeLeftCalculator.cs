@@ -36,7 +36,7 @@ public class TimeLeftCalculator : ITimeLeftCalculator
     /// <param name="environmentService">A reference to an IEnvironmentService.</param>
     /// <param name="frameCount">The total number of frames to encode.</param>
     /// <param name="historyLength">The number of status entries to store. The larger the number, the slower the time left will change. Default is 20.</param>
-    public TimeLeftCalculator(IEnvironmentService environmentService, long frameCount, int historyLength = 20)
+    internal TimeLeftCalculator(IEnvironmentService environmentService, long frameCount, int historyLength = 20)
     {
         _environment = environmentService ?? throw new ArgumentNullException(nameof(environmentService));
         FrameCount = frameCount;

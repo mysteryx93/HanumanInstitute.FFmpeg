@@ -3,7 +3,7 @@
 /// <summary>
 /// Provides information about the application, environment and operating system.
 /// </summary>
-public interface IEnvironmentService
+internal interface IEnvironmentService
 {
     /// <summary>
     /// Gets the current date and time expressed as local time.

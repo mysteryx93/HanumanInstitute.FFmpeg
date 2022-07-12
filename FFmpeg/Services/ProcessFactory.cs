@@ -3,7 +3,7 @@
 namespace HanumanInstitute.FFmpeg.Services;
 
 /// <inheritdoc />
-public class ProcessFactory : IProcessFactory
+internal class ProcessFactory : IProcessFactory
 {
     /// <inheritdoc />
     public IProcess Create() => new ProcessWrapper();

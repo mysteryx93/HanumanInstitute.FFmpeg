@@ -12,9 +12,9 @@ public class MediaScript : IMediaScript
     private readonly IProcessWorkerFactory _factory;
     private readonly IFileSystemService _fileSystem;
 
-    // public MediaScript(IProcessWorkerFactory processFactory) : this(processFactory, new FileSystemService()) { }
+    public MediaScript(IProcessWorkerFactory processFactory) : this(processFactory, new FileSystemService()) { }
 
-    public MediaScript(IProcessWorkerFactory processFactory, IFileSystemService fileSystemService)
+    internal MediaScript(IProcessWorkerFactory processFactory, IFileSystemService fileSystemService)
     {
         _factory = processFactory.CheckNotNull(nameof(processFactory));
         _fileSystem = fileSystemService.CheckNotNull(nameof(fileSystemService));
@@ -41,15 +41,15 @@ public class MediaScript : IMediaScript
     {
         path.CheckNotNullOrEmpty(nameof(path));
 
-        if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
-        {
-            throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));
-        }
+        // if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
+        // {
+        //     throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));
+        // }
 
         var args = Invariant($@"""{path}"" -rawvideo > NUL");
         var worker = _factory.Create(_owner, options, callback);
         worker.OutputType = ProcessOutput.Error;
-        var cmd = Invariant($@"""{_factory.Config.Avs2PipeMod}"" {args}");
+        var cmd = Invariant($@"""{_factory.Processes.Paths.Avs2PipeMod}"" {args}");
         var result = worker.RunAsCommand(cmd);
         return result;
     }
@@ -65,14 +65,14 @@ public class MediaScript : IMediaScript
     {
         path.CheckNotNullOrEmpty(nameof(path));
 
-        if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
-        {
-            throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));
-        }
+        // if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
+        // {
+        //     throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));
+        // }
 
         var args = Invariant($@"""{path}"" .");
         var worker = _factory.Create(_owner, options, callback);
-        var result = worker.Run(_factory.Config.VsPipePath, args);
+        var result = worker.Run(_factory.Processes.Paths.VsPipePath, args);
         return result;
     }
 }

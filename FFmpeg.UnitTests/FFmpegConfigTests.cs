@@ -9,12 +9,12 @@ public class FFmpegConfigTests
 {
     private Mock<IWindowsApiService> _api;
 
-    public IMediaConfig SetupConfig()
+    public IProcessManager SetupConfig()
     {
         _api = new Mock<IWindowsApiService>(MockBehavior.Strict);
         _api.Setup(x => x.AttachConsole(It.IsAny<uint>())).Returns(false);
         var fileSystem = new FakeFileSystemService();
-        return new MediaConfig(_api.Object, fileSystem);
+        return new ProcessManager(_api.Object, fileSystem);
     }
 
     [Theory]

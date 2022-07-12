@@ -3,7 +3,7 @@
 /// <summary>
 /// Provides methods to access the file system.
 /// </summary>
-public interface IFileSystemService
+internal interface IFileSystemService
 {
     /// <summary>
     /// Determines whether the specified file exists.

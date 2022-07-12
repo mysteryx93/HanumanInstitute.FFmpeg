@@ -1,7 +1,7 @@
 ﻿namespace HanumanInstitute.FFmpeg.Services;
 
 /// <inheritdoc />
-public class EnvironmentService : IEnvironmentService
+internal class EnvironmentService : IEnvironmentService
 {
     /// <inheritdoc />
     public DateTime Now => DateTime.Now;

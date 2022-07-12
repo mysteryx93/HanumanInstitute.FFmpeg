@@ -3,7 +3,7 @@ using HanumanInstitute.FFmpeg.Services;
 
 namespace HanumanInstitute.FFmpeg.UnitTests;
 
-public class FakeMediaConfig : IMediaConfig
+public class FakeMediaConfig : IProcessManager
 {
     public virtual string FFmpegPath { get; set; } = "ffmpeg.exe";
     public virtual string X264Path { get; set; } = "x264.exe";

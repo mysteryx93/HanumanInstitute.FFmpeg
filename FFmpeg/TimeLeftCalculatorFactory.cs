@@ -5,13 +5,13 @@ namespace HanumanInstitute.FFmpeg;
 /// <summary>
 /// Allows calculating the time left for a FFmpeg process.
 /// </summary>
-public class TimeLeftCalculatorFactory : ITimeLeftCalculatorFactory
+internal class TimeLeftCalculatorFactory : ITimeLeftCalculatorFactory
 {
     private readonly IEnvironmentService _environment;
 
     //public TimeLeftCalculatorFactory() : this(new EnvironmentService()) { }
 
-    public TimeLeftCalculatorFactory(IEnvironmentService environmentService)
+    internal TimeLeftCalculatorFactory(IEnvironmentService environmentService)
     {
         _environment = environmentService ?? throw new ArgumentNullException(nameof(environmentService));
     }

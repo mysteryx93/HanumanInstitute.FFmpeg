@@ -3,7 +3,7 @@
 namespace HanumanInstitute.FFmpeg.Services;
 
 /// <inheritdoc />
-public class FileSystemService : IFileSystemService
+internal class FileSystemService : IFileSystemService
 {
     /// <inheritdoc />
     public bool Exists(string path) => File.Exists(path);

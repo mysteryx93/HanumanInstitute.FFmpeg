@@ -8,7 +8,7 @@ public interface IProcessWorkerFactory
     /// <summary>
     /// Gets or sets the configuration settings.
     /// </summary>
-    IMediaConfig Config { get; set; }
+    IProcessManager Processes { get; set; }
     /// <summary>
     /// Gets or sets a class deriving from IUserInterfaceManager to manage FFmpeg UI.
     /// </summary>

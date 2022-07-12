@@ -11,7 +11,7 @@ public interface IProcessWorker
     /// <summary>
     /// Gets or sets the configuration settings.
     /// </summary>
-    IMediaConfig Config { get; set; }
+    IProcessManager Processes { get; set; }
     /// <summary>
     /// Gets or sets the options to control the behaviors of the process.
     /// </summary>

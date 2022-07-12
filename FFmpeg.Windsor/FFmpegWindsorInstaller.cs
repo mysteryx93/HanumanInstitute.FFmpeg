@@ -20,8 +20,8 @@ public class FFmpegWindsorInstaller : IWindsorInstaller
                 .LifeStyle.Transient);
 
         container.Register(
-            Component.For<IMediaConfig>()
-                .ImplementedBy<MediaConfig>()
+            Component.For<IProcessManager>()
+                .ImplementedBy<ProcessManager>()
                 .LifeStyle.Transient);
 
         container.Register(

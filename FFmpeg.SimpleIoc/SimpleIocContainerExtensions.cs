@@ -18,12 +18,12 @@ public static class SimpleIocContainerExtensions
 
         // FFmpeg
         services.Register<IFileInfoParserFactory, FileInfoParserFactory>();
-        services.Register<IMediaConfig>(() => new MediaConfig(services.GetInstance<IWindowsApiService>(), services.GetInstance<IFileSystemService>()));
+        services.Register<IProcessManager>(() => new ProcessManager(services.GetInstance<IWindowsApiService>(), services.GetInstance<IFileSystemService>()));
         services.Register<IMediaEncoder, MediaEncoder>();
         services.Register<IMediaInfoReader, MediaInfoReader>();
         services.Register<IMediaMuxer, MediaMuxer>();
         services.Register<IMediaScript, MediaScript>();
-        services.Register<IProcessWorkerFactory>(() => new ProcessWorkerFactory(services.GetInstance<IMediaConfig>(), services.GetInstance<IUserInterfaceManager>()));
+        services.Register<IProcessWorkerFactory>(() => new ProcessWorkerFactory(services.GetInstance<IProcessManager>(), services.GetInstance<IUserInterfaceManager>()));
         services.Register<ITimeLeftCalculatorFactory, TimeLeftCalculatorFactory>();
 
         // Services

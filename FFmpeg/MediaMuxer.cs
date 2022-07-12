@@ -13,9 +13,9 @@ public class MediaMuxer : IMediaMuxer
     private readonly IFileSystemService _fileSystem;
     private readonly IMediaInfoReader _infoReader;
 
-    //public MediaMuxer(IProcessWorkerFactory processFactory, IUserInterfaceManager uiManager) : this(processFactory, uiManager, new FileSystemService(), new MediaInfoReader(processFactory)) { }
+    public MediaMuxer(IProcessWorkerFactory processFactory) : this(processFactory, new FileSystemService(), new MediaInfoReader(processFactory)) { }
 
-    public MediaMuxer(IProcessWorkerFactory processFactory, IFileSystemService fileSystemService, IMediaInfoReader infoReader)
+    internal MediaMuxer(IProcessWorkerFactory processFactory, IFileSystemService fileSystemService, IMediaInfoReader infoReader)
     {
         _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
         _fileSystem = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));

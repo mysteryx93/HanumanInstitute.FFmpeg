@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32.SafeHandles;
+
 // ReSharper disable ClassWithVirtualMembersNeverInherited.Global
 
 namespace HanumanInstitute.FFmpeg.Services;
@@ -12,20 +13,11 @@ public class ProcessWrapper : IProcess, IDisposable
     private readonly Process _process;
 
     /// <summary>
-    /// Initializes a new instance of the ProcessWrapper class for a new process.
-    /// </summary>
-    public ProcessWrapper()
-    {
-        _process = new Process();
-    }
-
-    /// <summary>
     /// Initializes a new instance of the ProcessWrapper class for specified process.
     /// </summary>
-    public ProcessWrapper(Process? process)
-    {
+    /// <param name="process">The process to wrap around, or null to wrap around a new process instance.</param>
+    public ProcessWrapper(Process? process = null) =>
         _process = process ?? new Process();
-    }
 
     /// <inheritdoc />
     public ProcessPriorityClass PriorityClass
@@ -204,89 +196,46 @@ public class ProcessWrapper : IProcess, IDisposable
     }
 
     /// <inheritdoc />
-    public void BeginErrorReadLine()
-    {
-        _process.BeginErrorReadLine();
-    }
+    public void BeginErrorReadLine() => _process.BeginErrorReadLine();
 
     /// <inheritdoc />
-    public void BeginOutputReadLine()
-    {
-        _process.BeginOutputReadLine();
-    }
+    public void BeginOutputReadLine() => _process.BeginOutputReadLine();
 
     /// <inheritdoc />
-    public void CancelErrorRead()
-    {
-        _process.CancelErrorRead();
-    }
+    public void CancelErrorRead() => _process.CancelErrorRead();
 
     /// <inheritdoc />
-    public void CancelOutputRead()
-    {
-        _process.CancelOutputRead();
-    }
+    public void CancelOutputRead() => _process.CancelOutputRead();
 
     /// <inheritdoc />
-    public void Close()
-    {
-        _process.Close();
-    }
+    public void Close() => _process.Close();
 
     /// <inheritdoc />
-    public bool CloseMainWindow()
-    {
-        return _process.CloseMainWindow();
-    }
+    public bool CloseMainWindow() => _process.CloseMainWindow();
 
     /// <inheritdoc />
-    public void Kill()
-    {
-        _process.Kill();
-    }
+    public void Kill() => _process.Kill();
 
     /// <inheritdoc />
-    public void Refresh()
-    {
-        throw new NotImplementedException();
-    }
+    public void Refresh() => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public bool Start()
-    {
-        return _process.Start();
-    }
+    public bool Start() => _process.Start();
 
     /// <inheritdoc />
-    public bool WaitForExit(int milliseconds)
-    {
-        return _process.WaitForExit(milliseconds);
-    }
+    public bool WaitForExit(int milliseconds) => _process.WaitForExit(milliseconds);
 
     /// <inheritdoc />
-    public void WaitForExit()
-    {
-        _process.WaitForExit();
-    }
+    public void WaitForExit() => _process.WaitForExit();
 
     /// <inheritdoc />
-    public bool WaitForInputIdle(int milliseconds)
-    {
-        return _process.WaitForInputIdle(milliseconds);
-    }
+    public bool WaitForInputIdle(int milliseconds) => _process.WaitForInputIdle(milliseconds);
 
     /// <inheritdoc />
-    public bool WaitForInputIdle()
-    {
-        return _process.WaitForInputIdle();
-    }
+    public bool WaitForInputIdle() => _process.WaitForInputIdle();
 
     /// <inheritdoc cref="IProcess" />
-    public override string ToString()
-    {
-        return _process.ToString();
-    }
-
+    public override string ToString() => _process.ToString();
 
     private bool _disposed;
     /// <summary>

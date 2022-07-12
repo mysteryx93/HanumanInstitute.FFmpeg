@@ -9,7 +9,7 @@ public static class FactoryConfig
     public static IProcessWorkerFactory CreateWithConfig()
     {
         return new ProcessWorkerFactory(
-            new MediaConfig(new WindowsApiService(), new FileSystemService())
+            new ProcessManager(new WindowsApiService(), new FileSystemService())
             {
                 FFmpegPath = "ffmpeg", // Properties.Settings.Default.FFmpegPath,
                 X264Path = "x264", // Properties.Settings.Default.X264Path,

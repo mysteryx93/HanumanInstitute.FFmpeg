@@ -23,16 +23,16 @@ public class ProcessManagerFactoryTests
     public void Constructor_NoParam_Success() => new ProcessWorkerFactory().Create(null);
 
     [Fact]
-    public void Constructor_Config_Success() => new ProcessWorkerFactory(new MediaConfig(), null).Create(null);
+    public void Constructor_Config_Success() => new ProcessWorkerFactory(new ProcessManager(), null).Create(null);
 
     [Fact]
-    public void Constructor_InjectDependencies_Success() => new ProcessWorkerFactory(new MediaConfig(), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()).Create(null);
+    public void Constructor_InjectDependencies_Success() => new ProcessWorkerFactory(new ProcessManager(), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()).Create(null);
 
     [Fact]
     public void Constructor_NullDependencies_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerFactory(null, null, null, null, null));
 
     [Fact]
-    public void Constructor_InjectOneDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerFactory(new MediaConfig(), null, null, null, null));
+    public void Constructor_InjectOneDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessWorkerFactory(new ProcessManager(), null, null, null, null));
 
     [Fact]
     public void Create_NoParam_ReturnsProcessManager()
@@ -43,7 +43,7 @@ public class ProcessManagerFactoryTests
 
         Assert.NotNull(result);
         Assert.IsType<ProcessWorker>(result);
-        Assert.Same(_config, result.Config);
+        Assert.Same(_config, result.Processes);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class ProcessManagerFactoryTests
 
         Assert.NotNull(result);
         Assert.IsType<ProcessWorkerEncoder>(result);
-        Assert.Same(_config, result.Config);
+        Assert.Same(_config, result.Processes);
     }
 
     [Fact]

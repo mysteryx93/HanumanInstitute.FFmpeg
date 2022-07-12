@@ -5,7 +5,7 @@ namespace HanumanInstitute.FFmpeg.Services;
 /// <summary>
 /// Creates instances of process wrapper classes.
 /// </summary>
-public interface IProcessFactory
+internal interface IProcessFactory
 {
     /// <summary>
     /// Creates a new instance of IProcess.

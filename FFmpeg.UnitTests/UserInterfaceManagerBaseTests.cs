@@ -10,7 +10,7 @@ public class UserInterfaceManagerBaseTests
     protected const string TestTitle = "job title";
     protected const string TestFileName = "test";
     protected const int TestJobId = 0;
-    private Mock<IMediaConfig> _config;
+    private Mock<IProcessManager> _config;
 
     protected static Mock<FakeUserInterfaceManagerBase> SetupUI()
     {
@@ -19,7 +19,7 @@ public class UserInterfaceManagerBaseTests
 
     public IProcessWorker SetupManager()
     {
-        _config = new Mock<IMediaConfig>();
+        _config = new Mock<IProcessManager>();
         var factory = new FakeProcessFactory();
         return new ProcessWorker(_config.Object, factory, null);
     }

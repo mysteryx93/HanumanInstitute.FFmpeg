@@ -10,9 +10,9 @@ namespace HanumanInstitute.FFmpeg;
 public class ProcessWorker : IProcessWorker, IDisposable
 {
     /// <summary>
-    /// Gets or sets the configuration settings.
+    /// Gets or sets the process manager.
     /// </summary>
-    public IMediaConfig Config { get; set; }
+    public IProcessManager Processes { get; set; }
     /// <summary>
     /// Gets or sets the options to control the behaviors of the process.
     /// </summary>
@@ -57,9 +57,9 @@ public class ProcessWorker : IProcessWorker, IDisposable
 
     //public ProcessWorker() : this(new MediaConfig(), new ProcessFactory(), null) { }
 
-    public ProcessWorker(IMediaConfig config, IProcessFactory processFactory, ProcessOptions? options = null)
+    internal ProcessWorker(IProcessManager config, IProcessFactory processFactory, ProcessOptions? options = null)
     {
-        Config = config ?? throw new ArgumentNullException(nameof(config));
+        Processes = config ?? throw new ArgumentNullException(nameof(config));
         _factory = processFactory ?? throw new ArgumentNullException(nameof(processFactory));
         Options = options ?? new ProcessOptions();
     }
@@ -192,12 +192,12 @@ public class ProcessWorker : IProcessWorker, IDisposable
         {
             if (_cancelWork!.Token.IsCancellationRequested && !WorkProcess.HasExited)
             {
-                Config.SoftKill(WorkProcess);
+                Processes.SoftKill(WorkProcess);
             }
 
             if (Options.Timeout > TimeSpan.Zero && DateTime.Now - startTime > Options.Timeout)
             {
-                Config.SoftKill(WorkProcess);
+                Processes.SoftKill(WorkProcess);
                 return true;
             }
             WorkProcess.WaitForExit(500);
