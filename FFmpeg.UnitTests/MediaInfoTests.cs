@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class MediaInfoTests
 {

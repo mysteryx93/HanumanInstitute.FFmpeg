@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace HanumanInstitute.FFmpeg.IntegrationTests;
+﻿namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public class MediaInfoTests
 {

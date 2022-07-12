@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using DjvuNet.Tests.Xunit;
-using Xunit;
-using Xunit.Abstractions;
-using HanumanInstitute.FFmpeg.Services;
-
-namespace HanumanInstitute.FFmpeg.IntegrationTests;
+﻿namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public class MediaMuxerTests
 {

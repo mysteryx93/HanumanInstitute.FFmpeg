@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using HanumanInstitute.FFmpeg.Services;
-
-namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class FakeFileSystemService : IFileSystemService
 {

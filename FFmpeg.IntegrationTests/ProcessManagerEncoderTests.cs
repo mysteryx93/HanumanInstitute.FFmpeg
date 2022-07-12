@@ -1,9 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using Xunit;
-using Xunit.Abstractions;
-using static System.FormattableString;
+﻿using static System.FormattableString;
 
 namespace HanumanInstitute.FFmpeg.IntegrationTests;
 

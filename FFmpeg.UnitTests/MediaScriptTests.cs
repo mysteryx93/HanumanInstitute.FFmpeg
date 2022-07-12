@@ -1,11 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using Moq;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class MediaScriptTests
 {

@@ -1,5 +1,4 @@
-﻿using System;
-using HanumanInstitute.FFmpeg.Services;
+﻿
 // ReSharper disable StringLiteralTypo
 
 namespace HanumanInstitute.FFmpeg.IntegrationTests;

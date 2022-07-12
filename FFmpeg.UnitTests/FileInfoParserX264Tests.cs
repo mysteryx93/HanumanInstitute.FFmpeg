@@ -1,7 +1,4 @@
-﻿using System;
-using Xunit;
-
-namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class FileInfoParserX264Tests
 {

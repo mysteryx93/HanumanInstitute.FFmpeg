@@ -1,10 +1,4 @@
-﻿using System;
-using System.IO;
-using HanumanInstitute.FFmpeg.Services;
-using Moq;
-using Xunit;
-
-namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class ProcessManagerEncoderTests
 {

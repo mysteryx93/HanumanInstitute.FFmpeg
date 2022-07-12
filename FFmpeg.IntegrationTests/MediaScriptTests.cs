@@ -1,9 +1,4 @@
-﻿using System;
-using Xunit;
-using Xunit.Abstractions;
-using HanumanInstitute.FFmpeg.Services;
-
-namespace HanumanInstitute.FFmpeg.IntegrationTests;
+﻿namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public class MediaScriptTests
 {

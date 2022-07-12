@@ -1,7 +1,4 @@
-﻿using System;
-using Xunit.Abstractions;
-
-namespace HanumanInstitute.FFmpeg.IntegrationTests;
+﻿namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 /// <summary>
 /// Feeds the process output into XUnit's output.

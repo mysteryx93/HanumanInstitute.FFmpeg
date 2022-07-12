@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public static class OutputSamples
 {

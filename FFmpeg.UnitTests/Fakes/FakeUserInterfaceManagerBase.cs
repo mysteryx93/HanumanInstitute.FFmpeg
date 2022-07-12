@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Moq;
-
-namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class FakeUserInterfaceManagerBase : UserInterfaceManagerBase
 {

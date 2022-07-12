@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
-
-namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public static class TestDataSource
 {

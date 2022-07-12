@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace HanumanInstitute.FFmpeg.IntegrationTests;
+﻿namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public static class AppPaths
 {

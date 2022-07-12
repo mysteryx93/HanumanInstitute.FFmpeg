@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Diagnostics;
 using System.Reflection;
-using HanumanInstitute.FFmpeg.Services;
-using Moq;
 
 namespace HanumanInstitute.FFmpeg.UnitTests;
 
