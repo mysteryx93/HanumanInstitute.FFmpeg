@@ -1,14 +1,18 @@
-﻿namespace HanumanInstitute.FFmpeg.IntegrationTests;
+﻿// ReSharper disable PossibleMultipleEnumeration
 
+using System.Diagnostics.CodeAnalysis;
+// ReSharper disable StringLiteralTypo
+
+namespace HanumanInstitute.FFmpeg.IntegrationTests;
+
+[SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters")]
 public class MediaMuxerTests
 {
-    private readonly ITestOutputHelper _output;
     private readonly OutputFeeder _feed;
     private IProcessService _factory;
 
     public MediaMuxerTests(ITestOutputHelper output)
     {
-        _output = output;
         _feed = new OutputFeeder(output);
     }
 
@@ -249,7 +253,7 @@ public class MediaMuxerTests
     [MemberData(nameof(GenerateConcatenate_Valid))]
     public void Concatenate_Valid_Success(IEnumerable<string> source, string destExt)
     {
-        var src = source.Select(x => AppPaths.GetInputFile(x)).ToList();
+        var src = source.Select(AppPaths.GetInputFile).ToList();
         var dest = AppPaths.PrepareDestPath("Concatenate", source.First(), destExt);
         var muxer = SetupMuxer();
 
@@ -263,7 +267,7 @@ public class MediaMuxerTests
     [MemberData(nameof(GenerateConcatenate_Invalid))]
     public void Concatenate_Invalid_StatusFailed(IEnumerable<string> source, string destExt)
     {
-        var src = source.Select(x => AppPaths.GetInputFile(x)).ToList();
+        var src = source.Select(AppPaths.GetInputFile).ToList();
         var dest = AppPaths.PrepareDestPath("Concatenate", source.First(), destExt);
         var muxer = SetupMuxer();
 
@@ -279,10 +283,8 @@ public class MediaMuxerTests
         var src = AppPaths.GetInputFile(source);
         var dest = AppPaths.PrepareDestPath("Truncate", source, destExt);
         var muxer = SetupMuxer();
-        IProcessWorker manager = null;
         void Started(object s, ProcessStartedEventArgs e)
         {
-            manager = e.ProcessWorker;
             _feed.RunCallback(s, e);
         }
 

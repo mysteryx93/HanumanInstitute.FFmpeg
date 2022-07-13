@@ -1,16 +1,15 @@
 ﻿using static System.FormattableString;
+// ReSharper disable StringLiteralTypo
 
 namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public class ProcessManagerEncoderTests
 {
-    private readonly ITestOutputHelper _output;
     private readonly OutputFeeder _feed;
     private IProcessService _factory;
 
     public ProcessManagerEncoderTests(ITestOutputHelper output)
     {
-        _output = output;
         _feed = new OutputFeeder(output);
     }
 

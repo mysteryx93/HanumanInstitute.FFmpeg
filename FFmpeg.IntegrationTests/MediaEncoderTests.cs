@@ -1,18 +1,17 @@
 ﻿// ReSharper disable StringLiteralTypo
+// ReSharper disable CommentTypo
 namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public class MediaEncoderTests
 {
 
     private IProcessService _factory;
-    private readonly ITestOutputHelper _output;
     private readonly OutputFeeder _feed;
     private const string AviExt = ".avi";
     private const string Mp4Ext = ".mp4";
 
     public MediaEncoderTests(ITestOutputHelper output)
     {
-        _output = output;
         _feed = new OutputFeeder(output);
     }
 
@@ -31,7 +30,7 @@ public class MediaEncoderTests
     private void AssertMedia(string dest, int streamCount)
     {
         Assert.True(File.Exists(dest));
-        var fileInfo = GetFileInfo(dest) as FileInfoFFmpeg;
+        var fileInfo = GetFileInfo(dest);
         Assert.Equal(streamCount, fileInfo.FileStreams.Count);
     }
 

@@ -21,6 +21,6 @@ public class OutputFeeder
 
         _output.WriteLine(e.ProcessWorker.CommandWithArgs);
         _output.WriteLine(string.Empty);
-        e.ProcessWorker.ProcessCompleted += (s2, e2) => _output.WriteLine(e.ProcessWorker.Output);
+        e.ProcessWorker.ProcessCompleted += (_, _) => _output.WriteLine(e.ProcessWorker.Output);
     }
 }

@@ -2,12 +2,10 @@
 
 public class MediaScriptTests
 {
-    private readonly ITestOutputHelper _output;
     private readonly OutputFeeder _feed;
 
     public MediaScriptTests(ITestOutputHelper output)
     {
-        _output = output;
         _feed = new OutputFeeder(output);
     }
 

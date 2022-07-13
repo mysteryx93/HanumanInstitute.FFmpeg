@@ -1,4 +1,5 @@
-﻿namespace HanumanInstitute.FFmpeg.IntegrationTests;
+﻿// ReSharper disable InconsistentNaming
+namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public static class AppPaths
 {
@@ -31,7 +32,7 @@ public static class AppPaths
     public static string PrepareDestPath(string prefix, string source, string destExt)
     {
         var dest = Path.Combine(AppPaths.OutputDirectory, Path.ChangeExtension(prefix + " " + source, destExt));
-        Directory.CreateDirectory(Path.GetDirectoryName(dest));
+        Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
         File.Delete(dest);
         return dest;
     }
