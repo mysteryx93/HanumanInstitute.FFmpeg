@@ -80,17 +80,6 @@ public class MediaScriptTests
 
     [Theory]
     [InlineData("file")]
-    public void RunAvisynth_AvsNotFound_ThrowsFileNotFoundException(string path)
-    {
-        var script = SetupScript();
-        _config.Setup(x => x.Paths).Returns(new AppPaths() { Avs2Yuv = MissingFileName });
-
-        Assert.Throws<FileNotFoundException>(() => script.RunAvisynth(path));
-    }
-
-
-    [Theory]
-    [InlineData("file")]
     public void RunVapourSynth_ValidFile_CommandContainsVsPipe(string path)
     {
         var script = SetupScript();
@@ -111,17 +100,5 @@ public class MediaScriptTests
         void Act() => script.RunVapourSynth(path);
 
         Assert.Throws(ex, Act);
-    }
-
-    [Theory]
-    [InlineData("file")]
-    public void RunVapourSynth_VpyNotFound_ThrowsFileNotFoundException(string path)
-    {
-        var script = SetupScript();
-        _config.Setup(x => x.Paths.Avs2Yuv).Returns(MissingFileName);
-
-        void Act() => script.RunVapourSynth(path);
-
-        Assert.Throws<FileNotFoundException>(Act);
     }
 }

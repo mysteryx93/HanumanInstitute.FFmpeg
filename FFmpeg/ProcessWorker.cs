@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using HanumanInstitute.FFmpeg.Services;
 
@@ -111,7 +113,15 @@ public class ProcessWorker : IProcessWorker, IDisposable
 
         ProcessStarted?.Invoke(this, new ProcessStartedEventArgs(this));
 
-        p.Start();
+        try
+        {
+            p.Start();
+        }
+        catch (Win32Exception ex)
+        {
+            throw new FileNotFoundException(ex.Message);
+        }
+        
         try
         {
             if (!p.HasExited)

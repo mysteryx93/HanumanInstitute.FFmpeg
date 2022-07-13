@@ -1,4 +1,5 @@
-﻿namespace HanumanInstitute.FFmpeg.IntegrationTests;
+﻿// ReSharper disable StringLiteralTypo
+namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public class MediaEncoderTests
 {
@@ -69,6 +70,19 @@ public class MediaEncoderTests
         Assert.Equal(CompletionStatus.Failed, result);
     }
 
+    [Fact]
+    public void EncodeFFmpeg_InvalidApp_ThrowsException()
+    {
+        var srcVideo = AppPaths.GetInputFile(AppPaths.Mpeg4);
+        var dest = AppPaths.PrepareDestPath("EncodeFFmpeg", AppPaths.Mpeg4, ".mp4");
+        var encoder = SetupEncoder();
+        _factory.Processes.Paths.FFmpegPath = "invalid";
+
+        void Act() => encoder.EncodeFFmpeg(srcVideo, dest, "libx264", null, null);
+        
+        Assert.Throws<FileNotFoundException>(Act);
+    }
+    
     [Theory]
     [InlineData(AppPaths.Mpeg4WithAudio, ".mp4", "libx264", null, "-preset ultrafast", 1)]
     [InlineData(AppPaths.Mpeg4WithAudio, ".mp4", "libx264", "aac", "-preset ultrafast", 2)]

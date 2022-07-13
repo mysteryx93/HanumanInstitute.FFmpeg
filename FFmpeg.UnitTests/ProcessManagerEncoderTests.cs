@@ -107,15 +107,6 @@ public class ProcessManagerEncoderTests
     }
 
     [Fact]
-    public void RunEncoder_AppNotFound_ThrowsFileNotFoundException()
-    {
-        var manager = SetupManager();
-        _config.Setup(x => x.Paths).Returns(new AppPaths() { FFmpegPath = MissingFileName });
-
-        Assert.Throws<FileNotFoundException>(() => manager.RunEncoder(null, EncoderApp.FFmpeg));
-    }
-
-    [Fact]
     public void RunEncoder_InvalidEncoderApp_ThrowsException()
     {
         var manager = SetupManager();
