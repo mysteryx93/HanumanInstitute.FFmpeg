@@ -1,10 +1,13 @@
-﻿namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿// ReSharper disable AssignNullToNotNullAttribute
+
+using System.Runtime.InteropServices;
+
+namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class ProcessManagerTests
 {
     protected const string MissingFileName = "MissingFile";
     protected const string TestFileName = "test";
-    protected const string AppCmd = "cmd";
     protected const string ErrorDataStream = "data_error";
     protected const string OutputDataStream = "data_output";
     private Mock<IProcessManager> _config;
@@ -13,11 +16,12 @@ public class ProcessManagerTests
     {
         _config = new Mock<IProcessManager>();
         var factory = new FakeProcessFactory();
-        var fileSystem = Mock.Of<FakeFileSystemService>(x =>
-            x.Exists(It.IsAny<string>()) == true && x.Exists(MissingFileName) == false);
-        return new ProcessWorker(_config.Object, factory, null);
+        // var fileSystem = Mock.Of<FakeFileSystemService>(x =>
+        //     x.Exists(It.IsAny<string>()) == true && x.Exists(MissingFileName) == false);
+        return new ProcessWorker(_config.Object, factory);
     }
 
+    private string AppCmd => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash";
 
     [Fact]
     public void Init_OutputType_ReturnsNone()
@@ -72,7 +76,7 @@ public class ProcessManagerTests
             Assert.NotNull(manager.WorkProcess);
         };
 
-        var result = manager.Run(TestFileName, null);
+        manager.Run(TestFileName, null);
 
         Assert.Equal(1, processStartedCalled);
     }
@@ -83,13 +87,13 @@ public class ProcessManagerTests
         var manager = SetupManager();
 
         var completedCalled = 0;
-        manager.ProcessCompleted += (s, e) =>
+        manager.ProcessCompleted += (_, e) =>
         {
             completedCalled++;
             Assert.Equal(CompletionStatus.Success, e.Status);
         };
 
-        var result = manager.Run(TestFileName, null);
+        manager.Run(TestFileName, null);
 
         Assert.Equal(1, completedCalled);
     }
@@ -99,14 +103,14 @@ public class ProcessManagerTests
     {
         var manager = SetupManager();
         manager.Options.Timeout = TimeSpan.FromMilliseconds(10);
-        manager.ProcessStarted += (s, e) =>
+        manager.ProcessStarted += (_, e) =>
         {
-            var pMock = Mock.Get<IProcess>(e.ProcessWorker.WorkProcess);
+            var pMock = Mock.Get(e.ProcessWorker.WorkProcess);
             pMock.Setup(x => x.WaitForExit(It.IsAny<int>())).Returns(false);
         };
 
         var completedCalled = 0;
-        manager.ProcessCompleted += (s, e) =>
+        manager.ProcessCompleted += (_, e) =>
         {
             completedCalled++;
             Assert.Equal(CompletionStatus.Timeout, e.Status);
@@ -125,16 +129,16 @@ public class ProcessManagerTests
         var manager = SetupManager();
         Mock<IProcess> pMock;
         manager.Options.Timeout = TimeSpan.FromSeconds(2);
-        manager.ProcessStarted += (s, e) =>
+        manager.ProcessStarted += (_, e) =>
         {
-            pMock = Mock.Get<IProcess>(e.ProcessWorker.WorkProcess);
+            pMock = Mock.Get(e.ProcessWorker.WorkProcess);
             pMock.Setup(x => x.WaitForExit(It.IsAny<int>())).Returns(false);
             manager.Cancel();
             _config.Setup(x => x.SoftKill(It.IsAny<IProcess>())).Callback(() => pMock.Setup(x => x.HasExited).Returns(true));
         };
 
         var completedCalled = 0;
-        manager.ProcessCompleted += (s, e) =>
+        manager.ProcessCompleted += (_, e) =>
         {
             completedCalled++;
             Assert.Equal(CompletionStatus.Cancelled, e.Status);
@@ -148,8 +152,8 @@ public class ProcessManagerTests
     }
 
     [Theory]
-    [InlineData("ffmpeg.exe", null)]
-    [InlineData("ffmpeg.exe", "-i abc.avi")]
+    [InlineData("ffmpeg", null)]
+    [InlineData("ffmpeg", "-i abc.avi")]
     public void Run_Valid_CommandContainsFileNameAndArgs(string fileName, string args)
     {
         var manager = SetupManager();
@@ -182,13 +186,13 @@ public class ProcessManagerTests
     {
         var manager = SetupManager();
         manager.OutputType = outputType;
-        manager.ProcessStarted += (s, e) =>
+        manager.ProcessStarted += (_, e) =>
         {
-            var pMock = Mock.Get<IProcess>(e.ProcessWorker.WorkProcess);
+            var pMock = Mock.Get(e.ProcessWorker.WorkProcess);
             pMock.Raise(x => x.OutputDataReceived += null, FakeProcessService.CreateMockDataReceivedEventArgs(OutputDataStream));
             pMock.Raise(x => x.ErrorDataReceived += null, FakeProcessService.CreateMockDataReceivedEventArgs(ErrorDataStream));
         };
-        manager.DataReceived += (s, e) =>
+        manager.DataReceived += (_, e) =>
         {
             if (expectedData != null)
             {
@@ -234,7 +238,7 @@ public class ProcessManagerTests
             Assert.NotNull(manager.WorkProcess);
         };
 
-        var result = manager.RunAsCommand(TestFileName);
+        manager.RunAsCommand(TestFileName);
 
         Assert.Equal(1, processStartedCalled);
     }
@@ -244,13 +248,13 @@ public class ProcessManagerTests
     {
         var manager = SetupManager();
         var completedCalled = 0;
-        manager.ProcessCompleted += (s, e) =>
+        manager.ProcessCompleted += (_, e) =>
         {
             completedCalled++;
             Assert.Equal(CompletionStatus.Success, e.Status);
         };
 
-        var result = manager.RunAsCommand(TestFileName);
+        manager.RunAsCommand(TestFileName);
 
         Assert.Equal(1, completedCalled);
     }

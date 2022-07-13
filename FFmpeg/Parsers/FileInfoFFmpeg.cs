@@ -134,7 +134,7 @@ public class FileInfoFFmpeg : IFileInfoParser
     /// </summary>
     /// <param name="text">A line of text to parse.</param>
     /// <returns>The stream info, or null if parsing failed.</returns>
-    private static MediaStreamInfo? ParseStreamInfo(string text)
+    internal static MediaStreamInfo? ParseStreamInfo(string text)
     {
         if (string.IsNullOrEmpty(text))
         {

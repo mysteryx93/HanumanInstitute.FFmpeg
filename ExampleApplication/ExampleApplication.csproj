@@ -123,8 +123,8 @@
     <Reference Include="xunit.execution.desktop, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
       <HintPath>..\packages\xunit.extensibility.execution.2.4.1\lib\net452\xunit.execution.desktop.dll</HintPath>
     </Reference>
-    <Reference Include="XunitDjvuTheory, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\XunitDjvuTheory.1.0.0\lib\net452\XunitDjvuTheory.dll</HintPath>
+    <Reference Include="XunitTheory, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\XunitTheory.1.0.0\lib\net452\XunitTheory.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

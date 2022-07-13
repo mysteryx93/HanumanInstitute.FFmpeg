@@ -51,7 +51,7 @@ public class MediaEncoder : IMediaEncoder
     /// <inheritdoc />
     public CompletionStatus EncodeAvisynthToFFmpeg(string source, string destination, string? videoCodec, string? audioCodec,
         string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null) =>
-        EncodeFFmpegInternal(SourceType.Avisynth, source, destination, videoCodec, audioCodec, encodeArgs, options, callback);
+        EncodeFFmpegInternal(SourceType.Direct, source, destination, videoCodec, audioCodec, encodeArgs, options, callback);
 
     /// <inheritdoc />
     public CompletionStatus EncodeVapourSynthToFFmpeg(string source, string destination, string? videoCodec, string? audioCodec,
@@ -196,11 +196,11 @@ public class MediaEncoder : IMediaEncoder
         /// </summary>
         Direct,
         /// <summary>
-        /// Source is an Avisynth script opened with avs2pipemod.exe
+        /// Source is an Avisynth script opened with avs2pipemod.
         /// </summary>
         Avisynth,
         /// <summary>
-        /// Source is a VapourSynth script opened with vspipe.exe
+        /// Source is a VapourSynth script opened with vspipe.
         /// </summary>
         VapourSynth
     }

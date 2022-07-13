@@ -20,7 +20,7 @@ public interface IFileInfoParser {
     /// </summary>
     /// <param name="outputText">The encoder process output.</param>
     /// <param name="options">Options that were specified when calling the encoder.</param>
-    void ParseFileInfo(string outputText, ProcessOptionsEncoder options);
+    void ParseFileInfo(string outputText, ProcessOptionsEncoder? options);
     /// <summary>
     /// Returns whether specified line of output is a progress update.
     /// </summary>

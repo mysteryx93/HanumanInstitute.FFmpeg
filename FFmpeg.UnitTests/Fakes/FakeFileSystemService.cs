@@ -1,4 +1,5 @@
-﻿namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿// ReSharper disable ClassWithVirtualMembersNeverInherited.Global
+namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class FakeFileSystemService : IFileSystemService
 {

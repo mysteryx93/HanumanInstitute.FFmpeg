@@ -1,18 +1,22 @@
 ﻿using Microsoft.Extensions.Options;
 
+// ReSharper disable ClassWithVirtualMembersNeverInherited.Global
+
 namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class FakeProcessManager : IProcessManager
 {
     private readonly IOptions<AppPaths> _appPaths;
 
-    public FakeProcessManager(IOptions<AppPaths>? appPaths)
+    public FakeProcessManager() : this(null) { }
+
+    public FakeProcessManager(IOptions<AppPaths> appPaths = null)
     {
         _appPaths = appPaths ?? Options.Create(new AppPaths());
     }
 
-    public AppPaths Paths => _appPaths.Value;
-    
+    public virtual AppPaths Paths => _appPaths.Value;
+
     public virtual string ApplicationPath => "\\";
 
     public virtual string GetAppPath(string encoderApp)

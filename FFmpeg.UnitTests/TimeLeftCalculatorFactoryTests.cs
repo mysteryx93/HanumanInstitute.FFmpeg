@@ -1,4 +1,5 @@
-﻿namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿// ReSharper disable AssignNullToNotNullAttribute
+namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class TimeLeftCalculatorFactoryTests
 {
@@ -11,10 +12,12 @@ public class TimeLeftCalculatorFactoryTests
     public void Constructor_Empty_Success() => new TimeLeftCalculatorFactory(new FakeEnvironmentService()).Create(0);
 
     [Fact]
-    public void Constructor_Dependency_Success() => new TimeLeftCalculatorFactory(Mock.Of<IEnvironmentService>()).Create(0);
-
-    [Fact]
-    public void Constructor_NullDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new TimeLeftCalculatorFactory(null));
+    public void Constructor_NullDependency_ThrowsException()
+    {
+        TimeLeftCalculatorFactory Act() => new(null);
+        
+        Assert.Throws<ArgumentNullException>(Act);  
+    } 
 
     [Theory]
     [InlineData(100)]

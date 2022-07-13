@@ -13,7 +13,7 @@ public class FakeProcessService : ProcessService
     /// <summary>
     /// Returns the list of instances that were created by the factory.
     /// </summary>
-    public List<IProcessWorker> Instances { get; private set; } = new List<IProcessWorker>();
+    public List<IProcessWorker> Instances { get; private set; } = new();
 
     public override IProcessWorker CreateProcess(object owner, ProcessOptions options = null, ProcessStartedEventHandler callback = null)
     {
@@ -22,18 +22,18 @@ public class FakeProcessService : ProcessService
         return result;
     }
 
-    public override IProcessWorkerEncoder CreateEncoder(object owner, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
+    public override IProcessWorkerEncoder CreateEncoder(object owner = null, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
     {
         var result = base.CreateEncoder(owner, options, callback);
-        result.ProcessCompleted += (s, e) =>
+        result.ProcessCompleted += (_, _) =>
         {
-            if (result.FileInfo is FileInfoFFmpeg info && info.FileStreams == null)
+            if (result.FileInfo is FileInfoFFmpeg info && !info.FileStreams.Any())
             {
                 // If no data was fed into the process, this will initialize FileStreams.
-                var mockP = Mock.Get<IProcess>(result.WorkProcess);
+                var mockP = Mock.Get(result.WorkProcess);
                 mockP.Raise(x => x.ErrorDataReceived += null, CreateMockDataReceivedEventArgs(null));
                 mockP.Raise(x => x.OutputDataReceived += null, CreateMockDataReceivedEventArgs(null));
-                if (info.FileStreams != null)
+                if (!info.FileStreams.Any())
                 {
                     info.FileStreams.Add(new MediaVideoStreamInfo());
                     info.FileStreams.Add(new MediaAudioStreamInfo());

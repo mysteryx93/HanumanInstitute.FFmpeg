@@ -38,7 +38,7 @@ public class MediaScript : IMediaScript
         var args = Invariant($@"""{path}"" -rawvideo > NUL");
         var worker = _factory.CreateProcess(Owner, options, callback);
         worker.OutputType = ProcessOutput.Error;
-        var cmd = Invariant($@"""{_factory.Processes.Paths.Avs2PipeMod}"" {args}");
+        var cmd = Invariant($@"""{_factory.Processes.Paths.Avs2Yuv}"" {args}");
         var result = worker.RunAsCommand(cmd);
         return result;
     }

@@ -1,12 +1,14 @@
-﻿namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿// ReSharper disable AssignNullToNotNullAttribute
+
+namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class MediaScriptTests
 {
-    protected const string AppAvs2PipeMod = "avs2pipemod.exe";
-    protected const string AppVsPipe = "vspipe.exe";
+    protected const string AppAvs2Yuv = "avs2yuv";
+    protected const string AppVsPipe = "vspipe";
     protected const string MissingFileName = "MissingFile";
     private Mock<FakeProcessManager> _config;
-    private readonly FakeProcessService _factory = new FakeProcessService();
+    private readonly FakeProcessService _factory = new();
     private readonly ITestOutputHelper _output;
 
     public MediaScriptTests(ITestOutputHelper output)
@@ -33,14 +35,24 @@ public class MediaScriptTests
 
 
     [Fact]
+    // ReSharper disable once ObjectCreationAsStatement
     public void Constructor_WithFactory_Success() => new MediaEncoder(_factory);
 
     [Fact]
-    public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>((Func<object>)(() => new MediaEncoder((IProcessService)null)));
+    public void Constructor_NullFactory_ThrowsException()
+    {
+        MediaScript Act() => new(null);
+
+        Assert.Throws<ArgumentNullException>(Act);
+    }
 
     [Fact]
-    public void Constructor_NullDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaScript(_factory, null));
+    public void Constructor_NullDependency_ThrowsException()
+    {
+        MediaScript Act() => new(_factory, null);
 
+        Assert.Throws<ArgumentNullException>(Act);
+    }
 
     [Theory]
     [InlineData("file")]
@@ -52,7 +64,7 @@ public class MediaScriptTests
 
         Assert.Equal(CompletionStatus.Success, result);
         AssertSingleInstance();
-        Assert.Contains(AppAvs2PipeMod, _factory.Instances[0].CommandWithArgs, StringComparison.InvariantCulture);
+        Assert.Contains(AppAvs2Yuv, _factory.Instances[0].CommandWithArgs, StringComparison.InvariantCulture);
     }
 
     [Theory]
@@ -71,7 +83,7 @@ public class MediaScriptTests
     public void RunAvisynth_AvsNotFound_ThrowsFileNotFoundException(string path)
     {
         var script = SetupScript();
-        _config.Setup(x => x.Avs2PipeMod).Returns(MissingFileName);
+        _config.Setup(x => x.Paths).Returns(new AppPaths() { Avs2Yuv = MissingFileName });
 
         Assert.Throws<FileNotFoundException>(() => script.RunAvisynth(path));
     }
@@ -103,10 +115,10 @@ public class MediaScriptTests
 
     [Theory]
     [InlineData("file")]
-    public void RunVapourSynth_AvsNotFound_ThrowsFileNotFoundException(string path)
+    public void RunVapourSynth_VpyNotFound_ThrowsFileNotFoundException(string path)
     {
         var script = SetupScript();
-        _config.Setup(x => x.Avs2PipeMod).Returns(MissingFileName);
+        _config.Setup(x => x.Paths.Avs2Yuv).Returns(MissingFileName);
 
         void Act() => script.RunVapourSynth(path);
 

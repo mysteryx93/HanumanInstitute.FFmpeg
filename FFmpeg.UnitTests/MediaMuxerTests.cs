@@ -1,8 +1,10 @@
-﻿namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿// ReSharper disable AssignNullToNotNullAttribute
+// ReSharper disable PossibleMultipleEnumeration
+namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class MediaMuxerTests
 {
-    private const string FFMPEG = "ffmpeg.exe", AUDIOCODEC = "-acodec", VIDEOCODEC = "-vcodec", FIXAAC = "aac_adtstoasc", FIXPCM = "pcm_s16le";
+    private const string FFmpeg = "ffmpeg", AudioCodec = "-acodec", VideoCodec = "-vcodec", FixAac = "aac_adtstoasc", FixPcm = "pcm_s16le";
     private FakeProcessService _factory;
     private readonly ITestOutputHelper _output;
 
@@ -33,9 +35,9 @@ public class MediaMuxerTests
         var manager = instanceIndex < 0 ? _factory.Instances.Last() : _factory.Instances[instanceIndex];
         Assert.NotNull(manager);
         _output.WriteLine(manager.CommandWithArgs);
-        Assert.Contains(FFMPEG, manager.CommandWithArgs, StringComparison.InvariantCulture);
-        manager.CommandWithArgs.ContainsOrNot(VIDEOCODEC, hasVideo);
-        manager.CommandWithArgs.ContainsOrNot(AUDIOCODEC, hasAudio);
+        Assert.Contains(FFmpeg, manager.CommandWithArgs, StringComparison.InvariantCulture);
+        manager.CommandWithArgs.ContainsOrNot(VideoCodec, hasVideo);
+        manager.CommandWithArgs.ContainsOrNot(AudioCodec, hasAudio);
         return manager;
     }
 
@@ -44,51 +46,51 @@ public class MediaMuxerTests
     {
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video", 0, "mpeg2", FFmpegStreamType.Video),
+                new("video", 0, "mpeg2", FFmpegStreamType.Video),
             },
             "dest", true, false
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("audio", 1, "mp3", FFmpegStreamType.Audio)
+                new("audio", 1, "mp3", FFmpegStreamType.Audio)
             },
             "dest", false, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video", 0, "mpeg2", FFmpegStreamType.Video),
-                new MediaStream("audio", 1, "mp3", FFmpegStreamType.Audio)
+                new("video", 0, "mpeg2", FFmpegStreamType.Video),
+                new("audio", 1, "mp3", FFmpegStreamType.Audio)
             },
             "dest", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video.264", 0, null, FFmpegStreamType.Video),
-                new MediaStream("audio.m4a", 1, "m4a", FFmpegStreamType.Audio)
+                new("video.264", 0, null, FFmpegStreamType.Video),
+                new("audio.m4a", 1, "m4a", FFmpegStreamType.Audio)
             },
             "dest.mp4", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("Audio.AAC", 1, "aac", FFmpegStreamType.Audio),
-                new MediaStream("Video.265", 0, "mpeg2", FFmpegStreamType.Video),
-                new MediaStream("audio.m4a", 1, "m4a", FFmpegStreamType.Audio)
+                new("Audio.AAC", 1, "aac", FFmpegStreamType.Audio),
+                new("Video.265", 0, "mpeg2", FFmpegStreamType.Video),
+                new("audio.m4a", 1, "m4a", FFmpegStreamType.Audio)
             },
             "Dest.MP4", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("Video.MKV", 0, "mpeg2", FFmpegStreamType.Video),
-                new MediaStream("Audio.AAC", 1, "aac", FFmpegStreamType.Audio),
-                new MediaStream("audio.mp4", 1, "", FFmpegStreamType.Video)
+                new("Video.MKV", 0, "mpeg2", FFmpegStreamType.Video),
+                new("Audio.AAC", 1, "aac", FFmpegStreamType.Audio),
+                new("audio.mp4", 1, "", FFmpegStreamType.Video)
             },
             "Dest.MKV", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("\0\"\0\"\0\n", -5, "\0\0\0\n", FFmpegStreamType.Video),
-                new MediaStream("读写汉字", -10, "读写汉字", FFmpegStreamType.None),
-                new MediaStream("读写汉字", -15, null, FFmpegStreamType.Video),
+                new("\0\"\0\"\0\n", -5, "\0\0\0\n", FFmpegStreamType.Video),
+                new("读写汉字", -10, "读写汉字", FFmpegStreamType.None),
+                new("读写汉字", -15, null, FFmpegStreamType.Video),
             },
             "学中文", true, false
         };
@@ -102,42 +104,41 @@ public class MediaMuxerTests
             typeof(ArgumentNullException)
         };
         yield return new object[] {
+            new List<MediaStream>(),
+            "dest",
+            typeof(ArgumentException)
+        };
+        yield return new object[] {
             new List<MediaStream>() {
+                new("video", 0, "", FFmpegStreamType.None)
             },
             "dest",
             typeof(ArgumentException)
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video", 0, "", FFmpegStreamType.None)
-            },
-            "dest",
-            typeof(ArgumentException)
-        };
-        yield return new object[] {
-            new List<MediaStream>() {
-                new MediaStream("video", 0, "", FFmpegStreamType.Video)
+                new("video", 0, "", FFmpegStreamType.Video)
             },
             null,
             typeof(ArgumentNullException)
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video", 0, "", FFmpegStreamType.Video)
+                new("video", 0, "", FFmpegStreamType.Video)
             },
             "",
             typeof(ArgumentException)
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream(null, 0, "", FFmpegStreamType.Video)
+                new(null, 0, "", FFmpegStreamType.Video)
             },
             "dest",
             typeof(ArgumentException)
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("", 0, "", FFmpegStreamType.Video)
+                new("", 0, "", FFmpegStreamType.Video)
             },
             "dest",
             typeof(ArgumentException)
@@ -148,15 +149,15 @@ public class MediaMuxerTests
     {
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("audio.aac", 0, "aac", FFmpegStreamType.Audio),
-                new MediaStream("video.mp4", 0, "mp4", FFmpegStreamType.Video),
+                new("audio.aac", 0, "aac", FFmpegStreamType.Audio),
+                new("video.mp4", 0, "mp4", FFmpegStreamType.Video),
             },
             "dest", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video.Mp4", 0, "mp4", FFmpegStreamType.Video),
-                new MediaStream(".AAC", 0, "aac", FFmpegStreamType.Audio),
+                new("video.Mp4", 0, "mp4", FFmpegStreamType.Video),
+                new(".AAC", 0, "aac", FFmpegStreamType.Audio),
             },
             "dest", true, true
         };
@@ -166,21 +167,21 @@ public class MediaMuxerTests
     {
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("audio.wav", 0, "pcm_dvd", FFmpegStreamType.Audio),
-                new MediaStream("video.WAV", 0, null, FFmpegStreamType.Video),
+                new("audio.wav", 0, "pcm_dvd", FFmpegStreamType.Audio),
+                new("video.WAV", 0, null, FFmpegStreamType.Video),
             },
             "dest", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video.Mp4", 0, "mp4", FFmpegStreamType.Audio),
-                new MediaStream(".AAC", 0, "pcm_dvd", FFmpegStreamType.Audio),
+                new("video.Mp4", 0, "mp4", FFmpegStreamType.Audio),
+                new(".AAC", 0, "pcm_dvd", FFmpegStreamType.Audio),
             },
             "dest", false, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream(".AAC", 0, "pcm_dvd", FFmpegStreamType.Audio)
+                new(".AAC", 0, "pcm_dvd", FFmpegStreamType.Audio)
             },
             "dest", false, true
         };
@@ -190,15 +191,15 @@ public class MediaMuxerTests
     {
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("audio.aac", 0, "aac", FFmpegStreamType.Video),
-                new MediaStream("video.mp4", 0, "mp4", FFmpegStreamType.Audio),
+                new("audio.aac", 0, "aac", FFmpegStreamType.Video),
+                new("video.mp4", 0, "mp4", FFmpegStreamType.Audio),
             },
             "dest", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("Audio.aac", 0, "aac", FFmpegStreamType.Audio),
-                new MediaStream(".AAC", 0, "aac", FFmpegStreamType.Audio),
+                new("Audio.aac", 0, "aac", FFmpegStreamType.Audio),
+                new(".AAC", 0, "aac", FFmpegStreamType.Audio),
             },
             "dest", false, true
         };
@@ -208,15 +209,15 @@ public class MediaMuxerTests
     {
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("audio.wav", 0, "pcm_dvd", FFmpegStreamType.Video),
-                new MediaStream("video.WAV", 0, null, FFmpegStreamType.Audio),
+                new("audio.wav", 0, "pcm_dvd", FFmpegStreamType.Video),
+                new("video.WAV", 0, null, FFmpegStreamType.Audio),
             },
             "dest", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video.aac", 0, "aac", FFmpegStreamType.Audio),
-                new MediaStream(".WAV", 0, "pcm_dvd", FFmpegStreamType.None),
+                new("video.aac", 0, "aac", FFmpegStreamType.Audio),
+                new(".WAV", 0, "pcm_dvd", FFmpegStreamType.None),
             },
             "dest", false, true
         };
@@ -226,8 +227,8 @@ public class MediaMuxerTests
     {
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video", 0, "mpeg2", FFmpegStreamType.Video),
-                new MediaStream("audio", 1, "mp3", FFmpegStreamType.Audio)
+                new("video", 0, "mpeg2", FFmpegStreamType.Video),
+                new("audio", 1, "mp3", FFmpegStreamType.Audio)
             },
             "dest"
         };
@@ -237,21 +238,21 @@ public class MediaMuxerTests
     {
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("video.264", 0, "h264", FFmpegStreamType.Video),
-                new MediaStream("audio.aac", 1, "aac", FFmpegStreamType.Audio)
+                new("video.264", 0, "h264", FFmpegStreamType.Video),
+                new("audio.aac", 1, "aac", FFmpegStreamType.Audio)
             },
             "dest.mkv", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream("audio.aac", 1, "aac", FFmpegStreamType.Audio),
-                new MediaStream("video.265", 0, "h265", FFmpegStreamType.Video)
+                new("audio.aac", 1, "aac", FFmpegStreamType.Audio),
+                new("video.265", 0, "h265", FFmpegStreamType.Video)
             },
             "dest.mkv", true, true
         };
         yield return new object[] {
             new List<MediaStream>() {
-                new MediaStream(".264", 1, "h264", FFmpegStreamType.Video)
+                new(".264", 1, "h264", FFmpegStreamType.Video)
             },
             ".mkv", true, false
         };
@@ -290,8 +291,7 @@ public class MediaMuxerTests
             typeof(ArgumentNullException)
         };
         yield return new object[] {
-            new List<string>() {
-            },
+            new List<string>(),
             "dest.mkv",
             typeof(ArgumentException)
         };
@@ -373,6 +373,7 @@ public class MediaMuxerTests
 
 
     [Fact]
+    // ReSharper disable once ObjectCreationAsStatement
     public void Constructor_WithFactory_Success() => new MediaMuxer(new FakeProcessService(), new FakeFileSystemService(), Mock.Of<IMediaInfoReader>());
 
     [Fact]
@@ -382,8 +383,8 @@ public class MediaMuxerTests
     public void Constructor_NullDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaMuxer(_factory, null, null));
 
 
-    // DjvuTheory is required to serialize FFmpegStream argument, otherwise we cannot see the list of theory cases.
-    [DjvuTheory]
+    // Theory is required to serialize FFmpegStream argument, otherwise we cannot see the list of theory cases.
+    [Theory]
     [MemberData(nameof(GenerateStreamLists_Valid))]
     public void Muxe_StreamList_Valid_Success(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
     {
@@ -396,7 +397,7 @@ public class MediaMuxerTests
         AssertFFmpegManager(hasVideo, hasAudio);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateStreamLists_EmptyArgs))]
     public void Muxe_StreamList_EmptyArgs_ThrowsNullException(IEnumerable<MediaStream> fileStreams, string destination, Type ex)
     {
@@ -407,32 +408,32 @@ public class MediaMuxerTests
         Assert.Throws(ex, Act);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateStreamLists_FixAac))]
     public void Muxe_StreamList_WithAudioAac_AddArgumentFixAac(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
     {
-        Muxe_StreamList_FixAudio(fileStreams, destination, FIXAAC, hasVideo, hasAudio);
+        Muxe_StreamList_FixAudio(fileStreams, destination, FixAac, hasVideo, hasAudio);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateStreamLists_FixPcm))]
     public void Muxe_StreamList_WithAudioPcm_AddArgumentFixPcm(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
     {
-        Muxe_StreamList_FixAudio(fileStreams, destination, FIXPCM, hasVideo, hasAudio);
+        Muxe_StreamList_FixAudio(fileStreams, destination, FixPcm, hasVideo, hasAudio);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateStreamLists_DoNotFixAac))]
     public void Muxe_StreamList_WithNoAudioAac_DoNotAddArgumentFixAac(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
     {
-        Muxe_StreamList_FixAudio(fileStreams, destination, FIXAAC, hasVideo, hasAudio, false);
+        Muxe_StreamList_FixAudio(fileStreams, destination, FixAac, hasVideo, hasAudio, false);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateStreamLists_DoNotFixPcm))]
     public void Muxe_StreamList_WithNoAudioPcm_DoNotAddArgumentFixPcm(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
     {
-        Muxe_StreamList_FixAudio(fileStreams, destination, FIXPCM, hasVideo, hasAudio, false);
+        Muxe_StreamList_FixAudio(fileStreams, destination, FixPcm, hasVideo, hasAudio, false);
     }
 
     private void Muxe_StreamList_FixAudio(IEnumerable<MediaStream> fileStreams, string destination, string fixString, bool hasVideo, bool hasAudio, bool fixStringExpected = true)
@@ -447,13 +448,13 @@ public class MediaMuxerTests
         manager.CommandWithArgs.ContainsOrNot(fixString, fixStringExpected);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateStreamLists_H264IntoMkv))]
     public void Muxe_StreamsList_H264IntoMkv_MuxeIntoMp4First(IEnumerable<MediaStream> fileStreams, string destination, bool hasVideo, bool hasAudio)
     {
         var muxer = SetupMuxer();
 
-        var result = muxer.Muxe(fileStreams, destination, null);
+        var result = muxer.Muxe(fileStreams, destination);
 
         Assert.Equal(CompletionStatus.Success, result);
         Assert.True(_factory.Instances.Count > 1);
@@ -464,7 +465,7 @@ public class MediaMuxerTests
         AssertFFmpegManager(hasVideo, hasAudio);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateStreamLists_SingleValid))]
     public void Muxe_StreamsList_ParamOptions_ReturnsSame(IEnumerable<MediaStream> fileStreams, string destination)
     {
@@ -476,14 +477,14 @@ public class MediaMuxerTests
         Assert.Same(options, _factory.Instances[0].Options);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateStreamLists_SingleValid))]
     public void Muxe_StreamsList_ParamCallback_CallbackCalled(IEnumerable<MediaStream> fileStreams, string destination)
     {
         var muxer = SetupMuxer();
         var callbackCalled = 0;
 
-        var result = muxer.Muxe(fileStreams, destination, null, (s, e) => callbackCalled++);
+        muxer.Muxe(fileStreams, destination, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }
@@ -572,7 +573,7 @@ public class MediaMuxerTests
         var muxer = SetupMuxer();
         var callbackCalled = 0;
 
-        var result = muxer.Muxe(videoFile, audioFile, destination, null, (s, e) => callbackCalled++);
+        muxer.Muxe(videoFile, audioFile, destination, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }
@@ -621,7 +622,7 @@ public class MediaMuxerTests
         var muxer = SetupMuxer();
         var callbackCalled = 0;
 
-        muxer.ExtractAudio(source, destination, null, (s, e) => callbackCalled++);
+        muxer.ExtractAudio(source, destination, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }
@@ -670,7 +671,7 @@ public class MediaMuxerTests
         var muxer = SetupMuxer();
         var callbackCalled = 0;
 
-        var result = muxer.ExtractVideo(source, destination, null, (s, e) => callbackCalled++);
+        muxer.ExtractVideo(source, destination, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }
@@ -719,7 +720,7 @@ public class MediaMuxerTests
         var muxer = SetupMuxer();
         var callbackCalled = 0;
 
-        var result = muxer.Concatenate(files, destination, null, (s, e) => callbackCalled++);
+        muxer.Concatenate(files, destination, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }
@@ -768,7 +769,7 @@ public class MediaMuxerTests
         var muxer = SetupMuxer();
         var callbackCalled = 0;
 
-        muxer.Truncate(source, destination, startPos, duration, null, (s, e) => callbackCalled++);
+        muxer.Truncate(source, destination, startPos, duration, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }

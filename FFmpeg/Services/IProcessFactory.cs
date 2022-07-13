@@ -15,5 +15,5 @@ internal interface IProcessFactory
     /// Creates a new instance of IProcess as a wrapper around an existing process.
     /// </summary>
     /// <param name="process">The process to wrap the new class around.</param>
-    IProcess Create(Process process);
+    IProcess Create(Process? process);
 }

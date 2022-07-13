@@ -2,7 +2,7 @@
 
 public class FakeUserInterfaceManagerBase : UserInterfaceManagerBase
 {
-    public List<IUserInterfaceWindow> Instances { get; private set; } = new List<IUserInterfaceWindow>();
+    public List<IUserInterfaceWindow> Instances { get; private set; } = new();
 
     public override IUserInterfaceWindow CreateUI(object owner, string title, bool autoClose)
     {

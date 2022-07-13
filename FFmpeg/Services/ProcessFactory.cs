@@ -8,5 +8,5 @@ internal class ProcessFactory : IProcessFactory
     /// <inheritdoc />
     public IProcess Create() => new ProcessWrapper();
     /// <inheritdoc />
-    public IProcess Create(Process process) => new ProcessWrapper(process);
+    public IProcess Create(Process? process) => new ProcessWrapper(process);
 }

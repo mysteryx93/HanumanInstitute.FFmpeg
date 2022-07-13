@@ -11,7 +11,7 @@ public class FakeMediaInfoReader : IMediaInfoReader
     public FileInfoFFmpeg GetFileInfo(string source, ProcessOptionsEncoder options = null, ProcessStartedEventHandler callback = null)
     {
         var result = new FileInfoFFmpeg();
-        result.ParseFileInfo(OutputText, null);
+        result.ParseFileInfo(OutputText);
         return result;
     }
 

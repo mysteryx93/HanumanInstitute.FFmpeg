@@ -20,7 +20,7 @@ public class ProcessManager : IProcessManager
     /// Initializes a new instance of the ProcessManager class.
     /// </summary>
     /// <param name="appPaths"></param>
-    public ProcessManager(IOptions<AppPaths>? appPaths) : this(appPaths, new WindowsApiService(), new FileSystemService()) { }
+    public ProcessManager(IOptions<AppPaths>? appPaths = null) : this(appPaths, new WindowsApiService(), new FileSystemService()) { }
 
     internal ProcessManager(IOptions<AppPaths>? appPaths, IWindowsApiService winApi, IFileSystemService fileSystemService)
     {

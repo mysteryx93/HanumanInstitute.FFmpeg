@@ -8,23 +8,23 @@ namespace HanumanInstitute.FFmpeg;
 public class AppPaths
 {
     /// <summary>
-    /// Gets or sets the path to FFmpeg.exe
+    /// Gets or sets the path to FFmpeg
     /// </summary>
     public string FFmpegPath { get; set; } = "ffmpeg";
     /// <summary>
-    /// Gets or sets the path to X264.exe
+    /// Gets or sets the path to X264
     /// </summary>
     public string X264Path { get; set; } = "x264";
     /// <summary>
-    /// Gets or sets the path to X265.exe
+    /// Gets or sets the path to X265
     /// </summary>
     public string X265Path { get; set; } = "x265";
     /// <summary>
-    /// Gets or sets the path to avs2pipemod.exe to use Avisynth in a separate process.
+    /// Gets or sets the path to avs2yuv to use Avisynth in a separate process.
     /// </summary>
-    public string Avs2PipeMod { get; set; } = "avs2pipemod";
+    public string Avs2Yuv { get; set; } = "avs2yuv";
     /// <summary>
-    /// Gets or sets the path to vspipe.exe to use VapourSynth in a separate process.
+    /// Gets or sets the path to vspipe to use VapourSynth in a separate process.
     /// </summary>
     public string VsPipePath { get; set; } = "vspipe";
 }

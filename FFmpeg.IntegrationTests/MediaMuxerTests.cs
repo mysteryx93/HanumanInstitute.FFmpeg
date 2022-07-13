@@ -149,7 +149,7 @@ public class MediaMuxerTests
         Assert.Equal(streamCount, fileInfo.FileStreams.Count);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateMuxeLists_Valid))]
     public void Muxe_List_Valid_Success(IEnumerable<MediaStream> fileStreams, string destExt, int streamCount)
     {
@@ -168,7 +168,7 @@ public class MediaMuxerTests
         Assert.Equal(streamCount, fileInfo.FileStreams.Count);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateMuxeLists_Invalid))]
     public void Muxe_List_Invalid_ReturnsStatusFailed(IEnumerable<MediaStream> fileStreams, string destExt, int _)
     {
@@ -272,7 +272,7 @@ public class MediaMuxerTests
         Assert.Equal(CompletionStatus.Failed, result);
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateTruncate_Valid))]
     public void Truncate_Valid_Success(string source, string destExt, TimeSpan? startPos, TimeSpan? duration)
     {
@@ -297,7 +297,7 @@ public class MediaMuxerTests
         }
     }
 
-    [DjvuTheory]
+    [Theory]
     [MemberData(nameof(GenerateTruncate_Invalid))]
     public void Truncate_Invalid_StatusFailed(string source, string destExt, TimeSpan? startPos, TimeSpan? duration)
     {

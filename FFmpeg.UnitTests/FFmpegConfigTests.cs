@@ -1,4 +1,7 @@
-﻿namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿using System.Runtime.InteropServices;
+using Microsoft.Extensions.Options;
+
+namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class FFmpegConfigTests
 {
@@ -9,13 +12,13 @@ public class FFmpegConfigTests
         _api = new Mock<IWindowsApiService>(MockBehavior.Strict);
         _api.Setup(x => x.AttachConsole(It.IsAny<uint>())).Returns(false);
         var fileSystem = new FakeFileSystemService();
-        return new ProcessManager(_api.Object, fileSystem);
+        return new ProcessManager(null, _api.Object, fileSystem);
     }
 
     [Theory]
-    [InlineData(EncoderApp.FFmpeg, "ffmpeg.exe")]
-    [InlineData(EncoderApp.x264, "x264.exe")]
-    [InlineData(EncoderApp.x265, "x265.exe")]
+    [InlineData(EncoderApp.FFmpeg, "ffmpeg")]
+    [InlineData(EncoderApp.x264, "x264")]
+    [InlineData(EncoderApp.x265, "x265")]
     public void GetAppPath_EachValue_MatchesResult(EncoderApp encoderApp, string expectedValue)
     {
         var config = SetupConfig();
@@ -25,29 +28,19 @@ public class FFmpegConfigTests
         Assert.Equal(expectedValue, result);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void SoftKill_Valid_AttachedConsoleCalled(bool handled)
+    [Fact]
+    public void SoftKill_Valid_AttachedConsoleCalled()
     {
         var config = SetupConfig();
-        CloseProcessEventArgs calledArgs = null;
-        config.CloseProcess += (s, e) =>
-        {
-            calledArgs = e;
-            if (handled)
-            {
-                e.Handled = true;
-            }
-        };
         var process = Mock.Of<IProcess>(x => x.HasExited == true && x.Id == 1);
 
         var result = config.SoftKill(process);
 
         Assert.True(result);
-        Assert.NotNull(calledArgs);
-        Assert.Equal(process, calledArgs.Process);
         // Very AttachConsole was called. The rest of SoftKillWinApp will not be tested.
-        _api.Verify(x => x.AttachConsole((uint)process.Id), handled ? Times.Never() : Times.Once());
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            _api.Verify(x => x.AttachConsole((uint)process.Id), Times.Once());
+        }
     }
 }

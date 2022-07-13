@@ -55,7 +55,7 @@ public class FileInfoX264 : IFileInfoParser
     /// </summary>
     /// <param name="outputText">The raw output line from x264.</param>
     /// <returns>A EncoderStatus object.</returns>
-    private static long ParseFrameCount(string outputText)
+    internal static long ParseFrameCount(string outputText)
     {
         if (!outputText.HasValue())
         {

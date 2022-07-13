@@ -1,10 +1,11 @@
-﻿namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿// ReSharper disable AssignNullToNotNullAttribute
+namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class TimeLeftCalculatorTests
 {
     private const int FrameCount = 200;
     private const int HistoryLength = 4;
-    private FakeEnvironmentService _environment = new FakeEnvironmentService();
+    private FakeEnvironmentService _environment = new();
 
     public ITimeLeftCalculator SetupCalc()
     {
@@ -34,7 +35,12 @@ public class TimeLeftCalculatorTests
     public void Constructor_WithDependency_Success() => new TimeLeftCalculator(_environment, FrameCount, HistoryLength).Calculate(0);
 
     [Fact]
-    public void Constructor_NullDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new TimeLeftCalculator(null, FrameCount, HistoryLength));
+    public void Constructor_NullDependency_ThrowsException()
+    {
+        TimeLeftCalculator Act() => new(null, FrameCount, HistoryLength);
+        
+        Assert.Throws<ArgumentNullException>(Act);  
+    } 
 
     [Fact]
     public void Constructor_MinValues_Success() => new TimeLeftCalculator(_environment, 0, 1).Calculate(0);
@@ -94,8 +100,8 @@ public class TimeLeftCalculatorTests
         {
             frame += 10;
             CalcValidate(calc, frame, 1);
-            Assert.InRange<double>(calc.ResultFps, 5, 10);
-            Assert.InRange<double>(calc.ResultTimeLeft.TotalSeconds, 0, 15);
+            Assert.InRange(calc.ResultFps, 5, 10);
+            Assert.InRange(calc.ResultTimeLeft.TotalSeconds, 0, 15);
         }
 
         Assert.Equal(10, calc.ResultFps);

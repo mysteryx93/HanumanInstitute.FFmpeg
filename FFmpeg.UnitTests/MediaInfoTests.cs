@@ -28,9 +28,11 @@ public class MediaInfoTests
 
 
     [Fact]
+    // ReSharper disable once ObjectCreationAsStatement
     public void Constructor_WithFactory_Success() => new MediaInfoReader(new FakeProcessService());
 
     [Fact]
+    // ReSharper disable once AssignNullToNotNullAttribute
     public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaInfoReader(null));
 
 
@@ -62,7 +64,7 @@ public class MediaInfoTests
         var info = SetupInfo();
         var callbackCalled = 0;
 
-        info.GetVersion(null, (s, e) => callbackCalled++);
+        info.GetVersion(null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }
@@ -109,7 +111,7 @@ public class MediaInfoTests
         var info = SetupInfo();
         var callbackCalled = 0;
 
-        info.GetFileInfo(source, null, (s, e) => callbackCalled++);
+        info.GetFileInfo(source, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }
@@ -157,7 +159,7 @@ public class MediaInfoTests
         var info = SetupInfo();
         var callbackCalled = 0;
 
-        info.GetFrameCount(source, null, (s, e) => callbackCalled++);
+        info.GetFrameCount(source, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }

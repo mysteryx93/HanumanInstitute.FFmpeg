@@ -1,4 +1,5 @@
-﻿namespace HanumanInstitute.FFmpeg.UnitTests;
+﻿// ReSharper disable AssignNullToNotNullAttribute
+namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class UserInterfaceManagerBaseTests
 {
@@ -7,6 +8,7 @@ public class UserInterfaceManagerBaseTests
     protected const int TestJobId = 0;
     private Mock<IProcessManager> _config;
 
+    // ReSharper disable once InconsistentNaming
     protected static Mock<FakeUserInterfaceManagerBase> SetupUI()
     {
         return new Mock<FakeUserInterfaceManagerBase>() { CallBase = true };
@@ -16,7 +18,7 @@ public class UserInterfaceManagerBaseTests
     {
         _config = new Mock<IProcessManager>();
         var factory = new FakeProcessFactory();
-        return new ProcessWorker(_config.Object, factory, null);
+        return new ProcessWorker(_config.Object, factory);
     }
 
     [Theory]
@@ -35,8 +37,10 @@ public class UserInterfaceManagerBaseTests
     public void Start_NullJobId_ThrowsNullException()
     {
         var uiMock = SetupUI();
+        
+        void Act() => uiMock.Object.Start(null, null, TestTitle);
 
-        Assert.Throws<ArgumentNullException>(() => uiMock.Object.Start(null, null, TestTitle));
+        Assert.Throws<ArgumentNullException>(Act);
     }
 
     [Fact]
@@ -48,7 +52,7 @@ public class UserInterfaceManagerBaseTests
         uiMock.Object.Close(TestJobId);
 
         Assert.Single(uiMock.Object.Instances);
-        var wMock = Mock.Get<IUserInterfaceWindow>(uiMock.Object.Instances[0]);
+        var wMock = Mock.Get(uiMock.Object.Instances[0]);
         wMock.Verify(x => x.Close(), Times.Once);
     }
 
@@ -62,7 +66,7 @@ public class UserInterfaceManagerBaseTests
         uiMock.Object.Start(null, TestJobId, TestTitle);
         uiMock.Object.Display(null, manager);
 
-        var wMock = Mock.Get<IUserInterfaceWindow>(uiMock.Object.Instances[0]);
+        var wMock = Mock.Get(uiMock.Object.Instances[0]);
         wMock.Verify(x => x.DisplayTask(It.IsAny<IProcessWorker>()), Times.Once);
     }
 

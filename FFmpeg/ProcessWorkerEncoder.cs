@@ -9,8 +9,8 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
     private readonly IFileSystemService _fileSystem;
     private readonly IFileInfoParserFactory _parserFactory;
 
-    internal ProcessWorkerEncoder(IProcessManager config, IProcessFactory processFactory, IFileSystemService fileSystemService, IFileInfoParserFactory parserFactory, ProcessOptionsEncoder options)
-        : base(config, processFactory, options)
+    internal ProcessWorkerEncoder(IProcessManager config, IProcessFactory processFactory, IFileSystemService fileSystemService, IFileInfoParserFactory parserFactory, ProcessOptionsEncoder? options)
+        : base(config, processFactory, options ??= new ProcessOptionsEncoder())
     {
         _fileSystem = fileSystemService.CheckNotNull(nameof(fileSystemService));
         _parserFactory = parserFactory.CheckNotNull(nameof(parserFactory));
@@ -68,7 +68,7 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
         //if (!_fileSystem.Exists(Config.Avs2PipeMod)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, Config.Avs2PipeMod)); }
         EnsureNotRunning();
         EncoderApp = encoderApp;
-        var query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" -y4mp ""{1}"" | ""{2}"" {3}", Processes.Paths.Avs2PipeMod, source, Processes.GetAppPath(encoderApp), arguments);
+        var query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" -y4mp ""{1}"" | ""{2}"" {3}", Processes.Paths.Avs2Yuv, source, Processes.GetAppPath(encoderApp), arguments);
         return RunAsCommand(query);
     }
 

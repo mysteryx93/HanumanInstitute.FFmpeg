@@ -2,7 +2,7 @@
 
 public class MediaEncoderTests
 {
-    private readonly FakeProcessService _factory = new FakeProcessService();
+    private readonly FakeProcessService _factory = new();
     private const string SourcePath = "source", DestPath = "dest";
     private readonly ITestOutputHelper _output;
 
@@ -31,28 +31,28 @@ public class MediaEncoderTests
     public static IEnumerable<object[]> GenerateEncodeFFmpeg_Valid()
     {
         yield return new object[] {
-            new string[] { "a", "b", "c" },
-            new string[] { "d", "e", "f" },
+            new[] { "a", "b", "c" },
+            new[] { "d", "e", "f" },
             "args", true, true
         };
         yield return new object[] {
-            new string[] { "a", "b", "c" },
+            new[] { "a", "b", "c" },
             null,
             null, true, false
         };
         yield return new object[] {
             null,
-            new string[] { "d", "e", "f" },
+            new[] { "d", "e", "f" },
             "args", false, true
         };
         yield return new object[] {
-            new string[] { null, "", "c" },
-            new string[] { "", "", null },
+            new[] { null, "", "c" },
+            new[] { "", "", null },
             "", true, false
         };
         yield return new object[] {
             new string[] { null },
-            new string[] { "a" },
+            new[] { "a" },
             "", false, true
         };
     }
@@ -72,18 +72,19 @@ public class MediaEncoderTests
             Array.Empty<string>()
         };
         yield return new object[] {
-            new string[] { null, "" },
-            new string[] { "", null }
+            new[] { null, "" },
+            new[] { "", null }
         };
     }
 
 
     [Fact]
+    // ReSharper disable once ObjectCreationAsStatement
     public void Constructor_WithFactory_Success() => new MediaEncoder(_factory);
 
     [Fact]
+    // ReSharper disable once AssignNullToNotNullAttribute
     public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaEncoder(null));
-
 
     [Theory]
     [InlineData(true)]
@@ -126,7 +127,7 @@ public class MediaEncoderTests
         var encoder = SetupEncoder();
         var callbackCalled = 0;
 
-        encoder.ConvertToAviUtVideo(SourcePath, DestPath, false, null, (s, e) => callbackCalled++);
+        encoder.ConvertToAviUtVideo(SourcePath, DestPath, false, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }
@@ -176,7 +177,7 @@ public class MediaEncoderTests
         var encoder = SetupEncoder();
         var callbackCalled = 0;
 
-        encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecTest, null, null, null, (s, e) => callbackCalled++);
+        encoder.EncodeFFmpeg(SourcePath, DestPath, VideoCodecTest, null, null, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }
@@ -278,7 +279,7 @@ public class MediaEncoderTests
 
     [Theory]
     [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
-    public void EncodeVapourSynthToFFmpeg_NulllSourceDest_ThrowsException(string source, string dest, Type ex)
+    public void EncodeVapourSynthToFFmpeg_NullSourceDest_ThrowsException(string source, string dest, Type ex)
     {
         var encoder = SetupEncoder();
 
@@ -330,7 +331,7 @@ public class MediaEncoderTests
         var encoder = SetupEncoder();
         var callbackCalled = 0;
 
-        encoder.EncodeX264(SourcePath, DestPath, VideoCodecTest, null, (s, e) => callbackCalled++);
+        encoder.EncodeX264(SourcePath, DestPath, VideoCodecTest, null, (_, _) => callbackCalled++);
 
         Assert.Equal(1, callbackCalled);
     }

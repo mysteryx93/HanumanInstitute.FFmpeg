@@ -5,4 +5,3 @@ global using System.Linq;
 global using HanumanInstitute.FFmpeg.Services;
 global using Xunit;
 global using Xunit.Abstractions;
-global using DjvuNet.Tests.Xunit;

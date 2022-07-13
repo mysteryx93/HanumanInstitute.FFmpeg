@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics;
+// ReSharper disable ClassWithVirtualMembersNeverInherited.Global
 
 namespace HanumanInstitute.FFmpeg.UnitTests;
 
 public class FakeProcessFactory : IProcessFactory
 {
-    public FakeProcessFactory() { }
-
     public virtual IProcess Create() => Create(null);
 
     public virtual IProcess Create(Process process)
