@@ -1,0 +1,37 @@
+﻿<Window x:Class="HanumanInstitute.FFmpegExampleApplication.Views.MainView"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HanumanInstitute.FFmpegExampleApplication"
+        Title="FFmpeg.NET Example Application" CanResize="False"
+        mc:Ignorable="d" Height="132" MinHeight="132" MaxHeight="132" Width="369" MinWidth="369" MaxWidth="369"
+        DataContext="{x:Static local:ViewModelLocator.Main}">
+    <Grid>
+        <Grid Margin="10">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto">
+                <Grid.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="Margin" Value="0,4,10,4" />
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                </Grid.Styles>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Source" />
+                <TextBox Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" Text="{Binding SourcePath}" />
+                <Button Grid.Row="0" Grid.Column="2" Content="..." Width="22" Height="24" Padding="3"
+                        Command="{Binding ShowOpenFile, Mode=OneWay}" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Destination" />
+                <TextBox Grid.Row="1" Grid.Column="1" VerticalContentAlignment="Center" Margin="0,2,0,2"
+                         Text="{Binding DestinationPath}" />
+                <Button Grid.Row="1" Grid.Column="2" Content="..." Width="22" Height="24" Padding="3"
+                        Command="{Binding ShowSaveFile, Mode=OneWay}" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="Encodes video to H264/AAC" />
+                <Grid Row="3" Column="1">
+                    <Button Content="_Simple" Width="100" Command="{Binding RunSimpleTask, Mode=OneWay}" />
+                    <Button Content="_Complex" Width="100" Command="{Binding RunComplexTask, Mode=OneWay}"
+                            HorizontalAlignment="Right" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

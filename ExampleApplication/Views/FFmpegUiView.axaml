@@ -1,0 +1,35 @@
+﻿<Window x:Class="HanumanInstitute.FFmpegExampleApplication.Views.FFmpegUiView"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HanumanInstitute.FFmpegExampleApplication"
+        Title="{Binding TitleWithStatus, Mode=OneWay}" ShowInTaskbar="False" CanResize="False"
+        Height="80" MinHeight="80" MaxHeight="80" Width="426" MinWidth="426" MaxWidth="426"
+        DataContext="{x:Static local:ViewModelLocator.FFmpegUi}"
+        mc:Ignorable="d" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid Margin="10">
+            <ProgressBar Height="20" VerticalAlignment="Top" Value="{Binding ProgressBarValue, Mode=OneWay}"
+                         Maximum="{Binding ProgressBarMax, Mode=OneWay}" />
+            <TextBlock Margin="5,2,0,2" Text="{Binding TaskName, Mode=OneWay}" />
+            <Grid Margin="0,30,0,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Height="30">
+                    <StackPanel.Styles>
+                        <Style Selector="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                    </StackPanel.Styles>
+                    <TextBlock Foreground="Blue" Text="{Binding Status}" Width="80" />
+                    <TextBlock Text="Fps: " />
+                    <TextBlock Foreground="Blue" Text="{Binding Fps, Mode=OneWay}" Width="50" />
+                    <TextBlock Text="Time left: " />
+                    <TextBlock Foreground="Blue" Text="{Binding TimeLeft, Mode=OneWay}" Width="50" />
+                </StackPanel>
+                <Button HorizontalAlignment="Right" VerticalAlignment="Top" Height="30"
+                        Content="{Binding CancelText, Mode=OneWay}" Width="75" IsCancel="True"
+                        Command="{Binding CloseCommand, Mode=OneWay}" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,39 +1,33 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows;
-using MvvmDialogs;
-using HanumanInstitute.FFmpeg;
-using GalaSoft.MvvmLight.Threading;
+﻿using Avalonia.Threading;
 
-namespace HanumanInstitute.FFmpegExampleApplication.Business
+namespace HanumanInstitute.FFmpegExampleApplication.Business;
+
+public class FFmpegUserInterfaceManager : UserInterfaceManagerBase
 {
-    public class FFmpegUserInterfaceManager : UserInterfaceManagerBase
+    private readonly IDialogService _dialogService;
+
+    public FFmpegUserInterfaceManager(IDialogService dialogService)
     {
-        private IDialogService _dialogService;
-        private IFFmpegUserInterfaceFactory _uiFactory;
+        _dialogService = dialogService;
+    }
 
-        public FFmpegUserInterfaceManager(IFFmpegUserInterfaceFactory uiFactory, IDialogService dialogService)
-        {
-            _dialogService = dialogService;
-            _uiFactory = uiFactory;
-        }
+    public override IUserInterfaceWindow CreateUI(object? owner, string title, bool autoClose)
+    {
+        var ui = _dialogService.CreateViewModel<FFmpegUiViewModel>();
+        ui.Title = title;
+        ui.AutoClose = autoClose;
 
-        public override IUserInterfaceWindow CreateUI(object owner, string title, bool autoClose)
-        {
-            var ui = _uiFactory.CreateUI(title, autoClose);
-            DispatcherHelper.CheckBeginInvokeOnUI(() =>
-            {
-                _dialogService.ShowDialog(owner as INotifyPropertyChanged, ui);
-            });
-            return ui;
-        }
+        Dispatcher.UIThread.InvokeAsync(() => 
+            _dialogService.ShowDialogAsync((INotifyPropertyChanged)owner!, ui));
+        return ui;
+    }
 
-        public override void DisplayError(object owner, IProcessWorker host)
-        {
-            DispatcherHelper.CheckBeginInvokeOnUI(() =>
-            {
-                _dialogService.ShowDialog(owner as INotifyPropertyChanged, _uiFactory.CreateError(host));
-            });
-        }
+    public override void DisplayError(object? owner, IProcessWorker host)
+    {
+        var ui = _dialogService.CreateViewModel<FFmpegErrorViewModel>();
+        ui.Process = host;
+        
+        Dispatcher.UIThread.InvokeAsync(() => 
+            _dialogService.ShowDialogAsync((INotifyPropertyChanged)owner!, ui));
     }
 }

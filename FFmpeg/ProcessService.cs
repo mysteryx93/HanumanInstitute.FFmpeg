@@ -30,9 +30,9 @@ public class ProcessService : IProcessService
     /// and altering soft process close behavior. Altering soft close behavior is required for console applications.</param>
     /// <param name="uiManager">A custom class that will receive notifications for display.</param>
     /// <param name="parserFactory">A custom factory to parse output from additional applications.</param>
-    public ProcessService(IProcessManager processManager, IUserInterfaceManager? uiManager = null,
+    public ProcessService(IProcessManager? processManager, IUserInterfaceManager? uiManager = null,
         IFileInfoParserFactory? parserFactory = null) :
-        this(processManager, uiManager, parserFactory ?? new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService())
+        this(processManager ?? new ProcessManager(), uiManager, parserFactory ?? new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService())
     {
     }
 

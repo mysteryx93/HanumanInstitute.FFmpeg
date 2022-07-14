@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFmpeg", "FFmpeg\FFmpeg.csproj", "{C01178B4-A869-45F8-9B2B-7683F9EBB53D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleApplication", "ExampleApplication\ExampleApplication.csproj", "{A5C0D2BE-F95D-4105-9CA5-BA6B7F94FCB8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D88EA79E-DBA5-4FD5-A39D-569D7ADD0D8A}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -15,6 +13,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFmpeg.UnitTests", "FFmpeg.UnitTests\FFmpeg.UnitTests.csproj", "{2B8E982F-0A3F-4FA7-BB64-06B49374D0AB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFmpeg.IntegrationTests", "FFmpeg.IntegrationTests\FFmpeg.IntegrationTests.csproj", "{E1C8D143-C627-48BF-9063-67C419097B19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleApplication", "ExampleApplication\ExampleApplication.csproj", "{447039C1-8ADF-4931-89E7-B27320D2CA7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,10 +26,6 @@ Global
 		{C01178B4-A869-45F8-9B2B-7683F9EBB53D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C01178B4-A869-45F8-9B2B-7683F9EBB53D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C01178B4-A869-45F8-9B2B-7683F9EBB53D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A5C0D2BE-F95D-4105-9CA5-BA6B7F94FCB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A5C0D2BE-F95D-4105-9CA5-BA6B7F94FCB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A5C0D2BE-F95D-4105-9CA5-BA6B7F94FCB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A5C0D2BE-F95D-4105-9CA5-BA6B7F94FCB8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2B8E982F-0A3F-4FA7-BB64-06B49374D0AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2B8E982F-0A3F-4FA7-BB64-06B49374D0AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B8E982F-0A3F-4FA7-BB64-06B49374D0AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -38,6 +34,10 @@ Global
 		{E1C8D143-C627-48BF-9063-67C419097B19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1C8D143-C627-48BF-9063-67C419097B19}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1C8D143-C627-48BF-9063-67C419097B19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{447039C1-8ADF-4931-89E7-B27320D2CA7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{447039C1-8ADF-4931-89E7-B27320D2CA7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{447039C1-8ADF-4931-89E7-B27320D2CA7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{447039C1-8ADF-4931-89E7-B27320D2CA7D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

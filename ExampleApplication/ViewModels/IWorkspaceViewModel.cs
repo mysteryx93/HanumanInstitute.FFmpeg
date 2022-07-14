@@ -1,16 +1,9 @@
-﻿using System;
-using GalaSoft.MvvmLight.CommandWpf;
-using MvvmDialogs;
+﻿namespace HanumanInstitute.FFmpegExampleApplication.ViewModels;
 
-namespace HanumanInstitute.FFmpegExampleApplication.ViewModels
+public interface IWorkspaceViewModel : IModalDialogViewModel, ICloseable
 {
-    public interface IWorkspaceViewModel : IModalDialogViewModel
-    {
-        event EventHandler RequestClose;
-        RelayCommand CloseCommand { get; }
-        string DisplayName { get; set; }
-        bool CanClose { get; set; }
-        bool OnClosing();
-        void OnRequestClose();
-    }
+    bool CanClose { get; set; }
+    ICommand CloseCommand { get; }
+    string DisplayName { get; set; }
+    bool OnClosing();
 }

@@ -1,28 +1,16 @@
-﻿using System;
-using System.ComponentModel;
-using HanumanInstitute.FFmpeg;
-using MvvmDialogs;
+﻿
+namespace HanumanInstitute.FFmpegExampleApplication.ViewModels;
 
-namespace HanumanInstitute.FFmpegExampleApplication.ViewModels
+// ReSharper disable once InconsistentNaming
+public class FFmpegErrorViewModel : WorkspaceViewModel
 {
-    public interface IFFmpegErrorViewModel : IWorkspaceViewModel
-    {
-        string Title { get; }
-        string OutputText { get; }
-    }
+    public IProcessWorker? Process { get; set; }
 
-    public class FFmpegErrorViewModel : WorkspaceViewModel, IFFmpegErrorViewModel
-    {
-        public FFmpegErrorViewModel(IProcessWorker host)
-        {
-            if (host == null) { throw new ArgumentNullException(nameof(host)); }
+    public string Title => Process != null ?
+        (Process.LastCompletionStatus == CompletionStatus.Timeout ? "Timeout: " : "Failed: ") + Process.Options.Title :
+        string.Empty;
 
-            Title = (host.LastCompletionStatus == CompletionStatus.Timeout ? "Timeout: " : "Failed: ") + host.Options.Title;
-            OutputText = host.CommandWithArgs + Environment.NewLine + Environment.NewLine + host.Output;
-        }
-
-        public string Title { get; private set; }
-
-        public string OutputText { get; private set; }
-    }
+    public string OutputText => Process != null ?
+        Process.CommandWithArgs + Environment.NewLine + Environment.NewLine + Process.Output :
+        string.Empty;
 }

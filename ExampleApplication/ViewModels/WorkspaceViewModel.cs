@@ -1,39 +1,37 @@
-﻿using System;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.CommandWpf;
+﻿using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 
+namespace HanumanInstitute.FFmpegExampleApplication.ViewModels;
 
-namespace HanumanInstitute.FFmpegExampleApplication.ViewModels
+public class WorkspaceViewModel : ReactiveObject, IWorkspaceViewModel
 {
-    public class WorkspaceViewModel : ViewModelBase, IWorkspaceViewModel
+    public WorkspaceViewModel() : this(string.Empty, true) { }
+
+    [Reactive] public bool CanClose { get; set; }
+
+    public WorkspaceViewModel(string displayName, bool canClose)
     {
-        public WorkspaceViewModel() { }
+        DisplayName = displayName;
+        CanClose = canClose;
+    }
 
-        public WorkspaceViewModel(string displayName, bool canClose)
+    public event EventHandler? RequestClose;
+
+    public ICommand CloseCommand => _close ??= ReactiveCommand.Create(CloseImpl, 
+        this.WhenAnyValue(x => x.CanClose));
+    private ICommand? _close;
+    private void CloseImpl()
+    {
+        if (OnClosing())
         {
-            DisplayName = displayName;
-            CanClose = canClose;
-        }
-
-        public event EventHandler RequestClose;
-
-        private RelayCommand _closeCommand;
-        public RelayCommand CloseCommand => this.InitCommand(ref _closeCommand, OnRequestClose, () => CanClose, true);
-
-        public string DisplayName { get; set; }
-
-        public bool CanClose { get; set; } = true;
-
-        public bool? DialogResult { get; set; }
-
-        public virtual bool OnClosing() => CanClose;
-
-        public void OnRequestClose()
-        {
-            if (OnClosing())
-            {
-                RequestClose?.Invoke(this, new EventArgs());
-            }
+            RequestClose?.Invoke(this, EventArgs.Empty);
         }
     }
+
+    public string DisplayName { get; set; }
+
+    public bool? DialogResult { get; } = true;
+
+    public virtual bool OnClosing() => CanClose;
+
 }
