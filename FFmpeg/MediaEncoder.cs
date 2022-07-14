@@ -51,7 +51,7 @@ public class MediaEncoder : IMediaEncoder
     /// <inheritdoc />
     public CompletionStatus EncodeAvisynthToFFmpeg(string source, string destination, string? videoCodec, string? audioCodec,
         string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null) =>
-        EncodeFFmpegInternal(SourceType.Direct, source, destination, videoCodec, audioCodec, encodeArgs, options, callback);
+        EncodeFFmpegInternal(SourceType.Avisynth, source, destination, videoCodec, audioCodec, encodeArgs, options, callback);
 
     /// <inheritdoc />
     public CompletionStatus EncodeVapourSynthToFFmpeg(string source, string destination, string? videoCodec, string? audioCodec,

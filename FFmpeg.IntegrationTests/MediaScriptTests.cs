@@ -38,6 +38,4 @@ public class MediaScriptTests
 
         Assert.Equal(CompletionStatus.Success, result);
     }
-
-
 }

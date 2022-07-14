@@ -30,12 +30,7 @@ public class MediaScript : IMediaScript
     {
         path.CheckNotNullOrEmpty(nameof(path));
 
-        // if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
-        // {
-        //     throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));
-        // }
-
-        var args = Invariant($@"""{path}"" -rawvideo > NUL");
+        var args = Invariant($@"""{path}"" - > NUL");
         var worker = _factory.CreateProcess(Owner, options, callback);
         worker.OutputType = ProcessOutput.Error;
         var cmd = Invariant($@"""{_factory.Processes.Paths.Avs2Yuv}"" {args}");
@@ -47,11 +42,6 @@ public class MediaScript : IMediaScript
     public CompletionStatus RunVapourSynth(string path, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
         path.CheckNotNullOrEmpty(nameof(path));
-
-        // if (!_fileSystem.Exists(_factory.Config.Avs2PipeMod))
-        // {
-        //     throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, _factory.Config.Avs2PipeMod));
-        // }
 
         var args = Invariant($@"""{path}"" .");
         var worker = _factory.CreateProcess(Owner, options, callback);

@@ -68,7 +68,7 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
         //if (!_fileSystem.Exists(Config.Avs2PipeMod)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, Config.Avs2PipeMod)); }
         EnsureNotRunning();
         EncoderApp = encoderApp;
-        var query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" -y4mp ""{1}"" | ""{2}"" {3}", Processes.Paths.Avs2Yuv, source, Processes.GetAppPath(encoderApp), arguments);
+        var query = string.Format(CultureInfo.InvariantCulture, @"""{0}"" ""{1}"" - | ""{2}"" {3}", Processes.Paths.Avs2Yuv, source, Processes.GetAppPath(encoderApp), arguments);
         return RunAsCommand(query);
     }
 
