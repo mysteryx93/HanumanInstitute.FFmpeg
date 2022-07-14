@@ -10,15 +10,15 @@ public class AppPaths
     /// <summary>
     /// Gets or sets the path to FFmpeg
     /// </summary>
-    public string FFmpegPath { get; set; } = "ffmpeg";
+    public string FFmpeg { get; set; } = "ffmpeg";
     /// <summary>
     /// Gets or sets the path to X264
     /// </summary>
-    public string X264Path { get; set; } = "x264";
+    public string X264 { get; set; } = "x264";
     /// <summary>
     /// Gets or sets the path to X265
     /// </summary>
-    public string X265Path { get; set; } = "x265";
+    public string X265 { get; set; } = "x265";
     /// <summary>
     /// Gets or sets the path to avs2yuv to use Avisynth in a separate process.
     /// </summary>
@@ -26,5 +26,5 @@ public class AppPaths
     /// <summary>
     /// Gets or sets the path to vspipe to use VapourSynth in a separate process.
     /// </summary>
-    public string VsPipePath { get; set; } = "vspipe";
+    public string VsPipe { get; set; } = "vspipe";
 }

@@ -75,7 +75,7 @@ public class MediaEncoderTests
         var srcVideo = AppPaths.GetInputFile(AppPaths.Mpeg4);
         var dest = AppPaths.PrepareDestPath("EncodeFFmpeg", AppPaths.Mpeg4, ".mp4");
         var encoder = SetupEncoder();
-        _factory.Processes.Paths.FFmpegPath = "invalid";
+        _factory.Processes.Paths.FFmpeg = "invalid";
 
         void Act() => encoder.EncodeFFmpeg(srcVideo, dest, "libx264", null, null);
         

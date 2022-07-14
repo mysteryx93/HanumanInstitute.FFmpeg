@@ -45,7 +45,7 @@ public class MediaScript : IMediaScript
 
         var args = Invariant($@"""{path}"" .");
         var worker = _factory.CreateProcess(Owner, options, callback);
-        var result = worker.Run(_factory.Processes.Paths.VsPipePath, args);
+        var result = worker.Run(_factory.Processes.Paths.VsPipe, args);
         return result;
     }
 }

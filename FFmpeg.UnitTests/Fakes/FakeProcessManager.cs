@@ -23,15 +23,15 @@ public class FakeProcessManager : IProcessManager
     {
         if (encoderApp == EncoderApp.FFmpeg.ToString())
         {
-            return _appPaths.Value.FFmpegPath;
+            return _appPaths.Value.FFmpeg;
         }
         else if (encoderApp == EncoderApp.x264.ToString())
         {
-            return _appPaths.Value.X264Path;
+            return _appPaths.Value.X264;
         }
         else if (encoderApp == EncoderApp.x265.ToString())
         {
-            return _appPaths.Value.X265Path;
+            return _appPaths.Value.X265;
         }
         return string.Empty;
     }
