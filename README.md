@@ -1,7 +1,7 @@
 # HanumanInstitute.FFmpeg (FFmpeg.Net)
 Cross-platform .Net wrapper for media encoders such as FFmpeg, X264 and X265, including Avisynth and VapourSynth support.
 
-[NuGet Package](https://www.nuget.org/packages/HanumanInstitute.FFmpeg/)
+<a href="https://www.nuget.org/packages/HanumanInstitute.FFmpeg/"><img src="https://img.shields.io/nuget/v/HanumanInstitute.FFmpeg.svg"></a>
 
 ## Features
 - Manages processes programatically (start, track, cancel).
