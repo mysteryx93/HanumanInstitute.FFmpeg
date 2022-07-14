@@ -10,7 +10,10 @@ Cross-platform .Net wrapper for media encoders such as FFmpeg, X264 and X265, in
 - Can pipe Avisynth and VapourSynth scripts into FFmpeg, X264 and X265 and will manage processes accordingly.
 - Can be extended to support additional encoders.
 - Fully tested with unit tests so it just works.
-- Works on Windows, Linux and MacOS.
+- **Works on Windows, Linux and MacOS.**
+- Includes cross-platform sample using Avalonia UI.
+
+![Screenshot](Screenshot.png)
 
 ## Usage
 
