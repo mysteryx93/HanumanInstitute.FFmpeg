@@ -30,12 +30,29 @@ All operations take 2 parameters: Options and Callback.
 **Callback** plugs into the ProcessStarted event and allows grabbing a reference to ProcessWorker.
 
 ```c#
-var Service = new ProcessService(new AppPaths() {
+var Service = new ProcessService(Options.Create(new AppPaths() {
     FFmpeg = "ffmpeg-x64" // exclude .exe to work on Linux/MacOS
-});
+}));
 var InfoReader = Service.GetMediaInfoReader(Factory);
 IProcessWorker Worker;
 var FileInfo = InfoReader.GetFileInfo("file.mp4", null, (_, e) => Worker = e.ProcessWorker);
+```
+
+## Configuring Application Paths
+
+ProcessService and ProcessManager take an argument of type `IOptions<AppPaths>`, which is the standard .NET approach to handling configurations. [Read more about Options Pattern in ASP.Net Core.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-6.0)
+
+Configuring it in a desktop application can be as simple as calling `Options.Create(myAppPaths)` (requires `Microsoft.Extensions.Options`).
+
+If you want to configure the values in `appsettings.json` file, you can do this (ASP.NET loads it automatically but we can do it manually for desktop). Requires `Microsoft.Extensions.Configuration`, `Microsoft.Extensions.Configuration.Json` and `Microsoft.Extensions.Configuration.Binder`.
+
+```c#
+var builder = new ConfigurationBuilder()
+    .AddJsonFile($"appsettings.json", true, true);
+var config = builder.Build();
+var paths = config.GetSection("AppPaths").Get<FFmpeg.AppPaths>();
+
+return new ProcessService(Options.Create(paths);
 ```
 
 ## Classes
