@@ -1,22 +1,22 @@
-# EmergenceGuardian.Encoder (.NET FFmpeg Wrapper)
-.Net wrapper for media encoders such as FFmpeg, X264 and X265, including Avisynth and VapourSynth support.
+# HanumanInstitute.FFmpeg (FFmpeg.Net)
+Cross-platform .Net wrapper for media encoders such as FFmpeg, X264 and X265, including Avisynth and VapourSynth support.
 
-[NuGet Package](https://www.nuget.org/packages/EmergenceGuardian.Encoder/)
+[NuGet Package](https://www.nuget.org/packages/HanumanInstitute.FFmpeg/)
 
 ## Features
 - Manages processes programatically (start, track, cancel).
 - Parses process output from FFmpeg, X264 or X265 to track progress and create a rich user interface.
 - Provides easy access to common functions, and can be extended to call and track any other console process.
-- Can pipe Avisynth and VapourSynth scripts into FFmpeg, X264 and X265 and will manage processes accordingly. 10-bit videos are supported.
+- Can pipe Avisynth and VapourSynth scripts into FFmpeg, X264 and X265 and will manage processes accordingly.
 - Can be extended to support additional encoders.
-- Designed using Dependency Injection principles.
 - Fully tested with unit tests so it just works.
+- Works on Windows, Linux and MacOS.
 
 ## Usage
 
-1. Create a ProcessWorkerFactory containing the application configuration settings.
+1. Create a ProcessService containing the application configuration settings.
 
-2. Create MediaEncoder, MediaInfoReader, MediaMuxer or MediaScript using that factory.
+2. Use GetMediaEncoder, GetMediaInfoReader, GetMediaMuxer and GetMediaScript on IProcessService.
 
 3. Call any of the operations such as MediaInfoReader.GetFileInfo.
 
@@ -27,45 +27,41 @@ All operations take 2 parameters: Options and Callback.
 **Callback** plugs into the ProcessStarted event and allows grabbing a reference to ProcessWorker.
 
 ```c#
-var Factory = new ProcessWorkerFactory(new MediaConfig() {
-    FFmpegPath = Properties.Settings.Default.FFmpegPath
+var Service = new ProcessService(new AppPaths() {
+    FFmpeg = "ffmpeg-x64" // exclude .exe to work on Linux/MacOS
 });
-var InfoReader = new MediaInfoReader(Factory);
+var InfoReader = Service.GetMediaInfoReader(Factory);
 IProcessWorker Worker;
-IFileInfoFFmpeg FileInfo = InfoReader.GetFileInfo("file.mp4", null, (s, e) => Worker = e.ProcessWorker);
+var FileInfo = InfoReader.GetFileInfo("file.mp4", null, (_, e) => Worker = e.ProcessWorker);
 ```
 
 ## Classes
 
-### IProcessWorkerFactory
+### IProcessService (main class)
 
-Creates new instances of process workers.
+Creates new instances of process workers. Main entry point to access all process services.
 
-IMediaConfig **Config** : Gets or sets the configuration settings.
+#### Constructor:
+
+IProcessManager: Add your own implementation to alter SoftKill behavior, or to add new applications and paths to be recognized. Or, pass `new ProcessManager()` with AppPaths configuration.
+
+IUserInterfaceManager: Optional. Add your own implementation to display an UI when requested.
+
+IFileInfoParserFactory: Optional. Add your own implementation to parse additional applications.
+
+#### Methods:
 
 IProcessWorker **Create** : Creates a new process worker with specified options.
 
 IProcessWorkerEncoder **CreateEncoder** : Creates a new process worker to run an encoder with specified options.
 
-### IMediaConfig
+IMediaEncoder **GetMediaEncoder**: Gets a class exposing methods to encode.
 
-Contains the configuration settings of EmergenceGuardian.Encoder.
+IMediaInfoReader **GetMediaInfoReader**: Gets a class exposing methods to get media information.
 
-string **FFmpegPath** : Gets or sets the path to FFmpeg.exe
+IMediaMuxer **GetMediaMuxer**: Gets a class exposing methods to muxe medias.
 
-string **X264Path** : Gets or sets the path to X264.exe
-
-string **X265Path** : Gets or sets the path to X265.exe
-
-string **Avs2PipeMod** : Gets or sets the path to avs2pipemod.exe to use Avisynth in a separate process.
-
-string **VsPipePath** : Gets or sets the path to vspipe.exe to use VapourSynth in a separate process.
-
-IUserInterfaceManager **UserInterfaceManager** : Gets or sets a class that will manage graphical interface instances when DisplayMode = Interface
-
-event **CloseProcess** : Occurs when a process needs to be closed. This needs to be managed manually for Console applications. See http://stackoverflow.com/a/29274238/3960200
-
-event **GetCustomAppPath** : Occurs when running a custom application name to get the path of the application.
+IMediaScript **GetMediaScript**: Gets a class exposing methods to run Avisynth/Vapoursynth scripts. 
 
 ### IMediaInfoReader
 
@@ -265,7 +261,7 @@ If you want to parse the output of an additional application, follow these steps
 
 3. When creating your ProcessWorkerFactory, use the overload where you supply all the dependencies to pass your custom IFileInfoParserFactory.
 
-4. Handle MediaConfig.GetCustomAppPath event to return the path of the custom application.
+4. Handle `IProcessManager.GetCustomAppPath` event to return the path of the custom application.
 
 5. Call ProcessWorkerEncoder.RunEncoder and specify your custom application name.
 
@@ -286,11 +282,8 @@ you to display FFmpeg's progress with a progress bar, while tasks with IsMainTas
 "Extracting audio", "Encoding Audio" and "Muxing Audio and Video" while those are running in the background. You can also easily
 track and cancel the whole chain of commands.
 
-See ExampleApplication to view EmergenceGuardian.Encoder in action.
+See ExampleApplication to view HanumanInstitute.FFmpeg in action.
 
-## About The Author
+### Author
 
-[Etienne Charland](https://www.spiritualselftransformation.com), known as the Emergence Guardian, helps starseeds reconnect with their soul power to accomplish the purpose 
-they came here to do. [You can read his book at Satrimono Publishing.](https://satrimono.com/) Warning: non-geek zone.
-
-You may also be interested in the [Natural Grounding Player, Yin Media Encoder, 432hz Player, Powerliminals Player, and Audio Video Muxer.](https://github.com/mysteryx93/NaturalGroundingPlayer)
+Brought to you by [Etienne Charland aka Hanuman](https://www.spiritualselftransformation.com/). Made by a Lightworker in his spare time.
