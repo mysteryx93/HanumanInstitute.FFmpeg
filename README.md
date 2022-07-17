@@ -55,7 +55,7 @@ SplatRegistrations.Register<IMediaScript, MediaScript>();
 
 2. Inject `IMediaEncoder`, `IMediaMuxer`, `IMediaInfoReader` or `IMediaScript` into your class constructor.
 
-3. Set the `Owner property, which gets passed to `IUserInterfaceManager` if you implement it.
+3. Set the Owner property, which gets passed to `IUserInterfaceManager` if you implement it.
 
 ```c#
 private readonly IMediaEncoder _encoder;
