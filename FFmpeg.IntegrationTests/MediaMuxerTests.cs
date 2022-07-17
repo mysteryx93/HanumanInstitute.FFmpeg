@@ -9,7 +9,7 @@ namespace HanumanInstitute.FFmpeg.IntegrationTests;
 public class MediaMuxerTests
 {
     private readonly OutputFeeder _feed;
-    private IProcessService _factory;
+    private IEncoderService _factory;
 
     public MediaMuxerTests(ITestOutputHelper output)
     {

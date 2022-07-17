@@ -7,14 +7,14 @@ namespace HanumanInstitute.FFmpeg.IntegrationTests;
 
 public static class FactoryConfig
 {
-    public static IProcessService CreateWithConfig()
+    public static IEncoderService CreateWithConfig()
     {
         var builder = new ConfigurationBuilder()
             .AddJsonFile($"appsettings.json", true, true);
         var config = builder.Build();
         var paths = config.GetSection("AppPaths").Get<FFmpeg.AppPaths>();
 
-        return new ProcessService(
+        return new EncoderService(
             new ProcessManager(Options.Create(paths), new WindowsApiService(), new FileSystemService()),
             null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService());
     }

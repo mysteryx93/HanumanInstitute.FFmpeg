@@ -2,7 +2,7 @@
 
 public class MediaInfoTests
 {
-    private FakeProcessService _factory;
+    private FakeEncoderService _factory;
     private readonly ITestOutputHelper _output;
     private const string TestFile = "test";
 
@@ -14,7 +14,7 @@ public class MediaInfoTests
 
     protected IMediaInfoReader SetupInfo()
     {
-        _factory = new FakeProcessService();
+        _factory = new FakeEncoderService();
         return new MediaInfoReader(_factory);
     }
 
@@ -29,7 +29,7 @@ public class MediaInfoTests
 
     [Fact]
     // ReSharper disable once ObjectCreationAsStatement
-    public void Constructor_WithFactory_Success() => new MediaInfoReader(new FakeProcessService());
+    public void Constructor_WithFactory_Success() => new MediaInfoReader(new FakeEncoderService());
 
     [Fact]
     // ReSharper disable once AssignNullToNotNullAttribute
@@ -122,7 +122,7 @@ public class MediaInfoTests
     public void GetFrameCount_Valid_ReturnsFrameCount(string output, int expected)
     {
         var info = SetupInfo();
-        void Callback(object s, ProcessStartedEventArgs e) => FakeProcessService.FeedOutputToProcess(e.ProcessWorker, output);
+        void Callback(object s, ProcessStartedEventArgs e) => FakeEncoderService.FeedOutputToProcess(e.ProcessWorker, output);
 
         var result = info.GetFrameCount(TestFile, null, Callback);
 

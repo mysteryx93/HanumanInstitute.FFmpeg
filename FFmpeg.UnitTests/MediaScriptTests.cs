@@ -8,7 +8,7 @@ public class MediaScriptTests
     protected const string AppVsPipe = "vspipe";
     protected const string MissingFileName = "MissingFile";
     private Mock<FakeProcessManager> _config;
-    private readonly FakeProcessService _factory = new();
+    private readonly FakeEncoderService _factory = new();
     private readonly ITestOutputHelper _output;
 
     public MediaScriptTests(ITestOutputHelper output)

@@ -37,7 +37,7 @@ public class GlobalErrorHandler : IObserver<Exception>
     public INotifyPropertyChanged? OwnerVm { get; set; }
     
     /// <inheritdoc />
-    public async void OnNext(Exception error) => ShowError(error);
+    public void OnNext(Exception error) => ShowError(error);
 
     /// <inheritdoc />
     public void OnError(Exception error)

@@ -5,7 +5,7 @@ namespace HanumanInstitute.FFmpeg.UnitTests;
 public class MediaMuxerTests
 {
     private const string FFmpeg = "ffmpeg", AudioCodec = "-acodec", VideoCodec = "-vcodec", FixAac = "aac_adtstoasc", FixPcm = "pcm_s16le";
-    private FakeProcessService _factory;
+    private FakeEncoderService _factory;
     private readonly ITestOutputHelper _output;
 
     public MediaMuxerTests(ITestOutputHelper output)
@@ -19,7 +19,7 @@ public class MediaMuxerTests
     /// </summary>
     protected IMediaMuxer SetupMuxer()
     {
-        _factory = new FakeProcessService();
+        _factory = new FakeEncoderService();
         var fileSystemStub = new FakeFileSystemService();
         return new MediaMuxer(_factory, fileSystemStub, new FakeMediaInfoReader());
     }
@@ -374,7 +374,7 @@ public class MediaMuxerTests
 
     [Fact]
     // ReSharper disable once ObjectCreationAsStatement
-    public void Constructor_WithFactory_Success() => new MediaMuxer(new FakeProcessService(), new FakeFileSystemService(), Mock.Of<IMediaInfoReader>());
+    public void Constructor_WithFactory_Success() => new MediaMuxer(new FakeEncoderService(), new FakeFileSystemService(), Mock.Of<IMediaInfoReader>());
 
     [Fact]
     public void Constructor_NullFactory_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new MediaMuxer(null, new FakeFileSystemService(), Mock.Of<IMediaInfoReader>()));

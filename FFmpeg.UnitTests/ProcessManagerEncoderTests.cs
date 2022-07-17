@@ -120,7 +120,7 @@ public class ProcessManagerEncoderTests
     {
         var manager = SetupManager();
         manager.Options.FrameCount = frameCount;
-        manager.ProcessStarted += (_, _) => FakeProcessService.FeedOutputToProcess(manager, output);
+        manager.ProcessStarted += (_, _) => FakeEncoderService.FeedOutputToProcess(manager, output);
 
         manager.RunEncoder(null, EncoderApp.FFmpeg);
 
@@ -258,7 +258,7 @@ public class ProcessManagerEncoderTests
     public void RunEncoder_InjectFFmpeg_StatusSuccess(string output)
     {
         var manager = SetupManager();
-        manager.ProcessStarted += (_, _) => FakeProcessService.FeedOutputToProcess(manager, output);
+        manager.ProcessStarted += (_, _) => FakeEncoderService.FeedOutputToProcess(manager, output);
 
         var result = manager.RunEncoder(null, EncoderApp.FFmpeg);
 
@@ -271,7 +271,7 @@ public class ProcessManagerEncoderTests
     public void RunEncoder_InjectFFmpeg_ExpectedFrameCount(string output, int expectedFrameCount)
     {
         var manager = SetupManager();
-        manager.ProcessStarted += (_, _) => FakeProcessService.FeedOutputToProcess(manager, output);
+        manager.ProcessStarted += (_, _) => FakeEncoderService.FeedOutputToProcess(manager, output);
 
         manager.RunEncoder(null, EncoderApp.FFmpeg);
 
@@ -293,7 +293,7 @@ public class ProcessManagerEncoderTests
         manager.FileInfoUpdated += (_, _) => infoUpdatedCalled++;
         var statusUpdatedCalled = 0;
         manager.ProgressReceived += (_, _) => statusUpdatedCalled++;
-        manager.ProcessStarted += (_, _) => FakeProcessService.FeedOutputToProcess(manager, output);
+        manager.ProcessStarted += (_, _) => FakeEncoderService.FeedOutputToProcess(manager, output);
 
         manager.RunEncoder(null, EncoderApp.FFmpeg);
 
@@ -307,7 +307,7 @@ public class ProcessManagerEncoderTests
     public void RunEncoder_InjectFFmpeg_ExpectedStreams(string output, string videoFormat, string audioFormat)
     {
         var manager = SetupManager();
-        manager.ProcessStarted += (_, _) => FakeProcessService.FeedOutputToProcess(manager, output);
+        manager.ProcessStarted += (_, _) => FakeEncoderService.FeedOutputToProcess(manager, output);
 
         manager.RunEncoder(null, EncoderApp.FFmpeg);
 
@@ -341,7 +341,7 @@ public class ProcessManagerEncoderTests
     public void RunEncoder_InjectX264_StatusSuccess(string output)
     {
         var manager = SetupManager();
-        manager.ProcessStarted += (_, _) => FakeProcessService.FeedOutputToProcess(manager, output);
+        manager.ProcessStarted += (_, _) => FakeEncoderService.FeedOutputToProcess(manager, output);
 
         var result = manager.RunEncoder(null, EncoderApp.x264);
 
@@ -356,7 +356,7 @@ public class ProcessManagerEncoderTests
     public void RunEncoder_InjectX264_ExpectedFrameCount(string output, int expectedFrameCount)
     {
         var manager = SetupManager();
-        manager.ProcessStarted += (_, _) => FakeProcessService.FeedOutputToProcess(manager, output);
+        manager.ProcessStarted += (_, _) => FakeEncoderService.FeedOutputToProcess(manager, output);
 
         manager.RunEncoder(null, EncoderApp.x264);
 
@@ -377,7 +377,7 @@ public class ProcessManagerEncoderTests
         manager.FileInfoUpdated += (_, _) => infoUpdatedCalled++;
         var statusUpdatedCalled = 0;
         manager.ProgressReceived += (_, _) => statusUpdatedCalled++;
-        manager.ProcessStarted += (_, _) => FakeProcessService.FeedOutputToProcess(manager, output);
+        manager.ProcessStarted += (_, _) => FakeEncoderService.FeedOutputToProcess(manager, output);
 
         manager.RunEncoder(null, EncoderApp.x264);
 

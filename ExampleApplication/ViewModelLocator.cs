@@ -30,8 +30,8 @@ public static class ViewModelLocator
         // FFmpeg
         SplatRegistrations.RegisterLazySingleton<IUserInterfaceManager, FFmpegUserInterfaceManager>();
         SplatRegistrations.RegisterLazySingleton<IProcessManager, ProcessManager>();
-        container.RegisterLazySingleton<IProcessService>(() =>
-            new ProcessService(Locator.Current.GetService<IProcessManager>(), Locator.Current.GetService<IUserInterfaceManager>()));
+        container.RegisterLazySingleton<IEncoderService>(() =>
+            new EncoderService(Locator.Current.GetService<IProcessManager>(), Locator.Current.GetService<IUserInterfaceManager>()));
             
         // ViewModels
         SplatRegistrations.Register<MainViewModel>();

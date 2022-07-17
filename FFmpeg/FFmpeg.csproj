@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>HanumanInstitute.FFmpeg</PackageId>
-    <Version>2.0</Version>
+    <Version>2.1</Version>
     <Authors>Etienne Charland</Authors>
     <Company>Hanuman Institute</Company>
     <Product>HanumanInstitute.FFmpeg</Product>
@@ -60,8 +60,5 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>DynamicProxyGenAssembly2</_Parameter1> <!-- Make availalbe to Moq -->
     </AssemblyAttribute>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\HanumanInstitute.Validators\Validators\HanumanInstitute.Validators.csproj" />
   </ItemGroup>
 </Project>

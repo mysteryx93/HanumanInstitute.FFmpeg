@@ -3,10 +3,10 @@ using System.Reflection;
 
 namespace HanumanInstitute.FFmpeg.UnitTests;
 
-public class FakeProcessService : ProcessService
+public class FakeEncoderService : EncoderService
 {
 
-    public FakeProcessService() : base(new FakeProcessManager(null), null, new FileInfoParserFactory(), new FakeProcessFactory(), new FakeFileSystemService())
+    public FakeEncoderService() : base(new FakeProcessManager(null), null, new FileInfoParserFactory(), new FakeProcessFactory(), new FakeFileSystemService())
     {
     }
 

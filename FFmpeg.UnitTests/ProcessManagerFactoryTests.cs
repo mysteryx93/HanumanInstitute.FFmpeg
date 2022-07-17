@@ -4,30 +4,30 @@ public class ProcessManagerFactoryTests
 {
     private FakeProcessManager _config;
 
-    protected IProcessService SetupFactory()
+    protected IEncoderService SetupFactory()
     {
         var moq = new MockRepository(MockBehavior.Strict);
         _config = new FakeProcessManager();
         var parserFactory = new FileInfoParserFactory();
         var processFactory = moq.Create<IProcessFactory>();
         var fileSystem = moq.Create<IFileSystemService>();
-        return new ProcessService(_config, null, parserFactory, processFactory.Object, fileSystem.Object);
+        return new EncoderService(_config, null, parserFactory, processFactory.Object, fileSystem.Object);
     }
 
     [Fact]
-    public void Constructor_NoParam_Success() => new ProcessService().CreateProcess(null);
+    public void Constructor_NoParam_Success() => new EncoderService().CreateProcess(null);
 
     [Fact]
-    public void Constructor_Config_Success() => new ProcessService(new ProcessManager(), null).CreateProcess(null);
+    public void Constructor_Config_Success() => new EncoderService(new ProcessManager(), null).CreateProcess(null);
 
     [Fact]
-    public void Constructor_InjectDependencies_Success() => new ProcessService(new ProcessManager(), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()).CreateProcess(null);
+    public void Constructor_InjectDependencies_Success() => new EncoderService(new ProcessManager(), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService()).CreateProcess(null);
 
     [Fact]
-    public void Constructor_NullDependencies_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessService(null, null, null, null, null));
+    public void Constructor_NullDependencies_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new EncoderService(null, null, null, null, null));
 
     [Fact]
-    public void Constructor_InjectOneDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new ProcessService(new ProcessManager(), null, null, null, null));
+    public void Constructor_InjectOneDependency_ThrowsException() => Assert.Throws<ArgumentNullException>(() => new EncoderService(new ProcessManager(), null, null, null, null));
 
     [Fact]
     public void Create_NoParam_ReturnsProcessManager()

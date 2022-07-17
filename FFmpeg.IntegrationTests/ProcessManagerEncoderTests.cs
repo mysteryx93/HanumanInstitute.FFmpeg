@@ -6,7 +6,7 @@ namespace HanumanInstitute.FFmpeg.IntegrationTests;
 public class ProcessManagerEncoderTests
 {
     private readonly OutputFeeder _feed;
-    private IProcessService _factory;
+    private IEncoderService _factory;
 
     public ProcessManagerEncoderTests(ITestOutputHelper output)
     {

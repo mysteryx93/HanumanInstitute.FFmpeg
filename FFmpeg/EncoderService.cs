@@ -15,7 +15,7 @@ public class EncoderService : IEncoderService
     private readonly IFileSystemService _fileSystemService;
 
     /// <summary>
-    /// Initializes a new instance of the ProcessService class.
+    /// Initializes a new instance of the EncoderService class.
     /// </summary>
     /// <param name="appPaths">The configuration of where to find standard encoding applications.</param>
     public EncoderService(IOptions<AppPaths>? appPaths = null) :
@@ -24,7 +24,7 @@ public class EncoderService : IEncoderService
     }
 
     /// <summary>
-    /// Initializes a new instance of the ProcessService class.
+    /// Initializes a new instance of the EncoderService class.
     /// </summary>
     /// <param name="processManager">Provides a custom IProcessManager that allows providing paths for additional applications,
     /// and altering soft process close behavior. Altering soft close behavior is required for console applications.</param>

@@ -2,7 +2,7 @@
 
 public class MediaEncoderTests
 {
-    private readonly FakeProcessService _factory = new();
+    private readonly FakeEncoderService _factory = new();
     private const string SourcePath = "source", DestPath = "dest";
     private readonly ITestOutputHelper _output;
 
