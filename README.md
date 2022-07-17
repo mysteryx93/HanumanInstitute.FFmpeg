@@ -15,11 +15,11 @@ Cross-platform .Net wrapper for media encoders such as FFmpeg, X264 and X265, in
 
 ![Screenshot](Screenshot.png)
 
-## Usage
+## Usage without IOC container
 
-1. Create a ProcessService containing the application configuration settings.
+1. Create a EncoderService containing the application configuration settings.
 
-2. Use GetMediaEncoder, GetMediaInfoReader, GetMediaMuxer and GetMediaScript on IProcessService.
+2. Use GetMediaEncoder, GetMediaInfoReader, GetMediaMuxer and GetMediaScript on IEncoderService.
 
 3. Call any of the operations such as MediaInfoReader.GetFileInfo.
 
@@ -30,7 +30,7 @@ All operations take 2 parameters: Options and Callback.
 **Callback** plugs into the ProcessStarted event and allows grabbing a reference to ProcessWorker.
 
 ```c#
-var Service = new ProcessService(Options.Create(new AppPaths() {
+var Service = new EncoderService(Options.Create(new AppPaths() {
     FFmpeg = "ffmpeg-x64" // exclude .exe to work on Linux/MacOS
 }));
 var InfoReader = Service.GetMediaInfoReader(Factory);
@@ -38,9 +38,41 @@ IProcessWorker Worker;
 var FileInfo = InfoReader.GetFileInfo("file.mp4", null, (_, e) => Worker = e.ProcessWorker);
 ```
 
+## Usage with IOC container
+
+1. Register into your IOC container of choice
+
+```c#
+SplatRegistrations.RegisterLazySingleton<IEncoderService, EncoderService>();
+SplatRegistrations.RegisterConstant(Options.Create(new AppPaths()));
+SplatRegistrations.RegisterLazySingleton<IProcessManager, ProcessManager>();
+SplatRegistrations.RegisterLazySingleton<IUserInterfaceManager, FFmpegUserInterfaceManager>();
+SplatRegistrations.Register<IMediaEncoder, MediaEncoder>();
+SplatRegistrations.Register<IMediaMuxer, MediaMuxer>();
+SplatRegistrations.Register<IMediaInfoReader, MediaInfoReader>();
+SplatRegistrations.Register<IMediaScript, MediaScript>();
+```
+
+2. Inject `IMediaEncoder`, `IMediaMuxer`, `IMediaInfoReader` or `IMediaScript` into your class constructor.
+
+3. Set the Owner property.
+
+```c#
+private readonly IMediaEncoder _encoder;
+private readonly IMediaMuxer _muxer;
+
+public MainViewModel(IMediaMuxer mediaMuxer, IMediaEncoder mediaEncoder)
+{
+    _encoder = mediaEncoder;
+    _encoder.Owner = this;
+    _muxer = mediaMuxer;
+    _muxer.Owner = this;
+}
+```
+
 ## Configuring Application Paths
 
-ProcessService and ProcessManager take an argument of type `IOptions<AppPaths>`, which is the standard .NET approach to handling configurations. [Read more about Options Pattern in ASP.Net Core.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-6.0)
+EncoderService and ProcessManager take an argument of type `IOptions<AppPaths>`, which is the standard .NET approach to handling configurations. [Read more about Options Pattern in ASP.Net Core.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-6.0)
 
 Configuring it in a desktop application can be as simple as calling `Options.Create(myAppPaths)` (requires `Microsoft.Extensions.Options`).
 
@@ -52,12 +84,12 @@ var builder = new ConfigurationBuilder()
 var config = builder.Build();
 var paths = config.GetSection("AppPaths").Get<FFmpeg.AppPaths>();
 
-return new ProcessService(Options.Create(paths);
+return new EncoderService(Options.Create(paths);
 ```
 
 ## Classes
 
-### IProcessService (main class)
+### IEncoderService (main class)
 
 Creates new instances of process workers. Main entry point to access all process services.
 

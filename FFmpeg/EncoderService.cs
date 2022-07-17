@@ -17,20 +17,11 @@ public class EncoderService : IEncoderService
     /// <summary>
     /// Initializes a new instance of the EncoderService class.
     /// </summary>
-    /// <param name="appPaths">The configuration of where to find standard encoding applications.</param>
-    public EncoderService(IOptions<AppPaths>? appPaths = null) :
-        this(new ProcessManager(appPaths), null, new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService())
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the EncoderService class.
-    /// </summary>
     /// <param name="processManager">Provides a custom IProcessManager that allows providing paths for additional applications,
     /// and altering soft process close behavior. Altering soft close behavior is required for console applications.</param>
     /// <param name="uiManager">A custom class that will receive notifications for display.</param>
     /// <param name="parserFactory">A custom factory to parse output from additional applications.</param>
-    public EncoderService(IProcessManager? processManager, IUserInterfaceManager? uiManager = null,
+    public EncoderService(IProcessManager? processManager = null, IUserInterfaceManager? uiManager = null,
         IFileInfoParserFactory? parserFactory = null) :
         this(processManager ?? new ProcessManager(), uiManager, parserFactory ?? new FileInfoParserFactory(), new ProcessFactory(), new FileSystemService())
     {

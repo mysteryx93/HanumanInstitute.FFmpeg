@@ -15,12 +15,14 @@ public class MainViewModel : ReactiveObject
     private readonly IMediaMuxer _muxer;
     private static int s_jobId;
 
-    public MainViewModel(IDialogService dialogService, IUserInterfaceManager uiManager, IEncoderService EncoderService)
+    public MainViewModel(IDialogService dialogService, IUserInterfaceManager uiManager, IMediaMuxer mediaMuxer, IMediaEncoder mediaEncoder)
     {
         _dialogService = dialogService;
         _uiManager = uiManager;
-        _encoder = EncoderService.GetMediaEncoder(this);
-        _muxer = EncoderService.GetMediaMuxer(this);
+        _encoder = mediaEncoder;
+        _encoder.Owner = this;
+        _muxer = mediaMuxer;
+        _muxer.Owner = this;
     }
 
     [Reactive]
