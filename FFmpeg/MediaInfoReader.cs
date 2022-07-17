@@ -3,13 +3,13 @@
 /// <inheritdoc />
 public class MediaInfoReader : IMediaInfoReader
 {
-    private readonly IProcessService _factory;
+    private readonly IEncoderService _factory;
 
     /// <summary>
     /// Initializes a new instance of the MediaInfoReader class
     /// </summary>
     /// <param name="processFactory">The Factory responsible for creating processes.</param>
-    public MediaInfoReader(IProcessService processFactory) =>
+    public MediaInfoReader(IEncoderService processFactory) =>
         _factory = processFactory.CheckNotNull(nameof(processFactory));
 
     /// <inheritdoc />

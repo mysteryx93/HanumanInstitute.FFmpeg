@@ -7,16 +7,16 @@ namespace HanumanInstitute.FFmpeg;
 /// <inheritdoc />
 public class MediaScript : IMediaScript
 {
-    private readonly IProcessService _factory;
+    private readonly IEncoderService _factory;
     private readonly IFileSystemService _fileSystem;
 
     /// <summary>
     /// Initializes a new instance of the MediaScript class
     /// </summary>
     /// <param name="processFactory">The Factory responsible for creating processes.</param>
-    public MediaScript(IProcessService processFactory) : this(processFactory, new FileSystemService()) { }
+    public MediaScript(IEncoderService processFactory) : this(processFactory, new FileSystemService()) { }
 
-    internal MediaScript(IProcessService processFactory, IFileSystemService fileSystemService)
+    internal MediaScript(IEncoderService processFactory, IFileSystemService fileSystemService)
     {
         _factory = processFactory.CheckNotNull(nameof(processFactory));
         _fileSystem = fileSystemService.CheckNotNull(nameof(fileSystemService));

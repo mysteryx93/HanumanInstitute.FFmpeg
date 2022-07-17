@@ -7,7 +7,7 @@ namespace HanumanInstitute.FFmpeg;
 /// <inheritdoc />
 public class MediaMuxer : IMediaMuxer
 {
-    private readonly IProcessService _factory;
+    private readonly IEncoderService _factory;
     private readonly IFileSystemService _fileSystem;
     private readonly IMediaInfoReader _infoReader;
 
@@ -15,9 +15,9 @@ public class MediaMuxer : IMediaMuxer
     /// Initializes a new instance of the MediaMuxer class
     /// </summary>
     /// <param name="processFactory">The Factory responsible for creating processes.</param>
-    public MediaMuxer(IProcessService processFactory) : this(processFactory, new FileSystemService(), new MediaInfoReader(processFactory)) { }
+    public MediaMuxer(IEncoderService processFactory) : this(processFactory, new FileSystemService(), new MediaInfoReader(processFactory)) { }
 
-    internal MediaMuxer(IProcessService processFactory, IFileSystemService fileSystemService, IMediaInfoReader infoReader)
+    internal MediaMuxer(IEncoderService processFactory, IFileSystemService fileSystemService, IMediaInfoReader infoReader)
     {
         _factory = processFactory.CheckNotNull(nameof(processFactory));
         _fileSystem = fileSystemService.CheckNotNull(nameof(fileSystemService));

@@ -8,13 +8,13 @@ namespace HanumanInstitute.FFmpeg;
 /// <inheritdoc />
 public class MediaEncoder : IMediaEncoder
 {
-    private readonly IProcessService _factory;
+    private readonly IEncoderService _factory;
 
     /// <summary>
     /// Initializes a new instance of the MediaEncoder class
     /// </summary>
     /// <param name="processFactory">The Factory responsible for creating processes.</param>
-    public MediaEncoder(IProcessService processFactory) =>
+    public MediaEncoder(IEncoderService processFactory) =>
         _factory = processFactory.CheckNotNull(nameof(processFactory));
 
     /// <summary>

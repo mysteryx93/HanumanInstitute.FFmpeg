@@ -3,7 +3,7 @@
 /// <summary>
 /// Creates new instances of process workers. Main entry point to access all process services.
 /// </summary>
-public interface IProcessService
+public interface IEncoderService
 {
     /// <summary>
     /// Gets or sets the configuration settings.
