@@ -11,11 +11,11 @@ public class FileInfoFFmpeg : IFileInfoParser
     /// <summary>
     /// Returns the estimated frame count of input file.
     /// </summary>
-    public long FrameCount { get; private set; }
+    public long FrameCount { get; set; }
     /// <summary>
     /// Returns the duration of input file.
     /// </summary>
-    public TimeSpan FileDuration { get; private set; }
+    public TimeSpan FileDuration { get; set; }
     /// <summary>
     /// Returns information about input streams.
     /// </summary>
