@@ -30,12 +30,12 @@ public class ProcessWorker : IProcessWorker, IDisposable
     /// <inheritdoc />
     public string CommandWithArgs { get; private set; } = string.Empty;
 
-    private readonly StringBuilder _output = new StringBuilder();
+    private readonly StringBuilder _output = new();
     private readonly IProcessFactory _factory;
     /// <summary>
     /// A token to lock access to WorkProcess from various threads.
     /// </summary>
-    protected object WorkProcessLock { get; private set; } = new object();
+    protected object WorkProcessLock { get; private set; } = new();
     private CancellationTokenSource? _cancelWork;
 
     //public ProcessWorker() : this(new MediaConfig(), new ProcessFactory(), null) { }

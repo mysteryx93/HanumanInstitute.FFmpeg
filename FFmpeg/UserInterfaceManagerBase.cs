@@ -3,7 +3,7 @@
 /// <inheritdoc />
 public abstract class UserInterfaceManagerBase : IUserInterfaceManager
 {
-    private readonly List<UiItem> _uiList = new List<UiItem>();
+    private readonly List<UiItem> _uiList = new();
 
     /// <inheritdoc />
     public bool AppExited { get; set; } = false;

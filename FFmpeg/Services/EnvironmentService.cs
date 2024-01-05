@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace HanumanInstitute.FFmpeg.Services;
+﻿namespace HanumanInstitute.FFmpeg.Services;
 
 /// <inheritdoc />
 internal class EnvironmentService : IEnvironmentService

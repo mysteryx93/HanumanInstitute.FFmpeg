@@ -1,5 +1,4 @@
 ﻿using HanumanInstitute.FFmpeg.Services;
-using Microsoft.Extensions.Options;
 
 namespace HanumanInstitute.FFmpeg;
 

@@ -19,7 +19,7 @@ public class FileInfoFFmpeg : IFileInfoParser
     /// <summary>
     /// Returns information about input streams.
     /// </summary>
-    public List<MediaStreamInfo> FileStreams { get; private set; } = new List<MediaStreamInfo>();
+    public List<MediaStreamInfo> FileStreams { get; private set; } = new();
 
     /// <summary>
     /// Gets the first video stream from FileStreams.
