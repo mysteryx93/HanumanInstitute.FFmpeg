@@ -19,7 +19,7 @@ public class FileInfoFFmpeg : IFileInfoParser
     /// <summary>
     /// Returns information about input streams.
     /// </summary>
-    public List<MediaStreamInfo> FileStreams { get; private set; } = new();
+    public List<MediaStreamInfo> FileStreams { get; private set; } = [];
 
     /// <summary>
     /// Gets the first video stream from FileStreams.
@@ -71,7 +71,7 @@ public class FileInfoFFmpeg : IFileInfoParser
             return;
         }
 
-        var outLines = outputText.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+        var outLines = outputText.Split([Environment.NewLine], StringSplitOptions.None);
 
         // Find duration line.
         var durationIndex = -1;
@@ -81,7 +81,7 @@ public class FileInfoFFmpeg : IFileInfoParser
             {
                 durationIndex = i;
                 // Parse duration line.
-                var durationInfo = outLines[i].Trim().Split(new[] { ", " }, StringSplitOptions.None);
+                var durationInfo = outLines[i].Trim().Split([", "], StringSplitOptions.None);
                 var durationString = durationInfo[0].Split(' ')[1];
                 if (durationString == "N/A")
                 {
@@ -188,7 +188,7 @@ public class FileInfoFFmpeg : IFileInfoParser
         var streamType = text.Substring(posStart, posEnd - posStart);
         // Split stream data
         posStart = posEnd + 2;
-        var streamInfo = text.Substring(posStart).Split(new[] { ", " }, StringSplitOptions.None);
+        var streamInfo = text.Substring(posStart).Split([", "], StringSplitOptions.None);
         if (!streamInfo.Any())
         {
             return null;
@@ -211,7 +211,7 @@ public class FileInfoFFmpeg : IFileInfoParser
                 v.ColorSpace = colorSpaceValues[0];
                 if (colorSpaceValues.Length > 1)
                 {
-                    var colorRange = colorSpaceValues[1].Split(new[] { "; " }, StringSplitOptions.RemoveEmptyEntries);
+                    var colorRange = colorSpaceValues[1].Split(["; "], StringSplitOptions.RemoveEmptyEntries);
                     if (colorRange.Any(c => c == "tv"))
                     {
                         v.ColorRange = "tv";
@@ -227,7 +227,7 @@ public class FileInfoFFmpeg : IFileInfoParser
                         v.ColorMatrix = colorMatrix;
                     }
                 }
-                var size = streamInfo[2].Split(new[] { "x", " [", ":", " ", "]" }, StringSplitOptions.None);
+                var size = streamInfo[2].Split(["x", " [", ":", " ", "]"], StringSplitOptions.None);
                 v.Width = int.Parse(size[0], CultureInfo.InvariantCulture);
                 v.Height = int.Parse(size[1], CultureInfo.InvariantCulture);
                 if (size.Length > 2 && size[2] == "SAR")

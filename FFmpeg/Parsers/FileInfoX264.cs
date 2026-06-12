@@ -63,7 +63,7 @@ public class FileInfoX264 : IFileInfoParser
         }
 
         // Get the last line.
-        var lines = outputText.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+        var lines = outputText.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
         var data = lines[lines.Length - 1];
 
         // Parse this format.
@@ -132,6 +132,6 @@ public class FileInfoX264 : IFileInfoParser
 
     private static string[] SplitData(string data)
     {
-        return data.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        return data.Split([' '], StringSplitOptions.RemoveEmptyEntries);
     }
 }
