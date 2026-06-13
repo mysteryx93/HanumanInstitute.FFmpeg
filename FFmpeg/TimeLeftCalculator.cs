@@ -8,8 +8,7 @@ public class TimeLeftCalculator : ITimeLeftCalculator
     private readonly KeyValuePair<DateTime, long>[] _progressHistory;
     private int _iterator;
     private bool _fullCycle;
-    private long _frameCount;
-    private int _historyLength;
+
     /// <inheritdoc />
     public TimeSpan ResultTimeLeft { get; private set; }
     /// <inheritdoc />
@@ -41,15 +40,15 @@ public class TimeLeftCalculator : ITimeLeftCalculator
     /// <inheritdoc />
     public long FrameCount
     {
-        get => _frameCount;
-        set => _frameCount = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(FrameCount));
+        get;
+        set => field = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(FrameCount));
     }
 
     /// <inheritdoc />
     public int HistoryLength
     {
-        get => _historyLength;
-        set => _historyLength = value >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(HistoryLength));
+        get;
+        set => field = value >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(HistoryLength));
     }
 
     /// <inheritdoc />
