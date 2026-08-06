@@ -14,14 +14,14 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            GlobalErrorHandler.BeginInit(); // Must be set before any ICommand is created.
-            
             desktop.MainWindow = new MainView
             {
                 DataContext = ViewModelLocator.Main
             };
-            
-            GlobalErrorHandler.EndInit(Locator.Current.GetService<IDialogService>()!, desktop?.MainWindow.DataContext as INotifyPropertyChanged);
+
+            GlobalErrorHandler.EndInit(
+                Locator.Current.GetService<IDialogService>()!,
+                desktop.MainWindow.DataContext as INotifyPropertyChanged);
         }
 
         base.OnFrameworkInitializationCompleted();

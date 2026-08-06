@@ -7,6 +7,6 @@
     </Application.DataTemplates>
 
     <Application.Styles>
-        <FluentTheme Mode="Light" DensityStyle="Compact"/>
+        <FluentTheme DensityStyle="Compact"/>
     </Application.Styles>
 </Application>

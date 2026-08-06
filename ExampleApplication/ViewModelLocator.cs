@@ -37,6 +37,7 @@ public static class ViewModelLocator
         SplatRegistrations.Register<IMediaMuxer, MediaMuxer>();
         SplatRegistrations.Register<IMediaInfoReader, MediaInfoReader>();
         SplatRegistrations.Register<IMediaScript, MediaScript>();
+        SplatRegistrations.Register<IFileInfoParserFactory, FileInfoParserFactory>();
             
         // ViewModels
         SplatRegistrations.Register<MainViewModel>();

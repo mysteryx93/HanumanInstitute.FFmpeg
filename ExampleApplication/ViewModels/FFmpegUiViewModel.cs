@@ -1,11 +1,11 @@
 ﻿using System.Globalization;
 using HanumanInstitute.Validators;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace HanumanInstitute.FFmpegExampleApplication.ViewModels;
 
-public class FFmpegUiViewModel : WorkspaceViewModel, IUserInterfaceWindow
+public partial class FFmpegUiViewModel : WorkspaceViewModel, IUserInterfaceWindow
 {
     private string _title = string.Empty;
     public string Title
@@ -29,21 +29,29 @@ public class FFmpegUiViewModel : WorkspaceViewModel, IUserInterfaceWindow
         }
     }
 
-    [Reactive] public string TitleWithStatus { get; private set; } = string.Empty;
+    [Reactive]
+    public partial string TitleWithStatus { get; set; } = string.Empty;
 
-    [Reactive] public bool AutoClose { get; set; }
+    [Reactive]
+    public partial bool AutoClose { get; set; }
 
-    [Reactive] public long ProgressBarMax { get; private set; } = 100;
+    [Reactive]
+    public partial long ProgressBarMax { get; set; } = 100;
 
-    [Reactive] public long ProgressBarValue { get; private set; }
+    [Reactive]
+    public partial long ProgressBarValue { get; set; }
 
-    [Reactive] public string TaskName { get; private set; } = string.Empty;
+    [Reactive]
+    public partial string TaskName { get; set; } = string.Empty;
 
-    [Reactive] public string Fps { get; private set; } = string.Empty;
+    [Reactive]
+    public partial string Fps { get; set; } = string.Empty;
 
-    [Reactive] public string TimeLeft { get; private set; } = string.Empty;
+    [Reactive]
+    public partial string TimeLeft { get; set; } = string.Empty;
 
-    [Reactive] public string CancelText { get; private set; } = "_Cancel";
+    [Reactive]
+    public partial string CancelText { get; set; } = "_Cancel";
 
     private IProcessWorker? _host;
     private IProcessWorkerEncoder? _hostFFmpeg;
@@ -114,7 +122,7 @@ public class FFmpegUiViewModel : WorkspaceViewModel, IUserInterfaceWindow
         }
     }
 
-    private void FFmpeg_Completed(object sender, ProcessCompletedEventArgs e)
+    private void FFmpeg_Completed(object? sender, ProcessCompletedEventArgs e)
     {
         WorkCompleted();
     }

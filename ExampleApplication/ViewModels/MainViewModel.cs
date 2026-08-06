@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using HanumanInstitute.MvvmDialogs.FileSystem;
 using HanumanInstitute.MvvmDialogs.FrameworkDialogs;
 using HanumanInstitute.Validators;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace HanumanInstitute.FFmpegExampleApplication.ViewModels;
 
-public class MainViewModel : ReactiveObject
+public partial class MainViewModel : ReactiveObject
 {
     private readonly IDialogService _dialogService;
     private readonly IUserInterfaceManager _uiManager;
@@ -26,10 +27,10 @@ public class MainViewModel : ReactiveObject
     }
 
     [Reactive]
-    public string SourcePath { get; set; } = @"/run/media/hanuman/Storage-ntfs/NaturalGrounding/AOA/Confused.mp4";
+    public partial string SourcePath { get; set; } = @"/run/media/hanuman/Storage-ntfs/NaturalGrounding/AOA/Confused.mp4";
 
     [Reactive]
-    public string DestinationPath { get; set; } = @"/home/hanuman/Downloads/TestOut.mp4";
+    public partial string DestinationPath { get; set; } = @"/home/hanuman/Downloads/TestOut.mp4";
 
     public ICommand ShowOpenFile => _showOpenFile ??= ReactiveCommand.CreateFromTask(ShowOpenFileImpl);
     private ICommand? _showOpenFile;
@@ -38,13 +39,13 @@ public class MainViewModel : ReactiveObject
         var defaultPath = TryGetDirectory(SourcePath);
         var settings = new OpenFileDialogSettings()
         {
-            InitialDirectory = defaultPath.HasValue() ? Path.GetDirectoryName(defaultPath)! : string.Empty
+            SuggestedStartLocation = defaultPath.HasValue() ? new DesktopDialogStorageFolder(Path.GetDirectoryName(defaultPath)!) : null
         };
         var result = await _dialogService.ShowOpenFileDialogAsync(this, settings).ConfigureAwait(true);
 
         if (result != null)
         {
-            SourcePath = result;
+            SourcePath = result.LocalPath;
         }
     }
 
@@ -55,18 +56,18 @@ public class MainViewModel : ReactiveObject
         var defaultPath = TryGetDirectory(DestinationPath);
         var settings = new SaveFileDialogSettings()
         {
-            Filters = new List<FileFilter>(new[]
-            {
-               new FileFilter("MP4 Files", "mp4"), 
-               new FileFilter("All Files", "*")
-            }),
-            InitialDirectory = defaultPath.HasValue() ? Path.GetDirectoryName(defaultPath)! : string.Empty
+            Filters = new List<FileFilter>(
+            [
+                new FileFilter("MP4 Files", "mp4"),
+                new FileFilter("All Files", "*")
+            ]),
+            SuggestedStartLocation = defaultPath.HasValue() ? new DesktopDialogStorageFolder(Path.GetDirectoryName(defaultPath)!) : null
         };
         var result = await _dialogService.ShowSaveFileDialogAsync(this, settings).ConfigureAwait(true);
 
         if (result != null)
         {
-            DestinationPath = result;
+            DestinationPath = result.LocalPath;
         }
     }
 
@@ -171,5 +172,4 @@ public class MainViewModel : ReactiveObject
         var pos = path.LastIndexOf('.');
         return pos == -1 ? path : path.Substring(0, pos);
     }
-
 }

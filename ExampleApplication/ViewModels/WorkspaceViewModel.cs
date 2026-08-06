@@ -1,13 +1,14 @@
 ﻿using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace HanumanInstitute.FFmpegExampleApplication.ViewModels;
 
-public class WorkspaceViewModel : ReactiveObject, IWorkspaceViewModel
+public partial class WorkspaceViewModel : ReactiveObject, IWorkspaceViewModel
 {
     public WorkspaceViewModel() : this(string.Empty, true) { }
 
-    [Reactive] public bool CanClose { get; set; }
+    [Reactive]
+    public partial bool CanClose { get; set; }
 
     public WorkspaceViewModel(string displayName, bool canClose)
     {
@@ -17,7 +18,7 @@ public class WorkspaceViewModel : ReactiveObject, IWorkspaceViewModel
 
     public event EventHandler? RequestClose;
 
-    public ICommand CloseCommand => _close ??= ReactiveCommand.Create(CloseImpl, 
+    public ICommand CloseCommand => _close ??= ReactiveCommand.Create(CloseImpl,
         this.WhenAnyValue(x => x.CanClose));
     private ICommand? _close;
     private void CloseImpl()
@@ -33,5 +34,4 @@ public class WorkspaceViewModel : ReactiveObject, IWorkspaceViewModel
     public bool? DialogResult { get; } = true;
 
     public virtual bool OnClosing() => CanClose;
-
 }
