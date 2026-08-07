@@ -17,6 +17,14 @@ public class FileInfoFFmpeg : IFileInfoParser
     /// </summary>
     public TimeSpan FileDuration { get; set; }
     /// <summary>
+    /// Container / demuxer name as reported by FFmpeg (e.g. mp3, mov,mp4,m4a,3gp,3g2,mj2, matroska,webm).
+    /// </summary>
+    public string? FormatName { get; set; }
+    /// <summary>
+    /// Format-level (container) metadata key/value pairs (e.g. title, artist).
+    /// </summary>
+    public IDictionary<string, string> Metadata { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    /// <summary>
     /// Returns information about input streams.
     /// </summary>
     public List<MediaStreamInfo> FileStreams { get; private set; } = [];
@@ -30,14 +38,16 @@ public class FileInfoFFmpeg : IFileInfoParser
     /// <summary>
     /// Gets the first audio stream from FileStreams.
     /// </summary>
-    /// <returns>A FFmpegAudioStreamInfo object.</returns>
     public MediaAudioStreamInfo? AudioStream => GetStream(FFmpegStreamType.Audio) as MediaAudioStreamInfo;
+
+    /// <summary>
+    /// Gets the first subtitle stream from FileStreams.
+    /// </summary>
+    public MediaSubtitleStreamInfo? SubtitleStream => GetStream(FFmpegStreamType.Subtitle) as MediaSubtitleStreamInfo;
 
     /// <summary>
     /// Returns the first stream of specified type.
     /// </summary>
-    /// <param name="streamType">The type of stream to search for.</param>
-    /// <returns>A FFmpegStreamInfo object.</returns>
     private MediaStreamInfo? GetStream(FFmpegStreamType streamType) => FileStreams.FirstOrDefault(f => f.StreamType == streamType);
 
 
@@ -47,15 +57,15 @@ public class FileInfoFFmpeg : IFileInfoParser
     public bool HasFileInfo(string data)
     {
         data.CheckNotNull(nameof(data));
-        return data.StartsWith("Output ", StringComparison.InvariantCulture) ||
-               data.StartsWith("Press [q] to stop", StringComparison.InvariantCulture);
+        return data.StartsWithInvariant("Output ") ||
+               data.StartsWithInvariant("Press [q] to stop");
     }
 
     /// <inheritdoc />
     public bool IsLineProgressUpdate(string data)
     {
         data.CheckNotNull(nameof(data));
-        return data.StartsWith("frame=", StringComparison.InvariantCulture);
+        return data.StartsWithInvariant("frame=");
     }
 
     /// <inheritdoc />
@@ -64,6 +74,8 @@ public class FileInfoFFmpeg : IFileInfoParser
         options ??= new ProcessOptionsEncoder();
         IsParsed = true;
         FileDuration = new TimeSpan();
+        FormatName = null;
+        Metadata.Clear();
         FileStreams.Clear();
 
         if (string.IsNullOrEmpty(outputText))
@@ -71,16 +83,39 @@ public class FileInfoFFmpeg : IFileInfoParser
             return;
         }
 
-        var outLines = outputText.Split([Environment.NewLine], StringSplitOptions.None);
+        // Captured FFmpeg output may use CRLF.
+        var outLines = outputText.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
 
-        // Find duration line.
+        // Input #0, matroska,webm, from 'TaggedMedia.mkv':
+        foreach (var t in outLines)
+        {
+            if (t.StartsWithInvariant("Input #0,"))
+            {
+                FormatName = ParseFormatName(t);
+                break;
+            }
+        }
+
+        //   Metadata: /     title           : Sample Title  (format tags, before Duration)
+        for (var i = 0; i < outLines.Length; i++)
+        {
+            if (outLines[i].StartsWithInvariant("  Duration: "))
+            {
+                break;
+            }
+            if (IsMetadataHeader(outLines[i]))
+            {
+                i = ParseMetadataBlock(outLines, i + 1, Metadata);
+            }
+        }
+
+        //   Duration: 00:00:02.02, start: 0.000000, bitrate: 210 kb/s
         var durationIndex = -1;
         for (var i = 0; i < outLines.Length; i++)
         {
-            if (outLines[i].StartsWith("  Duration: ", StringComparison.InvariantCulture))
+            if (outLines[i].StartsWithInvariant("  Duration: "))
             {
                 durationIndex = i;
-                // Parse duration line.
                 var durationInfo = outLines[i].Trim().Split([", "], StringSplitOptions.None);
                 var durationString = durationInfo[0].Split(' ')[1];
                 if (durationString == "N/A")
@@ -100,21 +135,37 @@ public class FileInfoFFmpeg : IFileInfoParser
             }
         }
 
-        // Find input streams.
+        //   Stream #0:1: Audio: aac (LC), 44100 Hz, mono, fltp (default)
+        //     Metadata:
+        //       FREQUENCY       : 440
+        // Stops at: Output #0, ...  /  Stream mapping:  /  Press [q] to stop
+        MediaStreamInfo? lastStream = null;
         for (var i = durationIndex + 1; i < outLines.Length; i++)
         {
-            if (outLines[i].TrimStart().StartsWith("Stream #0:", StringComparison.InvariantCulture))
-            {
-                // Parse input stream.
-                var itemInfo = ParseStreamInfo(outLines[i]);
-                if (itemInfo != null)
-                {
-                    FileStreams.Add(itemInfo);
-                }
-            }
-            else if (outLines[i].StartsWith("Output ", StringComparison.InvariantCulture))
+            var line = outLines[i];
+            if (line.StartsWithInvariant("Output ") ||
+                line.StartsWithInvariant("Stream mapping:") ||
+                line.StartsWithInvariant("Press [q]"))
             {
                 break;
+            }
+
+            if (line.TrimStart().StartsWithInvariant("Stream #0:"))
+            {
+                lastStream = ParseStreamInfo(line);
+                if (lastStream != null)
+                {
+                    FileStreams.Add(lastStream);
+                }
+            }
+            else if (lastStream != null && IsMetadataHeader(line))
+            {
+                i = ParseMetadataBlock(outLines, i + 1, lastStream.Metadata);
+            }
+            else if (line.Length > 0 && !char.IsWhiteSpace(line[0]) && !line.StartsWithInvariant("  "))
+            {
+                // [libx264 @ 000000000269e480] using SAR=178/163
+                lastStream = null;
             }
         }
 
@@ -129,11 +180,97 @@ public class FileInfoFFmpeg : IFileInfoParser
         }
     }
 
+    // Input #0, mov,mp4,m4a,3gp,3g2,mj2
+    internal static string? ParseFormatName(string inputLine)
+    {
+        if (string.IsNullOrEmpty(inputLine) || !inputLine.StartsWithInvariant("Input #0,"))
+        {
+            return null;
+        }
+        var fromIdx = inputLine.IndexOf(", from ", StringComparison.InvariantCulture);
+        if (fromIdx < 0)
+        {
+            return null;
+        }
+        var name = inputLine.Substring("Input #0,".Length, fromIdx - "Input #0,".Length).Trim();
+        return name.Length > 0 ? name : null;
+    }
+
+    //   Metadata:
+    private static bool IsMetadataHeader(string line)
+    {
+        var t = line.Trim();
+        return t.Equals("Metadata:", StringComparison.InvariantCulture);
+    }
+
+    //     title           : Nu
+    //       FREQUENCY       : 440
+    internal static int ParseMetadataBlock(string[] lines, int startIndex, IDictionary<string, string> target)
+    {
+        var i = startIndex;
+        for (; i < lines.Length; i++)
+        {
+            var line = lines[i];
+            if (!TryParseMetadataEntry(line, out var key, out var value))
+            {
+                return i - 1;
+            }
+            if (key.Length > 0)
+            {
+                target[key] = value;
+            }
+        }
+        return i - 1;
+    }
+
+    //     title           : Nu   /   not:   Duration: 00:00:02.00  /  Stream #0:0: Audio: ...
+    internal static bool TryParseMetadataEntry(string line, out string key, out string value)
+    {
+        key = string.Empty;
+        value = string.Empty;
+        if (string.IsNullOrEmpty(line))
+        {
+            return false;
+        }
+
+        if (line.Length == 0 || (line[0] != ' ' && line[0] != '\t'))
+        {
+            return false;
+        }
+
+        var trimmed = line.Trim();
+        if (trimmed.StartsWithInvariant("Stream #") ||
+            trimmed.StartsWithInvariant("Duration:") ||
+            trimmed.StartsWithInvariant("Metadata:") ||
+            trimmed.StartsWithInvariant("Chapter") ||
+            trimmed.StartsWithInvariant("Side data:") ||
+            trimmed.StartsWithInvariant("Output ") ||
+            trimmed.StartsWithInvariant("Input #"))
+        {
+            return false;
+        }
+
+        // title           : Nu
+        var match = System.Text.RegularExpressions.Regex.Match(trimmed, @"^([A-Za-z0-9_/-]+)\s*:\s*(.*)$");
+        if (!match.Success)
+        {
+            return false;
+        }
+        key = match.Groups[1].Value;
+        value = match.Groups[2].Value.Trim();
+        return key.Length > 0;
+    }
+
     /// <summary>
     /// Parses stream info from specified string returned from FFmpeg.
     /// </summary>
     /// <param name="text">A line of text to parse.</param>
     /// <returns>The stream info, or null if parsing failed.</returns>
+    // Stream #0:0: Audio: mp3, 44100 Hz, stereo, s16p, 192 kb/s
+    // Stream #0:1(eng): Audio: aac (LC), 48000 Hz, stereo, fltp, 128 kb/s (default)
+    // Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p, 352x288 [SAR 178:163 DAR 1958:1467], 228 kb/s, 25 fps, 25 tbr, 12800 tbn, 50 tbc (default)
+    // Stream #0:3(eng): Subtitle: subrip (srt)
+    // Stream #0:2: Data: bin_data / Stream #0:2: Attachment: ttf
     internal static MediaStreamInfo? ParseStreamInfo(string text)
     {
         if (string.IsNullOrEmpty(text))
@@ -143,7 +280,11 @@ public class FileInfoFFmpeg : IFileInfoParser
 
         text = text.Trim();
         var rawText = text;
+        var disposition = StreamDisposition.FromStreamLine(rawText);
+        var language = ParseStreamLanguage(rawText);
+
         // Within parenthesis, replace ',' with ';' to be able to split properly.
+        // yuv420p(tv, progressive) / (avc1 / 0x31637661) — commas inside () must not split fields
         var itemChars = text.ToCharArray();
         var isInParenthesis = false;
         for (var i = 0; i < itemChars.Length; i++)
@@ -201,7 +342,9 @@ public class FileInfoFFmpeg : IFileInfoParser
             {
                 RawText = rawText,
                 Index = streamIndex,
-                Format = streamFormat
+                Format = streamFormat,
+                Language = language,
+                Disposition = disposition
             };
 
             // Stream #0:0[0x1e0]: Video: mpeg1video, yuv420p(tv), 352x288 [SAR 178:163 DAR 1958:1467], 1152 kb/s, 25 fps, 25 tbr, 90k tbn
@@ -221,7 +364,7 @@ public class FileInfoFFmpeg : IFileInfoParser
                         v.ColorRange = "pc";
                     }
 
-                    var colorMatrix = colorRange.FirstOrDefault(c => c.StartsWith("bt", StringComparison.InvariantCulture));
+                    var colorMatrix = colorRange.FirstOrDefault(c => c.StartsWithInvariant("bt"));
                     if (colorMatrix != null)
                     {
                         v.ColorMatrix = colorMatrix;
@@ -246,7 +389,7 @@ public class FileInfoFFmpeg : IFileInfoParser
                         v.DisplayAspectRatio = Math.Round((double)v.Dar1 / v.Dar2, 3);
                     }
                 }
-                var fps = streamInfo.FirstOrDefault(s => s.EndsWith("fps", StringComparison.InvariantCulture));
+                var fps = streamInfo.FirstOrDefault(s => s.EndsWithInvariant("fps"));
                 if (fps is { Length: > 4 })
                 {
                     fps = fps.Substring(0, fps.Length - 4);
@@ -255,7 +398,7 @@ public class FileInfoFFmpeg : IFileInfoParser
                         v.FrameRate = double.Parse(fps, CultureInfo.InvariantCulture);
                     }
                 }
-                var bitrate = streamInfo.FirstOrDefault(s => s.EndsWith("kb/s", StringComparison.InvariantCulture));
+                var bitrate = streamInfo.FirstOrDefault(s => s.EndsWithInvariant("kb/s"));
                 if (bitrate is { Length: > 5 })
                 {
                     bitrate = bitrate.Substring(0, bitrate.Length - 5);
@@ -273,7 +416,9 @@ public class FileInfoFFmpeg : IFileInfoParser
             {
                 RawText = rawText,
                 Index = streamIndex,
-                Format = streamFormat
+                Format = streamFormat,
+                Language = language,
+                Disposition = disposition
             };
 
             // Stream #0:1[0x1c0]: Audio: mp2, 44100 Hz, stereo, s16p, 224 kb/s
@@ -295,7 +440,47 @@ public class FileInfoFFmpeg : IFileInfoParser
             catch (OverflowException) { }
             return v;
         }
-        return null;
+
+        // Stream #0:3(eng): Subtitle: subrip (srt)
+        // Stream #0:2: Data: bin_data
+        // Stream #0:2: Attachment: ttf
+        MediaStreamInfo? result = streamType switch
+        {
+            "Subtitle" => new MediaSubtitleStreamInfo(),
+            "Data" => new MediaDataStreamInfo(),
+            "Attachment" => new MediaAttachmentStreamInfo(),
+            _ => null
+        };
+        if (result != null)
+        {
+            result.RawText = rawText;
+            result.Index = streamIndex;
+            result.Format = streamFormat;
+            result.Language = language;
+            result.Disposition = disposition;
+        }
+        return result;
+    }
+
+    // Stream #0:1(eng): Audio: ...   /   Stream #0:0(und): Video: ...
+    // not language: Stream #0:0[0x1e0]: Video: mpeg1video, yuv420p(tv), ...
+    internal static string? ParseStreamLanguage(string streamLine)
+    {
+        if (string.IsNullOrEmpty(streamLine)) { return null; }
+        var m = System.Text.RegularExpressions.Regex.Match(streamLine, @"Stream #0:\d+(?:\[[^\]]*\])?\(([^)]+)\)");
+        if (!m.Success)
+        {
+            return null;
+        }
+        var lang = m.Groups[1].Value.Trim();
+        // not: trailing (default) mis-read as language
+        if (lang is "default" or "forced" or "dub" or "original" or "comment" or "lyrics" or "karaoke" or
+            "hearing_impaired" or "visual_impaired" or "clean_effects" or "attached_pic" or
+            "timed_thumbnails" or "captions" or "descriptions" or "metadata" or "dependent" or "still_image")
+        {
+            return null;
+        }
+        return lang.Length > 0 ? lang : null;
     }
 
     /// <inheritdoc />

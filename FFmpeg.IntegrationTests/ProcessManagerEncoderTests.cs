@@ -20,7 +20,8 @@ public class ProcessManagerEncoderTests
     }
 
     [Theory]
-    [InlineData(AppPaths.StreamH264, ".mp4")]
+    // Y4M is native x264 input — works with or without lavf (Linux distro builds often lack lavf).
+    [InlineData(AppPaths.StreamY4m, ".mp4")]
     public void RunEncoder_AppX264_Success(string videoFile, string destExt)
     {
         var srcVideo = AppPaths.GetInputFile(videoFile);

@@ -30,103 +30,117 @@ public class MediaMuxerTests
 
     public static IEnumerable<object[]> GenerateMuxeLists_Valid()
     {
-        yield return new object[] {
-            new List<MediaStream>() {
-                new MediaStream(AppPaths.Mpeg4, 2, "h264", FFmpegStreamType.Video),
+        yield return
+        [
+            new List<MediaStream> {
+                new(AppPaths.Mpeg4, 2, "h264", FFmpegStreamType.Video),
             },
             ".mp4", 1
-        };
-        yield return new object[] {
-            new List<MediaStream>() {
-                new MediaStream(AppPaths.Flv, 1, "flv", FFmpegStreamType.Audio)
+        ];
+        // zelda.flv audio stream (adpcm_swf). Dest must accept that codec with -c copy;
+        // modern FFmpeg rejects adpcm_swf in MKV ("can only be written to WAVE…").
+        yield return
+        [
+            new List<MediaStream> {
+                new(AppPaths.Flv, 1, "flv", FFmpegStreamType.Audio)
             },
-            ".mkv", 1
-        };
-        yield return new object[] {
-            new List<MediaStream>() {
-                new MediaStream(AppPaths.StreamAac, 0, "aac", FFmpegStreamType.Audio),
-                new MediaStream(AppPaths.StreamH264, 0, "h264", FFmpegStreamType.Video),
-                new MediaStream(AppPaths.StreamVp9, 0, "vp9", FFmpegStreamType.Video)
+            ".flv", 1
+        ];
+        yield return
+        [
+            new List<MediaStream> {
+                new(AppPaths.StreamAac, 0, "aac", FFmpegStreamType.Audio),
+                new(AppPaths.StreamH264, 0, "h264", FFmpegStreamType.Video),
+                new(AppPaths.StreamVp9, 0, "vp9", FFmpegStreamType.Video)
             },
             ".mkv", 3
-        };
-        yield return new object[] {
-            new List<MediaStream>() {
-                new MediaStream(AppPaths.StreamAac, 0, "aac", FFmpegStreamType.Audio),
-                new MediaStream(AppPaths.StreamH264, 0, "h264", FFmpegStreamType.Video),
-                new MediaStream(AppPaths.StreamVp9, 0, "vp9", FFmpegStreamType.Video),
-                new MediaStream(AppPaths.StreamOpus, 0, "opus", FFmpegStreamType.Audio)
+        ];
+        yield return
+        [
+            new List<MediaStream> {
+                new(AppPaths.StreamAac, 0, "aac", FFmpegStreamType.Audio),
+                new(AppPaths.StreamH264, 0, "h264", FFmpegStreamType.Video),
+                new(AppPaths.StreamVp9, 0, "vp9", FFmpegStreamType.Video),
+                new(AppPaths.StreamOpus, 0, "opus", FFmpegStreamType.Audio)
             },
             ".mkv", 4
-        };
+        ];
     }
 
     public static IEnumerable<object[]> GenerateMuxeLists_Invalid()
     {
-        yield return new object[] {
-            new List<MediaStream>() {
-                new MediaStream("invalidfile", 0, "", FFmpegStreamType.Video),
+        yield return
+        [
+            new List<MediaStream> {
+                new("invalidfile", 0, "", FFmpegStreamType.Video),
             },
             ".mp4", 1
-        };
+        ];
     }
 
     public static IEnumerable<object[]> GenerateConcatenate_Valid()
     {
-        yield return new object[] {
-            new List<string>() {
+        yield return
+        [
+            new List<string> {
                 AppPaths.Part1
             },
             ".mp4"
-        };
-        yield return new object[] {
-            new List<string>() {
+        ];
+        yield return
+        [
+            new List<string> {
                 AppPaths.Part1, AppPaths.Part2, AppPaths.Part3
             },
             ".mp4"
-        };
+        ];
     }
 
     public static IEnumerable<object[]> GenerateConcatenate_Invalid()
     {
-        yield return new object[] {
-            new List<string>() {
+        yield return
+        [
+            new List<string> {
                 "invalidfile"
             },
             ".mp4"
-        };
+        ];
     }
 
     public static IEnumerable<object[]> GenerateTruncate_Valid()
     {
-        yield return new object[] {
+        yield return
+        [
             AppPaths.StreamVp9,
             ".webm",
             null,
             TimeSpan.FromSeconds(5)
-        };
-        yield return new object[] {
+        ];
+        yield return
+        [
             AppPaths.Mpeg4WithAudio,
             ".mp4",
             TimeSpan.FromSeconds(4),
             TimeSpan.FromSeconds(3)
-        };
-        yield return new object[] {
+        ];
+        yield return
+        [
             AppPaths.StreamOpus,
             ".ogg",
             TimeSpan.FromSeconds(1),
             TimeSpan.FromSeconds(8)
-        };
+        ];
     }
 
     public static IEnumerable<object[]> GenerateTruncate_Invalid()
     {
-        yield return new object[] {
+        yield return
+        [
             "invalidfile",
             ".webm",
             null,
             TimeSpan.FromSeconds(5)
-        };
+        ];
     }
 
 
@@ -134,7 +148,8 @@ public class MediaMuxerTests
     [InlineData(AppPaths.StreamH264, AppPaths.StreamAac, ".mp4", 2)]
     [InlineData(AppPaths.StreamVp9, AppPaths.StreamOpus, ".webm", 2)]
     [InlineData(AppPaths.StreamH264, AppPaths.StreamOpus, ".mkv", 2)]
-    [InlineData(AppPaths.Mpeg2, AppPaths.Flv, ".mkv", 2)]
+    // Mpeg2 video + zelda.flv audio (adpcm_swf). .mkv rejects adpcm_swf with -c copy; .mov accepts both.
+    [InlineData(AppPaths.Mpeg2, AppPaths.Flv, ".mov", 2)]
     [InlineData(AppPaths.Flv, AppPaths.StreamOpus, ".mkv", 2)]
     [InlineData(AppPaths.StreamH264, null, ".mp4", 1)]
     [InlineData("", AppPaths.StreamOpus, ".webm", 1)]
@@ -191,7 +206,8 @@ public class MediaMuxerTests
     [Theory]
     [InlineData(AppPaths.StreamOpus, ".ogg")]
     [InlineData(AppPaths.Mpeg4WithAudio, ".mkv")]
-    [InlineData(AppPaths.Flv, ".mkv")]
+    // zelda.flv audio is adpcm_swf; -c copy into .mkv fails on modern FFmpeg — keep FLV source, use .flv dest.
+    [InlineData(AppPaths.Flv, ".flv")]
     public void ExtractAudio_Valid_Success(string source, string destExt)
     {
         var src = AppPaths.GetInputFile(source);

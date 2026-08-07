@@ -192,9 +192,9 @@ public class MediaEncoderTests
     // X264
 
     [Theory]
-    [InlineData(AppPaths.Mpeg4WithAudio, null)]
-    [InlineData(AppPaths.Mpeg4WithAudio, "--preset ultrafast")]
-    [InlineData(AppPaths.StreamVp9, "--preset ultrafast")]
+    // Y4M: direct x264 open (no lavf required). Containers need lavf; use EncodeFFmpeg for those.
+    [InlineData(AppPaths.StreamY4m, null)]
+    [InlineData(AppPaths.StreamY4m, "--preset ultrafast")]
     public void EncodeX264_Valid_Success(string source, string encodeArgs)
     {
         var srcVideo = AppPaths.GetInputFile(source);
@@ -209,7 +209,7 @@ public class MediaEncoderTests
 
     [Theory]
     [InlineData(AppPaths.InvalidFile, null)]
-    [InlineData(AppPaths.Mpeg4WithAudio, "invalid")]
+    [InlineData(AppPaths.StreamY4m, "invalid")]
     [InlineData(AppPaths.StreamOpus, "")]
     public void EncodeX264_Invalid_Failure(string source, string encodeArgs)
     {

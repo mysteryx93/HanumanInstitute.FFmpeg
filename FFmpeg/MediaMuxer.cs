@@ -80,7 +80,7 @@ public class MediaMuxer : IMediaMuxer
             {
                 throw new ArgumentException(Resources.ArgumentNullOrEmpty.FormatInvariant("FFmpegStream.Path"));
             }
-            if (item.Type == FFmpegStreamType.Video && item.Format is "h264" or "h265" && destination.EndsWith(".mkv", StringComparison.InvariantCulture))
+            if (item.Type == FFmpegStreamType.Video && item.Format is "h264" or "h265" && destination.EndsWithInvariant(".mkv"))
             {
                 var newFile = item.Path.Substring(0, item.Path.LastIndexOf('.')) + ".mp4";
                 result = Muxe(new List<MediaStream>() { item }, newFile, options);

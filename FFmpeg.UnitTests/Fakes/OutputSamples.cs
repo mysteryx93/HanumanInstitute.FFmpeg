@@ -30,6 +30,71 @@ Input #0, mp3, from 'E:\DJ Project - Soapte\03 Nu.mp3':
 Output #0, mp4, to 'C:\test2.mp4':
 ";
 
+    /// <summary>
+    /// Multi-audio sample with format tags, stream tags, language, and default disposition.
+    /// </summary>
+    public const string FFmpegInfoTagged = @"ffmpeg version N-83507-g8fa18e0 Copyright (c) 2000-2017 the FFmpeg developers
+Input #0, matroska,webm, from 'TaggedMedia.mkv':
+  Metadata:
+    title           : Sample Title
+    artist          : Sample Artist
+    COMMENT         : format-level comment
+  Duration: 00:00:02.00, start: 0.000000, bitrate: 200 kb/s
+    Stream #0:0(eng): Video: h264 (High), yuv420p(progressive), 320x240, 25 fps, 25 tbr, 1k tbn (default)
+    Metadata:
+      title           : Main Video
+      handler_name    : VideoHandler
+    Stream #0:1(eng): Audio: aac (LC), 48000 Hz, stereo, fltp, 128 kb/s (default)
+    Metadata:
+      title           : Original Audio
+      handler_name    : SoundHandler
+      frequency       : 440
+    Stream #0:2(eng): Audio: aac (LC), 48000 Hz, stereo, fltp, 128 kb/s
+    Metadata:
+      title           : Pitched Audio
+      frequency       : 432
+    Stream #0:3(eng): Subtitle: subrip (srt)
+    Metadata:
+      title           : English Captions
+    Stream #0:4(eng): Audio: aac (LC), 48000 Hz, stereo, fltp, 128 kb/s
+    Metadata:
+      frequency       : 528
+Output #0, null, to 'nowhere':
+";
+
+    public const string FFmpegInfoSubtitle = @"ffmpeg version N-test
+Input #0, matroska,webm, from 'subs.mkv':
+  Duration: 00:00:01.00, start: 0.000000, bitrate: 100 kb/s
+    Stream #0:0: Video: h264, yuv420p, 320x240, 25 fps, 25 tbr, 1k tbn
+    Stream #0:1(eng): Subtitle: subrip (srt)
+    Metadata:
+      title           : English Captions
+Output #0, null, to 'nowhere':
+";
+
+    public const string FFmpegInfoData = @"ffmpeg version N-test
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'data.mp4':
+  Duration: 00:00:01.00, start: 0.000000, bitrate: 100 kb/s
+    Stream #0:0(und): Data: none (mp4s / 0x7334706D) (default)
+    Metadata:
+      handler_name    : odsm
+    Stream #0:1(und): Video: mpeg4 (Simple Profile) (mp4v / 0x7634706D), yuv420p, 168x144, 15 fps, 25 tbr, 1k tbn (default)
+Output #0, null, to 'nowhere':
+";
+
+    public const string FFmpegInfoAttachment = @"ffmpeg version N-test
+Input #0, matroska,webm, from 'attach.mkv':
+  Metadata:
+    title           : With Attachment
+  Duration: 00:00:01.00, start: 0.000000, bitrate: 100 kb/s
+    Stream #0:0: Video: h264, yuv420p, 160x120, 25 fps, 25 tbr, 1k tbn
+    Stream #0:1: Attachment: ttf
+    Metadata:
+      filename        : test.ttf
+      mimetype        : application/x-truetype-font
+Output #0, null, to 'nowhere':
+";
+
     public const string FFmpegInfo2 = @"ffmpeg version N-83507-g8fa18e0 Copyright (c) 2000-2017 the FFmpeg developers
   built with gcc 5.4.0 (GCC)
   configuration: --enable-gpl --enable-version3 --enable-cuda --enable-cuvid --enable-d3d11va --enable-dxva2 --enable-libmfx --enable-nvenc --enable-avisynth --enable-bzlib --enable-fontconfig --enable-frei0r --enable-gnutls --enable-iconv --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libfreetype --enable-libgme --enable-libgsm --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenh264 --enable-libopenjpeg --enable-libopus --enable-librtmp --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxavs --enable-libxvid --enable-libzimg --enable-lzma --enable-zlib

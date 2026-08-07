@@ -123,4 +123,203 @@ public class FileInfoParserFFmpegTests
 
         Assert.Equal(expected, result);
     }
+
+    [Fact]
+    public void ParseFileInfo_WithMetadata_ParsesMetadataAndFormatName()
+    {
+        var parser = (FileInfoFFmpeg)SetupParser();
+
+        parser.ParseFileInfo(OutputSamples.FFmpegInfo1);
+
+        Assert.Equal("mp3", parser.FormatName);
+        Assert.Equal("Nu", parser.Metadata["title"]);
+        Assert.Equal("DJ Project", parser.Metadata["artist"]);
+        Assert.Equal("Soapte", parser.Metadata["album"]);
+        Assert.Equal("2005", parser.Metadata["date"]);
+        Assert.Equal("Dance", parser.Metadata["genre"]);
+    }
+
+    [Fact]
+    public void ParseFileInfo_WithStreamMetadata_ParsesStreamTags()
+    {
+        var parser = (FileInfoFFmpeg)SetupParser();
+
+        parser.ParseFileInfo(OutputSamples.FFmpegInfo1);
+
+        Assert.Single(parser.FileStreams);
+        Assert.Equal("LAME3.92", parser.FileStreams[0].Metadata["encoder"]);
+    }
+
+    [Fact]
+    public void ParseFileInfo_TaggedMultiStream_ParsesTagsLanguageAndDisposition()
+    {
+        var parser = (FileInfoFFmpeg)SetupParser();
+
+        parser.ParseFileInfo(OutputSamples.FFmpegInfoTagged);
+
+        Assert.Equal("matroska,webm", parser.FormatName);
+        Assert.Equal("Sample Title", parser.Metadata["title"]);
+        Assert.Equal("Sample Artist", parser.Metadata["artist"]);
+        Assert.Equal("format-level comment", parser.Metadata["COMMENT"]);
+        // Case-insensitive tag keys
+        Assert.Equal("Sample Title", parser.Metadata["TITLE"]);
+
+        // video + 2 audio + subtitle + audio after subtitle
+        Assert.Equal(5, parser.FileStreams.Count);
+
+        var video = Assert.IsType<MediaVideoStreamInfo>(parser.FileStreams[0]);
+        Assert.Equal("eng", video.Language);
+        Assert.True(video.Disposition.Has("default"));
+        Assert.Equal("Main Video", video.Metadata["title"]);
+        Assert.Equal("VideoHandler", video.Metadata["handler_name"]);
+
+        var audio0 = Assert.IsType<MediaAudioStreamInfo>(parser.FileStreams[1]);
+        Assert.Equal("eng", audio0.Language);
+        Assert.True(audio0.Disposition.Has("default"));
+        Assert.Equal("Original Audio", audio0.Metadata["title"]);
+        Assert.Equal("440", audio0.Metadata["frequency"]);
+
+        var audio1 = Assert.IsType<MediaAudioStreamInfo>(parser.FileStreams[2]);
+        Assert.Equal("eng", audio1.Language);
+        Assert.False(audio1.Disposition.Has("default"));
+        Assert.Equal("432", audio1.Metadata["frequency"]);
+        Assert.Equal("Pitched Audio", audio1.Metadata["title"]);
+
+        Assert.IsType<MediaSubtitleStreamInfo>(parser.FileStreams[3]);
+
+        var audio2 = Assert.IsType<MediaAudioStreamInfo>(parser.FileStreams[4]);
+        Assert.Equal("528", audio2.Metadata["frequency"]);
+    }
+
+    [Fact]
+    public void ParseFileInfo_Subtitle_ParsesCorrectly()
+    {
+        var parser = (FileInfoFFmpeg)SetupParser();
+
+        parser.ParseFileInfo(OutputSamples.FFmpegInfoSubtitle);
+
+        Assert.Equal(2, parser.FileStreams.Count);
+        Assert.IsType<MediaVideoStreamInfo>(parser.FileStreams[0]);
+
+        var sub = Assert.IsType<MediaSubtitleStreamInfo>(parser.FileStreams[1]);
+        Assert.Equal(FFmpegStreamType.Subtitle, sub.StreamType);
+        Assert.Equal("subrip", sub.Format);
+        Assert.Equal("eng", sub.Language);
+        Assert.Equal("English Captions", sub.Metadata["title"]);
+        Assert.Same(sub, parser.SubtitleStream);
+    }
+
+    [Fact]
+    public void ParseFileInfo_Data_ParsesCorrectly()
+    {
+        var parser = (FileInfoFFmpeg)SetupParser();
+
+        parser.ParseFileInfo(OutputSamples.FFmpegInfoData);
+
+        Assert.Equal(2, parser.FileStreams.Count);
+
+        var data = Assert.IsType<MediaDataStreamInfo>(parser.FileStreams[0]);
+        Assert.Equal(FFmpegStreamType.Data, data.StreamType);
+        Assert.Equal("none", data.Format);
+        Assert.Equal("und", data.Language);
+        Assert.True(data.Disposition.Has("default"));
+        Assert.Equal("odsm", data.Metadata["handler_name"]);
+
+        Assert.IsType<MediaVideoStreamInfo>(parser.FileStreams[1]);
+    }
+
+    [Fact]
+    public void ParseFileInfo_Attachment_ParsesCorrectly()
+    {
+        var parser = (FileInfoFFmpeg)SetupParser();
+
+        parser.ParseFileInfo(OutputSamples.FFmpegInfoAttachment);
+
+        Assert.Equal(2, parser.FileStreams.Count);
+        Assert.IsType<MediaVideoStreamInfo>(parser.FileStreams[0]);
+
+        var attach = Assert.IsType<MediaAttachmentStreamInfo>(parser.FileStreams[1]);
+        Assert.Equal(FFmpegStreamType.Attachment, attach.StreamType);
+        Assert.Equal("ttf", attach.Format);
+        Assert.Equal("test.ttf", attach.Metadata["filename"]);
+        Assert.Equal("application/x-truetype-font", attach.Metadata["mimetype"]);
+        Assert.Equal("With Attachment", parser.Metadata["title"]);
+    }
+
+    [Theory]
+    [InlineData("Stream #0:0(und): Video: h264, yuv420p, 100x100, 25 fps (default)", true, false, "und")]
+    [InlineData("Stream #0:1(eng): Audio: aac, 48000 Hz, stereo, fltp, 128 kb/s (default)", true, false, "eng")]
+    [InlineData("Stream #0:2: Audio: aac, 48000 Hz, stereo, fltp, 128 kb/s", false, false, null)]
+    [InlineData("Stream #0:3(fra): Audio: aac, 48000 Hz, mono, fltp (forced)", false, true, "fra")]
+    [InlineData("Stream #0:0: Audio: aac (LC), 44100 Hz, mono, fltp (default) (forced)", true, true, null)]
+    [InlineData("Stream #0:0: Audio: aac (LC), 44100 Hz, mono, fltp (default, forced)", true, true, null)]
+    public void ParseStreamInfo_DispositionAndLanguage_Parsed(string line, bool isDefault, bool isForced, string language)
+    {
+        var result = FileInfoFFmpeg.ParseStreamInfo(line);
+
+        Assert.NotNull(result);
+        Assert.Equal(isDefault, result.Disposition.Has("default"));
+        Assert.Equal(isForced, result.Disposition.Has("forced"));
+        Assert.Equal(language, result.Language);
+    }
+
+    [Fact]
+    public void StreamDisposition_SetAndHas_ByName()
+    {
+        var d = new StreamDisposition();
+        Assert.False(d.Any);
+
+        d.Set("default");
+        d.Set("forced");
+        Assert.True(d.Has("DEFAULT"));
+        Assert.True(d.Has("forced"));
+        Assert.Equal("default+forced", d.ToString());
+
+        d.Set("forced", enabled: false);
+        Assert.False(d.Has("forced"));
+        Assert.True(d.Has("default"));
+    }
+
+    [Theory]
+    [InlineData("Input #0, mp3, from 'a.mp3':", "mp3")]
+    [InlineData("Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'a.mp4':", "mov,mp4,m4a,3gp,3g2,mj2")]
+    [InlineData("Input #0, matroska,webm, from 'a.mkv':", "matroska,webm")]
+    [InlineData("not an input line", null)]
+    public void ParseFormatName_Valid_ReturnsExpected(string line, string expected)
+    {
+        Assert.Equal(expected, FileInfoFFmpeg.ParseFormatName(line));
+    }
+
+    [Theory]
+    [InlineData("    title           : Nu", true, "title", "Nu")]
+    [InlineData("      frequency       : 432", true, "frequency", "432")]
+    [InlineData("    handler_name    : SoundHandler", true, "handler_name", "SoundHandler")]
+    [InlineData("Stream #0:0: Audio: mp3", false, "", "")]
+    [InlineData("  Duration: 00:00:01.00", false, "", "")]
+    public void TryParseMetadataEntry_Lines_AsExpected(string line, bool ok, string key, string value)
+    {
+        var result = FileInfoFFmpeg.TryParseMetadataEntry(line, out var k, out var v);
+
+        Assert.Equal(ok, result);
+        if (ok)
+        {
+            Assert.Equal(key, k);
+            Assert.Equal(value, v);
+        }
+    }
+
+    [Fact]
+    public void ParseFileInfo_FrameCountSample_ParsesFormatAndStreamTags()
+    {
+        var parser = (FileInfoFFmpeg)SetupParser();
+
+        parser.ParseFileInfo(OutputSamples.FFmpegInfoFrameCount);
+
+        Assert.Contains("mov", parser.FormatName ?? "", StringComparison.Ordinal);
+        Assert.Equal("dash", parser.Metadata["major_brand"]);
+        Assert.Single(parser.FileStreams);
+        Assert.True(parser.FileStreams[0].Disposition.Has("default"));
+        Assert.Equal("und", parser.FileStreams[0].Language);
+        Assert.Equal("VideoHandler", parser.FileStreams[0].Metadata["handler_name"]);
+    }
 }

@@ -143,8 +143,7 @@ public class MediaEncoder : IMediaEncoder
 
         // Run FFmpeg with query.
         var worker = _factory.CreateEncoder(Owner, options, callback);
-        var result = RunEncoderInternal(source, query.ToString(), worker, sourceType, EncoderApp.FFmpeg);
-        return result;
+        return RunEncoderInternal(source, query.ToString(), worker, sourceType, EncoderApp.FFmpeg);
     }
 
     private CompletionStatus EncodeX264Internal(SourceType sourceType, EncoderApp encoderApp, string source, string destination,
@@ -172,8 +171,7 @@ public class MediaEncoder : IMediaEncoder
 
         // Run X264 or X265 with query.
         var worker = _factory.CreateEncoder(Owner, options, callback);
-        var result = RunEncoderInternal(source, query.ToString(), worker, sourceType, encoderApp);
-        return result;
+        return RunEncoderInternal(source, query.ToString(), worker, sourceType, encoderApp);
     }
 
     private static CompletionStatus RunEncoderInternal(string source, string arguments, IProcessWorkerEncoder worker, SourceType sourceType,
