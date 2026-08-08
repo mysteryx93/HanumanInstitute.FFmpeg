@@ -50,7 +50,7 @@ public class ProcessWorker : IProcessWorker, IDisposable
     /// <inheritdoc />
     public CompletionStatus RunAsCommand(string cmd)
     {
-        cmd.CheckNotNullOrEmpty(nameof(cmd));
+        cmd.CheckNotNullOrEmpty();
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             return Run("cmd", $@"/c "" {cmd} """);
@@ -65,7 +65,7 @@ public class ProcessWorker : IProcessWorker, IDisposable
     /// <inheritdoc />
     public virtual CompletionStatus Run(string fileName, string arguments)
     {
-        fileName.CheckNotNullOrEmpty(nameof(fileName));
+        fileName.CheckNotNullOrEmpty();
 
         IProcess p;
         lock (WorkProcessLock)

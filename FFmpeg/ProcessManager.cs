@@ -77,7 +77,7 @@ public class ProcessManager : IProcessManager
     /// <returns>Whether the process was closed.</returns>
     public virtual bool SoftKill(IProcess process)
     {
-        process.CheckNotNull(nameof(process));
+        process.CheckNotNull();
 
         if (!process.HasExited)
         {

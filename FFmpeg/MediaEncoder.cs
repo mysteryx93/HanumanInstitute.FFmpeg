@@ -15,7 +15,7 @@ public class MediaEncoder : IMediaEncoder
     /// </summary>
     /// <param name="processFactory">The Factory responsible for creating processes.</param>
     public MediaEncoder(IEncoderService processFactory) =>
-        _factory = processFactory.CheckNotNull(nameof(processFactory));
+        _factory = processFactory.CheckNotNull();
 
     /// <summary>
     /// Sets the owner of the process windows.
@@ -100,8 +100,8 @@ public class MediaEncoder : IMediaEncoder
     private CompletionStatus EncodeFFmpegInternal(SourceType sourceType, string source, string destination, string? videoCodec,
         string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options, ProcessStartedEventHandler? callback)
     {
-        source.CheckNotNullOrEmpty(nameof(source));
-        destination.CheckNotNullOrEmpty(nameof(destination));
+        source.CheckNotNullOrEmpty();
+        destination.CheckNotNullOrEmpty();
         if (string.IsNullOrEmpty(videoCodec) && string.IsNullOrEmpty(audioCodec))
         {
             throw new ArgumentException(Resources.CodecNullOrEmpty);
@@ -149,8 +149,8 @@ public class MediaEncoder : IMediaEncoder
     private CompletionStatus EncodeX264Internal(SourceType sourceType, EncoderApp encoderApp, string source, string destination,
         string? encodeArgs, ProcessOptionsEncoder? options, ProcessStartedEventHandler? callback)
     {
-        source.CheckNotNullOrEmpty(nameof(source));
-        destination.CheckNotNullOrEmpty(nameof(destination));
+        source.CheckNotNullOrEmpty();
+        destination.CheckNotNullOrEmpty();
         File.Delete(destination);
 
         var query = new StringBuilder();

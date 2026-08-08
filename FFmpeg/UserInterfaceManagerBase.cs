@@ -33,7 +33,7 @@ public abstract class UserInterfaceManagerBase : IUserInterfaceManager
     /// <inheritdoc />
     public void Start(object? owner, object jobId, string title)
     {
-        jobId.CheckNotNull(nameof(jobId));
+        jobId.CheckNotNull();
 
         if (!AppExited)
         {
@@ -57,7 +57,7 @@ public abstract class UserInterfaceManagerBase : IUserInterfaceManager
     /// <inheritdoc />
     public void Display(object? owner, IProcessWorker host)
     {
-        host.CheckNotNull(nameof(host));
+        host.CheckNotNull();
         if (!AppExited)
         {
             UiItem? ui = null;

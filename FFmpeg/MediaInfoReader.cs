@@ -10,7 +10,7 @@ public class MediaInfoReader : IMediaInfoReader
     /// </summary>
     /// <param name="processFactory">The Factory responsible for creating processes.</param>
     public MediaInfoReader(IEncoderService processFactory) =>
-        _factory = processFactory.CheckNotNull(nameof(processFactory));
+        _factory = processFactory.CheckNotNull();
 
     /// <inheritdoc />
     public object? Owner { get; set; }
@@ -38,7 +38,7 @@ public class MediaInfoReader : IMediaInfoReader
     /// <returns>A IFFmpegProcess object containing the file information.</returns>
     public FileInfoFFmpeg GetFileInfo(string source, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
-        source.CheckNotNullOrEmpty(nameof(source));
+        source.CheckNotNullOrEmpty();
 
         var worker = _factory.CreateEncoder(Owner, options, callback);
         worker.ProcessCompleted += (s, e) =>
@@ -61,7 +61,7 @@ public class MediaInfoReader : IMediaInfoReader
     /// <returns>The number of frames in the video.</returns>
     public long GetFrameCount(string source, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
-        source.CheckNotNullOrEmpty(nameof(source));
+        source.CheckNotNullOrEmpty();
 
         long result = 0;
         var worker = _factory.CreateEncoder(Owner, options, callback);

@@ -12,8 +12,8 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
     internal ProcessWorkerEncoder(IProcessManager config, IProcessFactory processFactory, IFileSystemService fileSystemService, IFileInfoParserFactory parserFactory, ProcessOptionsEncoder? options)
         : base(config, processFactory, options ??= new ProcessOptionsEncoder())
     {
-        _fileSystem = fileSystemService.CheckNotNull(nameof(fileSystemService));
-        _parserFactory = parserFactory.CheckNotNull(nameof(parserFactory));
+        _fileSystem = fileSystemService.CheckNotNull();
+        _parserFactory = parserFactory.CheckNotNull();
         OutputType = ProcessOutput.Error;
     }
 
@@ -64,7 +64,7 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
     /// <inheritdoc />
     public CompletionStatus RunAvisynthToEncoder(string source, string arguments, string encoderApp)
     {
-        source.CheckNotNullOrEmpty(nameof(source));
+        source.CheckNotNullOrEmpty();
         //if (!_fileSystem.Exists(Config.Avs2PipeMod)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.Avs2PipeModPathNotFound, Config.Avs2PipeMod)); }
         EnsureNotRunning();
         EncoderApp = encoderApp;
@@ -79,7 +79,7 @@ public class ProcessWorkerEncoder : ProcessWorker, IProcessWorkerEncoder
     /// <inheritdoc />
     public CompletionStatus RunVapourSynthToEncoder(string source, string arguments, string encoderApp)
     {
-        source.CheckNotNullOrEmpty(nameof(source));
+        source.CheckNotNullOrEmpty();
         // if (!_fileSystem.Exists(Processes.VsPipePath)) { throw new System.IO.FileNotFoundException(string.Format(CultureInfo.InvariantCulture, Resources.VsPipePathNotFound, Processes.VsPipePath)); }
 
         EnsureNotRunning();

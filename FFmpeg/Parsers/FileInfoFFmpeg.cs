@@ -56,7 +56,7 @@ public class FileInfoFFmpeg : IFileInfoParser
     /// <inheritdoc />
     public bool HasFileInfo(string data)
     {
-        data.CheckNotNull(nameof(data));
+        data.CheckNotNull();
         return data.StartsWithInvariant("Output ") ||
                data.StartsWithInvariant("Press [q] to stop");
     }
@@ -64,7 +64,7 @@ public class FileInfoFFmpeg : IFileInfoParser
     /// <inheritdoc />
     public bool IsLineProgressUpdate(string data)
     {
-        data.CheckNotNull(nameof(data));
+        data.CheckNotNull();
         return data.StartsWithInvariant("frame=");
     }
 
