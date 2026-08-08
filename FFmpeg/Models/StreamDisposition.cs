@@ -39,7 +39,10 @@ public class StreamDisposition
     /// <summary>
     /// Enables or disables a disposition flag by name.
     /// </summary>
-    public void Set(string name, bool enabled = true)
+    /// <param name="name">Flag name (e.g. default, forced).</param>
+    /// <param name="enabled">true to set; false to clear that flag.</param>
+    /// <returns>This instance.</returns>
+    public StreamDisposition Set(string name, bool enabled = true)
     {
         name = name.CheckNotNullOrEmpty().ToLowerInvariant();
         if (enabled)
@@ -50,12 +53,18 @@ public class StreamDisposition
         {
             _flags.Remove(name);
         }
+        return this;
     }
 
     /// <summary>
     /// Removes all disposition flags.
     /// </summary>
-    public void Clear() => _flags.Clear();
+    /// <returns>This instance.</returns>
+    public StreamDisposition Clear()
+    {
+        _flags.Clear();
+        return this;
+    }
 
     /// <summary>
     /// Returns flags joined for display (e.g. <c>default+forced</c>).

@@ -18,6 +18,8 @@ internal sealed class MuxCommandBuilder
 
         var inputs = InputTable.From(streams, muxOptions);
         var presence = StreamPresence.FromListed(streams);
+        // First stream of each type that claims "default" wins; others must not keep source default.
+        var defaultOwnerByType = FindDefaultOwners(streams);
 
         var query = new StringBuilder("-y ");
         AppendInputs(query, inputs);
@@ -26,7 +28,7 @@ internal sealed class MuxCommandBuilder
         var perStream = new StringBuilder();
         var mappedKeys = new HashSet<string>(StringComparer.Ordinal);
 
-        AppendListedStreams(map, perStream, streams, inputs, presence, mappedKeys);
+        AppendListedStreams(map, perStream, streams, inputs, presence, mappedKeys, defaultOwnerByType);
         AppendFromRules(map, muxOptions, inputs, presence, mappedKeys, options);
         AppendGlobalCodecs(query, streams, presence);
 
@@ -42,6 +44,28 @@ internal sealed class MuxCommandBuilder
         query.Append('"');
 
         return query.ToString();
+    }
+
+    // First listed stream per type with Disposition "default" (output order).
+    private static Dictionary<FFmpegStreamType, MediaStream> FindDefaultOwners(IReadOnlyList<MediaStream> streams)
+    {
+        var owners = new Dictionary<FFmpegStreamType, MediaStream>();
+        foreach (var stream in streams)
+        {
+            if (stream.Type == FFmpegStreamType.None)
+            {
+                continue;
+            }
+            if (stream.Disposition == null || !stream.Disposition.Has("default"))
+            {
+                continue;
+            }
+            if (!owners.ContainsKey(stream.Type))
+            {
+                owners[stream.Type] = stream;
+            }
+        }
+        return owners;
     }
 
     // Fills type/format on streams still unresolved (Type.None).
@@ -94,7 +118,14 @@ internal sealed class MuxCommandBuilder
 
     // Appends -map and per-output-stream codec/bsf/metadata/disposition
     // for the explicitly listed streams.
-    private static void AppendListedStreams(StringBuilder map, StringBuilder perStream, IReadOnlyList<MediaStream> streams, InputTable inputs, StreamPresence presence, HashSet<string> mappedKeys)
+    private static void AppendListedStreams(
+        StringBuilder map,
+        StringBuilder perStream,
+        IReadOnlyList<MediaStream> streams,
+        InputTable inputs,
+        StreamPresence presence,
+        HashSet<string> mappedKeys,
+        IReadOnlyDictionary<FFmpegStreamType, MediaStream> defaultOwnerByType)
     {
         var outputIndex = 0;
 
@@ -102,18 +133,60 @@ internal sealed class MuxCommandBuilder
         {
             var inputIndex = inputs.IndexOf(stream.Path);
             mappedKeys.Add(MapKey(inputIndex, stream.Index));
-            AppendStream(map, perStream, stream, inputIndex, outputIndex, presence);
+            AppendStream(map, perStream, stream, inputIndex, outputIndex, presence, defaultOwnerByType);
             outputIndex++;
         }
     }
 
-    private static void AppendStream(StringBuilder map, StringBuilder perStream, MediaStream stream, int inputIndex, int outputIndex, StreamPresence presence)
+    private static void AppendStream(
+        StringBuilder map,
+        StringBuilder perStream,
+        MediaStream stream,
+        int inputIndex,
+        int outputIndex,
+        StreamPresence presence,
+        IReadOnlyDictionary<FFmpegStreamType, MediaStream> defaultOwnerByType)
     {
         map.AppendFormatInvariant("-map {0}:{1} ", inputIndex, stream.Index);
         AppendStreamCodec(perStream, outputIndex, stream);
         AppendStreamBitstreamFilter(perStream, outputIndex, stream, presence);
         AppendStreamMetadata(perStream, outputIndex, stream);
-        AppendStreamDisposition(perStream, outputIndex, stream);
+        AppendStreamDisposition(perStream, outputIndex, EffectiveDisposition(stream, defaultOwnerByType));
+    }
+
+    // When another stream of the same type claims "default", demote this one so remux
+    // does not keep source default (user should not need to clear Disposition manually).
+    private static StreamDisposition? EffectiveDisposition(
+        MediaStream stream,
+        IReadOnlyDictionary<FFmpegStreamType, MediaStream> defaultOwnerByType)
+    {
+        if (!defaultOwnerByType.TryGetValue(stream.Type, out var owner) ||
+            ReferenceEquals(stream, owner))
+        {
+            return stream.Disposition;
+        }
+
+        // Someone else is the default for this type.
+        if (stream.Disposition == null)
+        {
+            // Null would omit -disposition and FFmpeg would keep source default — force clear.
+            return new StreamDisposition();
+        }
+        if (!stream.Disposition.Has("default"))
+        {
+            return stream.Disposition;
+        }
+
+        var withoutDefault = new StreamDisposition();
+        foreach (var flag in stream.Disposition.Flags)
+        {
+            if (!flag.Equals("default", StringComparison.OrdinalIgnoreCase))
+            {
+                withoutDefault.Set(flag);
+            }
+        }
+        // Empty → AppendStreamDisposition emits -disposition:N 0.
+        return withoutDefault;
     }
 
     private static void AppendStreamCodec(StringBuilder query, int outputIndex, MediaStream stream)
@@ -288,25 +361,22 @@ internal sealed class MuxCommandBuilder
         }
     }
 
-    // Appends -disposition:N
-    // (null = omit, empty = clear 0, else flags).
-    // Absolute index, not s:N.
-    private static void AppendStreamDisposition(StringBuilder query, int outputIndex, MediaStream stream)
+    // Appends -disposition:N (null = omit, empty = clear 0, else flags). Absolute index, not s:N.
+    private static void AppendStreamDisposition(StringBuilder query, int outputIndex, StreamDisposition? disposition)
     {
-        if (stream.Disposition == null)
+        if (disposition == null)
         {
             return;
         }
 
-        if (!stream.Disposition.Any)
+        if (!disposition.Any)
         {
             query.AppendFormatInvariant("-disposition:{0} 0 ", outputIndex);
             return;
         }
 
         query.AppendFormatInvariant("-disposition:{0} ", outputIndex);
-
-        query.Append(stream.Disposition);
+        query.Append(disposition);
         query.Append(' ');
     }
 
