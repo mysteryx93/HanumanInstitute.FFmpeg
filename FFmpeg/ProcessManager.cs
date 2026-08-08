@@ -66,7 +66,7 @@ public class ProcessManager : IProcessManager
     public IReadOnlyList<IProcess> GetFFmpegProcesses()
     {
         var processName = _fileSystem.GetFileNameWithoutExtension(_appPaths.Value.FFmpeg);
-        return Process.GetProcessesByName(processName).Select(p => new ProcessWrapper(p)).ToList<IProcess>();
+        return [.. Process.GetProcessesByName(processName).Select(p => new ProcessWrapper(p))];
     }
 
     /// <summary>

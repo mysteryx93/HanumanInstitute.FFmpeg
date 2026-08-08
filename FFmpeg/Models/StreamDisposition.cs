@@ -9,8 +9,7 @@ public class StreamDisposition
     // Parse allow-list: stream lines mix disposition with other parentheses, e.g.
     // Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, progressive), ... (default)
     // → only "default" (not und, High, avc1, tv, progressive)
-    private static readonly HashSet<string> KnownParseNames = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> s_knownParseNames = new(StringComparer.OrdinalIgnoreCase) {
         "default", "dub", "original", "comment", "lyrics", "karaoke", "forced",
         "hearing_impaired", "visual_impaired", "clean_effects", "attached_pic",
         "timed_thumbnails", "captions", "descriptions", "metadata", "dependent", "still_image"
@@ -84,7 +83,7 @@ public class StreamDisposition
                 var inner = streamLine.Substring(start, i - start);
                 foreach (var part in inner.Split([',', ' ', ';'], StringSplitOptions.RemoveEmptyEntries))
                 {
-                    if (KnownParseNames.Contains(part))
+                    if (s_knownParseNames.Contains(part))
                     {
                         d._flags.Add(part.ToLowerInvariant());
                     }

@@ -156,7 +156,7 @@ public class MediaEncoder : IMediaEncoder
         var query = new StringBuilder();
         if (sourceType != SourceType.Direct)
         {
-            query.AppendFormat(CultureInfo.InvariantCulture, "--{0}y4m ", encoderApp == EncoderApp.x264 ? "demuxer " : "");
+            query.AppendFormatInvariant("--{0}y4m ", encoderApp == EncoderApp.x264 ? "demuxer " : "");
         }
 
         if (!string.IsNullOrEmpty(encodeArgs))

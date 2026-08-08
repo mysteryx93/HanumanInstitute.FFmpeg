@@ -19,8 +19,8 @@
     <PackageReference Include="Avalonia" Version="12.1.1" />
     <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
-    <PackageReference Include="ReactiveUI" Version="24.0.0" />
-    <PackageReference Include="ReactiveUI.Avalonia" Version="12.1.0" />
+    <PackageReference Include="ReactiveUI" Version="24.1.0" />
+    <PackageReference Include="ReactiveUI.Avalonia" Version="12.1.1" />
     <PackageReference Include="ReactiveUI.SourceGenerators" Version="3.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

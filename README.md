@@ -129,17 +129,52 @@ long **GetFrameCount**(string source) : Returns the exact frame count of specifi
 
 Provides functions to manage audio and video streams.
 
-CompletionStatus **Muxe**(string videoFile, string audioFile, string destination) : Merges specified audio and video files.
+CompletionStatus **Muxe**(string videoFile, string audioFile, string destination) : Merges the first video and first audio stream of the given files.
 
-CompletionStatus **Muxe**(IEnumerable<MediaStream> fileStreams, string destination) : Merges the specified list of file streams.
+CompletionStatus **Muxe**(IEnumerable&lt;MediaStream&gt; fileStreams, string destination) : Merges the given streams (order preserved; duplicate paths share one `-i`).
+
+CompletionStatus **Muxe**(IEnumerable&lt;MediaStream&gt; fileStreams, string destination, MuxOptions muxOptions) : Same, plus container metadata, chapters, optional attachment/cover maps, and codec flags.
 
 CompletionStatus **ExtractVideo**(string source, string destination) : Extracts the video stream from specified file.
 
-CompletionStatus **ExtractVideo**(string source, string destination : Extracts the video stream from specified file.
+CompletionStatus **ExtractAudio**(string source, string destination) : Extracts the audio stream from specified file.
 
-CompletionStatus **Concatenate**(IEnumerable<string> files, string destination) : Concatenates (merges) all specified files.
+CompletionStatus **Concatenate**(IEnumerable&lt;string&gt; files, string destination) : Concatenates (merges) all specified files.
 
-CompletionStatus **Truncate**(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null) : Truncates a media file from specified start position with specified duration. This can result in data loss or corruption if not splitting exactly on a framekey.
+CompletionStatus **Truncate**(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null) : Truncates a media file from specified start position with specified duration.
+
+**MediaStream** (mux selection + write): `Path`, `Index`, `Format`, `Type` (from probe); `Language`, `Metadata`, `Disposition` (null=omit, empty=clear), `Codec`.  
+`FromStreamInfo` seeds type, format, and write tags from a probe.  
+Probe/read uses **MediaStreamInfo** (e.g. frequency tags).
+
+**MuxOptions** — `new MuxOptions()`, then `From(...)`. Always a **file** (FFmpeg `-i`), never a stream-list slot.
+
+```csharp
+// From(path)  — that file (open as -i if needed)
+// From(n)     — already-open -i n (unique paths only)
+
+// Stream list [fileA, fileA, fileB] → -i 0 = fileA, -i 1 = fileB
+// From(0) and From(1) are different files; two streams of fileA share input 0.
+new MuxOptions().From(0).ContainerTags().From(1).Cover();
+
+new MuxOptions()
+    .From(sourcePath).Media().Container()
+    .From(otherPath).Cover().Attachments()
+    .Done()
+    .WithAdditionalArguments("-movflags +faststart");
+
+// Listed streams + rest of container from source (everything except audio from source)
+muxer.Muxe(new[] { videoStream, audioStream }, dest,
+    new MuxOptions().From(sourcePath).All().Audio(false));
+```
+
+| On `MuxFromBuilder` | Meaning |
+|---------------------|---------|
+| `ContainerTags` / `Metadata` / `Chapters` | Container-level |
+| `Video` / `Audio` / `Subtitles` / `Cover` / `Attachments` / `Data` | Map those track types (`include: false` turns off) |
+| `Media()` / `Container()` / `SideStreams()` / `All()` | Combos (`All().Audio(false)` = everything except audio) |
+
+Stream tags: `FromStreamInfo` / `CopyTagsFrom`. Override or clear disposition on the `MediaStream` as needed.
 
 ### IMediaEncoder
 

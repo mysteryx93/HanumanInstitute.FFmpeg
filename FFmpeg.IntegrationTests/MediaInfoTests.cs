@@ -143,6 +143,22 @@ public class MediaInfoTests
         Assert.False(pitchedAudio.Disposition.Has("default"));
     }
 
+    /// <summary>List streams that carry a frequency tag (read-side filter; no mux).</summary>
+    [Fact]
+    public void GetFileInfo_TaggedMkv_ListStreamsWithFrequencyTag()
+    {
+        var fileInfo = SetupInfo().GetFileInfo(AppPaths.GetInputFile(AppPaths.TaggedMkv), null, _feed.RunCallback);
+
+        var withFrequency = fileInfo.FileStreams
+            .Where(s => s.Metadata.ContainsKey("frequency"))
+            .ToList();
+
+        Assert.Equal(2, withFrequency.Count);
+        Assert.All(withFrequency, s => Assert.Equal(FFmpegStreamType.Audio, s.StreamType));
+        Assert.Contains(withFrequency, s => s.Metadata["frequency"] == "440");
+        Assert.Contains(withFrequency, s => s.Metadata["frequency"] == "432");
+    }
+
     [Fact]
     public void GetFileInfo_Subtitle_ParsesCorrectly()
     {

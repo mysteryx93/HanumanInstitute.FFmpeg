@@ -1,69 +1,78 @@
 ﻿namespace HanumanInstitute.FFmpeg;
 
 /// <summary>
-/// Provides functions to manage audio and video streams.
+/// Muxes, extracts, concatenates, and truncates media streams via FFmpeg (stream-copy).
 /// </summary>
 public interface IMediaMuxer
 {
     /// <summary>
-    /// Sets the owner of the process windows.
+    /// Gets or sets the owner of the process windows.
     /// </summary>
     object? Owner { get; set; }
+
     /// <summary>
-    /// Merges specified audio and video files.
+    /// Muxes the first video stream and first audio stream of the given files into destination.
+    /// Either videoFile or audioFile may be null.
     /// </summary>
-    /// <param name="videoFile">The file containing the video.</param>
-    /// <param name="audioFile">The file containing the audio.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
+    /// <param name="videoFile">File providing the video stream, or null for audio-only.</param>
+    /// <param name="audioFile">File providing the audio stream, or null for video-only.</param>
+    /// <param name="destination">Output path.</param>
+    /// <param name="options">Process options, or null for defaults.</param>
+    /// <param name="callback">Invoked after the process has started, or null.</param>
     /// <returns>The process completion status.</returns>
     CompletionStatus Muxe(string? videoFile, string? audioFile, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+
     /// <summary>
-    /// Merges the specified list of file streams.
+    /// Muxes the given streams into destination with optional <see cref="MuxOptions"/>
+    /// (container tags, chapters, extra maps via <see cref="MuxOptions.From(string)"/>).
     /// </summary>
-    /// <param name="fileStreams">The list of file streams to include in the output.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
+    /// <param name="fileStreams">Streams to map, in output order.</param>
+    /// <param name="destination">Output path.</param>
+    /// <param name="muxOptions">Mux options, or null for none.</param>
+    /// <param name="options">Process options, or null for defaults.</param>
+    /// <param name="callback">Invoked after the process has started, or null.</param>
     /// <returns>The process completion status.</returns>
-    CompletionStatus Muxe(IEnumerable<MediaStream> fileStreams, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+    CompletionStatus Muxe(IEnumerable<MediaStream> fileStreams, string destination, MuxOptions? muxOptions = null, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+
     /// <summary>
-    /// Extracts the video stream from specified file.
+    /// Extracts the video stream from source into destination.
     /// </summary>
-    /// <param name="source">The media file to extract from.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
+    /// <param name="source">Input path.</param>
+    /// <param name="destination">Output path.</param>
+    /// <param name="options">Process options, or null for defaults.</param>
+    /// <param name="callback">Invoked after the process has started, or null.</param>
     /// <returns>The process completion status.</returns>
     CompletionStatus ExtractVideo(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+
     /// <summary>
-    /// Extracts the audio stream from specified file.
+    /// Extracts the audio stream from source into destination.
     /// </summary>
-    /// <param name="source">The media file to extract from.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
+    /// <param name="source">Input path.</param>
+    /// <param name="destination">Output path.</param>
+    /// <param name="options">Process options, or null for defaults.</param>
+    /// <param name="callback">Invoked after the process has started, or null.</param>
     /// <returns>The process completion status.</returns>
     CompletionStatus ExtractAudio(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+
     /// <summary>
-    /// Concatenates (merges) all specified files.
+    /// Concatenates the given files into destination.
     /// </summary>
-    /// <param name="files">The files to merge.</param>
-    /// <param name="destination">The destination file.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
+    /// <param name="files">Input paths, in order.</param>
+    /// <param name="destination">Output path.</param>
+    /// <param name="options">Process options, or null for defaults.</param>
+    /// <param name="callback">Invoked after the process has started, or null.</param>
     /// <returns>The process completion status.</returns>
     CompletionStatus Concatenate(IEnumerable<string> files, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+
     /// <summary>
-    /// Truncates a media file from specified start position with specified duration. This can result in data loss or corruption if not splitting exactly on a framekey.
+    /// Truncates source from startPos with optional duration into destination.
     /// </summary>
-    /// <param name="source">The source file to truncate.</param>
-    /// <param name="destination">The output file to write.</param>
-    /// <param name="startPos">The position where to start copying. Anything before this position will be ignored. TimeSpan.Zero or null to start from beginning.</param>
-    /// <param name="duration">The duration after which to stop copying. Anything after this duration will be ignored. TimeSpan.Zero or null to copy until the end.</param>
-    /// <param name="options">The options for starting the process.</param>
-    /// <param name="callback">A method that will be called after the process has been started.</param>
+    /// <param name="source">Input path.</param>
+    /// <param name="destination">Output path.</param>
+    /// <param name="startPos">Start position, or null to start at the beginning.</param>
+    /// <param name="duration">Duration to keep, or null for the remainder of the file.</param>
+    /// <param name="options">Process options, or null for defaults.</param>
+    /// <param name="callback">Invoked after the process has started, or null.</param>
     /// <returns>The process completion status.</returns>
     CompletionStatus Truncate(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
 }
