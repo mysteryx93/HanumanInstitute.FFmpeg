@@ -18,8 +18,8 @@ public class MediaScript : IMediaScript
 
     internal MediaScript(IEncoderService processFactory, IFileSystemService fileSystemService)
     {
-        _factory = processFactory.CheckNotNull(nameof(processFactory));
-        _fileSystem = fileSystemService.CheckNotNull(nameof(fileSystemService));
+        _factory = processFactory.CheckNotNull();
+        _fileSystem = fileSystemService.CheckNotNull();
     }
 
     /// <inheritdoc />
@@ -28,7 +28,7 @@ public class MediaScript : IMediaScript
     /// <inheritdoc />
     public CompletionStatus RunAvisynth(string path, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
-        path.CheckNotNullOrEmpty(nameof(path));
+        path.CheckNotNullOrEmpty();
 
         var args = Invariant($@"""{path}"" - > NUL");
         var worker = _factory.CreateProcess(Owner, options, callback);
@@ -41,7 +41,7 @@ public class MediaScript : IMediaScript
     /// <inheritdoc />
     public CompletionStatus RunVapourSynth(string path, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
     {
-        path.CheckNotNullOrEmpty(nameof(path));
+        path.CheckNotNullOrEmpty();
 
         var args = Invariant($@"""{path}"" .");
         var worker = _factory.CreateProcess(Owner, options, callback);
