@@ -10,17 +10,7 @@ public class MediaMuxer : IMediaMuxer
 {
     // Raw elementary video → MKV needs a temp MP4 remux (missing timestamps).
     private static readonly HashSet<string> s_elementaryVideoCodecs = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "h264", "h265", "hevc", "vvc", "h266"
-    };
-
-    private static readonly HashSet<string> s_elementaryVideoExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".264", ".h264",
-        ".265", ".h265", ".hevc",
-        ".266", ".h266", ".vvc"
-    };
-
+        { "h264", "h265", "hevc", "vvc", "h266", "av1", "mpeg4", "mpeg2video", "mpeg1video", "vp8", "vp9", "vc1", "msmpeg4v2", "msmpeg4v3", "wmv1", "wmv2", "wmv3" };
     private readonly IEncoderService _factory;
     private readonly IFileSystemService _fileSystem;
     private readonly IMediaInfoReader _infoReader;
@@ -140,8 +130,7 @@ public class MediaMuxer : IMediaMuxer
     {
         if (item.Type != FFmpegStreamType.Video) { return false; }
         if (!destination.EndsWithInvariant(".mkv")) { return false; }
-        if (!s_elementaryVideoCodecs.Contains(item.Format ?? string.Empty)) { return false; }
-        return s_elementaryVideoExtensions.Contains(Path.GetExtension(item.Path));
+        return s_elementaryVideoCodecs.Contains(item.Format ?? string.Empty);
     }
 
     // Requires non-empty paths; stream list may be empty when From() supplies media maps.
