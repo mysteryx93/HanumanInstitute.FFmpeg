@@ -286,6 +286,55 @@ public class MediaMuxerTests
     }
 
     [Fact]
+    public void Muxe_TwoStreamTitles_Mp4_PreservesBothOnRemux()
+    {
+        // First mux: write title on the new audio track (MP4 stores it as name).
+        var (muxer, src, mid) = Setup("MuxeTwoTitlesMid", AppPaths.Mpeg4WithAudio, ".mp4");
+        var aac = AppPaths.GetInputFile(AppPaths.StreamAac);
+        var info = GetFileInfo(src);
+        var first = FirstStream(aac);
+        first.Metadata["title"] = "432Hz";
+        first.Disposition = new StreamDisposition().Set("default");
+        var firstStreams = new[]
+        {
+            first,
+            FromInfo(src, info.VideoStream!),
+            FromInfo(src, info.AudioStream!)
+        };
+
+        Assert.Equal(CompletionStatus.Success, muxer.Muxe(firstStreams, mid, new MuxOptions().From(src).Container(), callback: _feed.RunCallback));
+
+        var midInfo = GetFileInfo(mid);
+        var midAudios = midInfo.FileStreams.OfType<MediaAudioStreamInfo>().ToList();
+        Assert.Equal(2, midAudios.Count);
+        Assert.True(
+            midAudios[0].Metadata.GetValueOrDefault("title", "") == "432Hz" ||
+            midAudios[0].Metadata.GetValueOrDefault("name", "") == "432Hz");
+
+        // Second mux: probe mid (title appears as name on MP4), add another titled stream.
+        // Both titles must survive — writing "name=" fails on MP4; builder must emit "title=".
+        var dest = AppPaths.PrepareDestPath("MuxeTwoTitlesFinal", AppPaths.Mpeg4WithAudio, ".mp4");
+        var newest = FirstStream(aac);
+        newest.Metadata["title"] = "528Hz";
+        newest.Disposition = new StreamDisposition().Set("default");
+        var remuxStreams = new List<MediaStream> { newest };
+        remuxStreams.AddRange(midInfo.FileStreams.Select(s => FromInfo(mid, s)));
+
+        Assert.Equal(CompletionStatus.Success, muxer.Muxe(remuxStreams, dest, new MuxOptions().From(mid).Container(), callback: _feed.RunCallback));
+
+        var outAudios = GetFileInfo(dest).FileStreams.OfType<MediaAudioStreamInfo>().ToList();
+        Assert.Equal(3, outAudios.Count);
+        static string TitleOf(MediaStreamInfo s) =>
+            s.Metadata.TryGetValue("title", out var t) && t.HasValue() ? t
+            : s.Metadata.TryGetValue("name", out var n) && n.HasValue() ? n
+            : null;
+        Assert.Contains(outAudios, a => TitleOf(a) == "528Hz");
+        Assert.Contains(outAudios, a => TitleOf(a) == "432Hz");
+        Assert.True(outAudios[0].Disposition.Has("default"));
+        Assert.Single(outAudios, a => a.Disposition.Has("default"));
+    }
+
+    [Fact]
     public void Muxe_ThreeAudio_FirstTrackIsOnlyDefault()
     {
         var (muxer, src, dest) = Setup("MuxeThreeAudio", AppPaths.Mpeg4WithAudio, ".mkv");

@@ -258,8 +258,64 @@ public class MediaMuxerTests
         muxer.Muxe([stream], "dest.m4a");
 
         Assert.Contains("-metadata:s:0 language=eng", Command, StringComparison.Ordinal);
+        Assert.Contains("-metadata:s:0 title=\"Pitched Audio\"", Command, StringComparison.Ordinal);
         Assert.Contains("-metadata:s:0 frequency=432", Command, StringComparison.Ordinal);
         Assert.Contains("-disposition:0 default", Command, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Muxe_TwoStreamTitles_AreWrittenOnBothStreams()
+    {
+        var muxer = CreateMuxer();
+        var first = new MediaStream("new.aac", 0, "aac", FFmpegStreamType.Audio)
+        {
+            Disposition = new StreamDisposition().Set("default")
+        };
+        first.Metadata["title"] = "528Hz";
+        var second = new MediaStream("source.mp4", 0, "aac", FFmpegStreamType.Audio);
+        second.Metadata["title"] = "432Hz";
+
+        muxer.Muxe([
+            first,
+            new MediaStream("source.mp4", 1, "h264", FFmpegStreamType.Video),
+            second
+        ], "dest.mp4");
+
+        Assert.Contains("-metadata:s:0 title=528Hz", Command, StringComparison.Ordinal);
+        Assert.Contains("-metadata:s:2 title=432Hz", Command, StringComparison.Ordinal);
+        Assert.DoesNotContain("-metadata:s:0 name=", Command, StringComparison.Ordinal);
+        Assert.DoesNotContain("-metadata:s:2 name=", Command, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Muxe_StreamNameFromProbe_WrittenAsTitle()
+    {
+        // MP4 probe exposes track title as "name"; command must remux with "title".
+        var muxer = CreateMuxer();
+        var stream = new MediaStream("source.mp4", 0, "aac", FFmpegStreamType.Audio);
+        stream.Metadata["name"] = "432Hz";
+        stream.Metadata["handler_name"] = "SoundHandler";
+
+        muxer.Muxe([stream], "dest.mp4");
+
+        Assert.Contains("-metadata:s:0 title=432Hz", Command, StringComparison.Ordinal);
+        Assert.DoesNotContain("-metadata:s:0 name=", Command, StringComparison.Ordinal);
+        Assert.Contains("-metadata:s:0 handler_name=SoundHandler", Command, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Muxe_TitlePreferredOverName()
+    {
+        var muxer = CreateMuxer();
+        var stream = new MediaStream("source.mp4", 0, "aac", FFmpegStreamType.Audio);
+        stream.Metadata["title"] = "528Hz";
+        stream.Metadata["name"] = "432Hz";
+
+        muxer.Muxe([stream], "dest.mp4");
+
+        Assert.Contains("-metadata:s:0 title=528Hz", Command, StringComparison.Ordinal);
+        Assert.DoesNotContain("432Hz", Command, StringComparison.Ordinal);
+        Assert.DoesNotContain("-metadata:s:0 name=", Command, StringComparison.Ordinal);
     }
 
     [Fact]
