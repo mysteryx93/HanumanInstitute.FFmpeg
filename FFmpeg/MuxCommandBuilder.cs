@@ -5,58 +5,87 @@ internal sealed class MuxCommandBuilder
 {
     private readonly IMediaInfoReader _infoReader;
 
+    // Initializes the command builder.
     public MuxCommandBuilder(IMediaInfoReader infoReader)
     {
         _infoReader = infoReader.CheckNotNull();
     }
 
-    // Full command:
-    // -y -i … codecs -map … per-stream args -map_metadata … "dest"
+    // Builds the complete FFmpeg mux command.
     public string Build(IReadOnlyList<MediaStream> streams, string destination, MuxOptions muxOptions, ProcessOptionsEncoder? options)
     {
         ResolveTypesFromProbe(streams, options);
-
-        var inputs = InputTable.From(streams, muxOptions);
-        var presence = StreamPresence.FromListed(streams);
-        // First stream of each type that claims "default" wins; others must not keep source default.
-        var defaultOwnerByType = FindDefaultOwners(streams);
-
+        var inputs = MuxInputTable.From(streams, muxOptions);
+        var selected = CollectStreams(streams, muxOptions, inputs, options);
+        var presence = MuxStreamPresence.From(selected);
+        var defaultOwners = FindDefaultOwners(selected);
         var query = new StringBuilder("-y ");
         AppendInputs(query, inputs);
-
-        var map = new StringBuilder();
-        var perStream = new StringBuilder();
-        var mappedKeys = new HashSet<string>(StringComparer.Ordinal);
-
-        AppendListedStreams(map, perStream, streams, inputs, presence, mappedKeys, defaultOwnerByType);
-        AppendFromRules(map, muxOptions, inputs, presence, mappedKeys, options);
-        AppendGlobalCodecs(query, streams, presence);
-
-        query.Append(map);
-        query.Append(perStream);
-
+        AppendStreams(query, selected, inputs, presence, defaultOwners);
         AppendContainerMaps(query, muxOptions, inputs);
         AppendOutputMetadata(query, muxOptions);
         AppendAdditionalArguments(query, muxOptions);
-
-        query.Append('"');
-        query.Append(destination);
-        query.Append('"');
-
+        query.Append('"').Append(destination).Append('"');
         return query.ToString();
     }
 
-    // First listed stream per type with Disposition "default" (output order).
+    // Adds streams selected by MuxOptions to the explicit stream list.
+    private List<MediaStream> CollectStreams(IReadOnlyList<MediaStream> streams, MuxOptions muxOptions, MuxInputTable muxInputs, ProcessOptionsEncoder? options)
+    {
+        var result = new List<MediaStream>(streams);
+        var mapped = new HashSet<string>(streams.Select(s => MapKey(muxInputs.IndexOf(s.Path), s.Index)), StringComparer.Ordinal);
+        foreach (var rule in muxOptions.FromInputs)
+        {
+            if (!rule.Any || !muxInputs.TryResolve(rule, out var inputIndex))
+            {
+                continue;
+            }
+
+            var path = muxInputs.Paths[inputIndex];
+            var info = _infoReader.GetFileInfo(path, options);
+            foreach (var stream in info.FileStreams)
+            {
+                if (!IncludeStream(rule, stream))
+                {
+                    continue;
+                }
+
+                var key = MapKey(inputIndex, stream.Index);
+                if (!mapped.Add(key))
+                {
+                    continue;
+                }
+
+                result.Add(MediaStream.FromStreamInfo(path, stream));
+            }
+        }
+
+        return result;
+    }
+
+    // Appends maps and per-stream output options.
+    private static void AppendStreams(StringBuilder query, IReadOnlyList<MediaStream> streams, MuxInputTable muxInputs, MuxStreamPresence presence, IReadOnlyDictionary<FFmpegStreamType, MediaStream> defaultOwners)
+    {
+        AppendGlobalCodecs(query, streams, presence);
+        for (var i = 0; i < streams.Count; i++)
+        {
+            var stream = streams[i];
+            var inputIndex = muxInputs.IndexOf(stream.Path);
+            query.AppendFormatInvariant("-map {0}:{1} ", inputIndex, stream.Index);
+            AppendStreamCodec(query, i, stream);
+            AppendStreamBitstreamFilter(query, i, stream, presence);
+            AppendStreamMetadata(query, i, stream);
+            AppendStreamDisposition(query, i, EffectiveDisposition(stream, defaultOwners));
+        }
+    }
+
+    // Finds the first default stream of each type.
     private static Dictionary<FFmpegStreamType, MediaStream> FindDefaultOwners(IReadOnlyList<MediaStream> streams)
     {
         var owners = new Dictionary<FFmpegStreamType, MediaStream>();
         foreach (var stream in streams)
         {
-            if (stream.Type == FFmpegStreamType.None)
-            {
-                continue;
-            }
-            if (stream.Disposition == null || !stream.Disposition.Has("default"))
+            if (stream.Type == FFmpegStreamType.None || stream.Disposition?.Has("default") != true)
             {
                 continue;
             }
@@ -68,18 +97,12 @@ internal sealed class MuxCommandBuilder
         return owners;
     }
 
-    // Fills type/format on streams still unresolved (Type.None).
+    // Resolves unresolved stream types and formats from the source files.
     private void ResolveTypesFromProbe(IReadOnlyList<MediaStream> streams, ProcessOptionsEncoder? options)
     {
-        foreach (var group in streams.GroupBy(s => s.Path, StringComparer.Ordinal))
+        foreach (var group in streams.Where(s => s.Type == FFmpegStreamType.None).GroupBy(s => s.Path, StringComparer.Ordinal))
         {
-            if (group.All(s => s.Type != FFmpegStreamType.None))
-            {
-                continue;
-            }
-
             FileInfoFFmpeg info;
-
             try
             {
                 info = _infoReader.GetFileInfo(group.Key, options);
@@ -91,13 +114,7 @@ internal sealed class MuxCommandBuilder
 
             foreach (var stream in group)
             {
-                if (stream.Type != FFmpegStreamType.None)
-                {
-                    continue;
-                }
-
                 var source = info.FileStreams.FirstOrDefault(s => s.Index == stream.Index);
-
                 if (source != null)
                 {
                     stream.SetFileInfo(source);
@@ -106,70 +123,15 @@ internal sealed class MuxCommandBuilder
         }
     }
 
-    private static void AppendInputs(StringBuilder query, InputTable inputs)
+    // Resolves the effective disposition when another stream owns the default flag.
+    private static StreamDisposition? EffectiveDisposition(MediaStream stream, IReadOnlyDictionary<FFmpegStreamType, MediaStream> defaultOwners)
     {
-        foreach (var path in inputs.Paths)
-        {
-            query.Append("-i \"");
-            query.Append(path);
-            query.Append("\" ");
-        }
-    }
-
-    // Appends -map and per-output-stream codec/bsf/metadata/disposition
-    // for the explicitly listed streams.
-    private static void AppendListedStreams(
-        StringBuilder map,
-        StringBuilder perStream,
-        IReadOnlyList<MediaStream> streams,
-        InputTable inputs,
-        StreamPresence presence,
-        HashSet<string> mappedKeys,
-        IReadOnlyDictionary<FFmpegStreamType, MediaStream> defaultOwnerByType)
-    {
-        var outputIndex = 0;
-
-        foreach (var stream in streams)
-        {
-            var inputIndex = inputs.IndexOf(stream.Path);
-            mappedKeys.Add(MapKey(inputIndex, stream.Index));
-            AppendStream(map, perStream, stream, inputIndex, outputIndex, presence, defaultOwnerByType);
-            outputIndex++;
-        }
-    }
-
-    private static void AppendStream(
-        StringBuilder map,
-        StringBuilder perStream,
-        MediaStream stream,
-        int inputIndex,
-        int outputIndex,
-        StreamPresence presence,
-        IReadOnlyDictionary<FFmpegStreamType, MediaStream> defaultOwnerByType)
-    {
-        map.AppendFormatInvariant("-map {0}:{1} ", inputIndex, stream.Index);
-        AppendStreamCodec(perStream, outputIndex, stream);
-        AppendStreamBitstreamFilter(perStream, outputIndex, stream, presence);
-        AppendStreamMetadata(perStream, outputIndex, stream);
-        AppendStreamDisposition(perStream, outputIndex, EffectiveDisposition(stream, defaultOwnerByType));
-    }
-
-    // When another stream of the same type claims "default", demote this one so remux
-    // does not keep source default (user should not need to clear Disposition manually).
-    private static StreamDisposition? EffectiveDisposition(
-        MediaStream stream,
-        IReadOnlyDictionary<FFmpegStreamType, MediaStream> defaultOwnerByType)
-    {
-        if (!defaultOwnerByType.TryGetValue(stream.Type, out var owner) ||
-            ReferenceEquals(stream, owner))
+        if (!defaultOwners.TryGetValue(stream.Type, out var owner) || ReferenceEquals(stream, owner))
         {
             return stream.Disposition;
         }
-
-        // Someone else is the default for this type.
         if (stream.Disposition == null)
         {
-            // Null would omit -disposition and FFmpeg would keep source default — force clear.
             return new StreamDisposition();
         }
         if (!stream.Disposition.Has("default"))
@@ -177,103 +139,85 @@ internal sealed class MuxCommandBuilder
             return stream.Disposition;
         }
 
-        var withoutDefault = new StreamDisposition();
+        var result = new StreamDisposition();
         foreach (var flag in stream.Disposition.Flags)
         {
             if (!flag.Equals("default", StringComparison.OrdinalIgnoreCase))
             {
-                withoutDefault.Set(flag);
+                result.Set(flag);
             }
         }
-        // Empty → AppendStreamDisposition emits -disposition:N 0.
-        return withoutDefault;
+
+        return result;
     }
 
+    // Appends all input files to the FFmpeg command.
+    private static void AppendInputs(StringBuilder query, MuxInputTable muxInputs)
+    {
+        foreach (var path in muxInputs.Paths)
+        {
+            query.Append("-i \"").Append(path).Append("\" ");
+        }
+    }
+
+    // Appends the codec override for an output stream.
     private static void AppendStreamCodec(StringBuilder query, int outputIndex, MediaStream stream)
     {
         var codec = stream.Codec;
-
-        if (string.IsNullOrEmpty(codec) && stream.Type == FFmpegStreamType.Audio &&
-            string.Equals(stream.Format, "pcm_dvd", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(codec) && stream.Type == FFmpegStreamType.Audio && string.Equals(stream.Format, "pcm_dvd", StringComparison.OrdinalIgnoreCase))
         {
             codec = "pcm_s16le";
         }
-
         if (!string.IsNullOrEmpty(codec))
         {
             query.AppendFormatInvariant("-c:{0} {1} ", outputIndex, codec);
         }
     }
 
-    private static void AppendStreamBitstreamFilter(StringBuilder query, int outputIndex, MediaStream stream, StreamPresence presence)
+    // Appends stream-specific bitstream filters required for remuxing.
+    private static void AppendStreamBitstreamFilter(StringBuilder query, int outputIndex, MediaStream stream, MuxStreamPresence presence)
     {
-        if (stream.Type == FFmpegStreamType.Audio &&
-            string.Equals(stream.Format, "aac", StringComparison.OrdinalIgnoreCase) && presence.HasVideo)
+        if (stream.Type == FFmpegStreamType.Audio && string.Equals(stream.Format, "aac", StringComparison.OrdinalIgnoreCase) && presence.HasVideo)
         {
             query.AppendFormatInvariant("-bsf:{0} aac_adtstoasc ", outputIndex);
         }
     }
 
-    // Optional maps from From().Video()/Audio()/… and update presence for global codecs.
-    private void AppendFromRules(StringBuilder map, MuxOptions muxOptions, InputTable inputs, StreamPresence presence, HashSet<string> mappedKeys, ProcessOptionsEncoder? options)
-    {
-        foreach (var rule in muxOptions.FromInputs)
-        {
-            if (!rule.Any || !inputs.TryResolve(rule, out var inputIndex))
-            {
-                continue;
-            }
-
-            presence.HasVideo |= rule.Video || rule.Cover;
-            presence.HasAudio |= rule.Audio;
-            presence.HasOther |= rule.Subtitles || rule.Attachments || rule.Data;
-
-            if (rule.Video || rule.Audio || rule.Subtitles || rule.Cover || rule.Attachments || rule.Data)
-            {
-                AppendOptionalStreamMaps(map, mappedKeys, inputs.Paths[inputIndex], inputIndex, rule, options);
-            }
-        }
-    }
-
-    // Stream-copy codecs for the whole job (pcm_dvd is remuxed to pcm_s16le).
-    private static void AppendGlobalCodecs(StringBuilder query, IReadOnlyList<MediaStream> streams, StreamPresence presence)
+    // Appends global stream-copy codec settings.
+    private static void AppendGlobalCodecs(StringBuilder query, IReadOnlyList<MediaStream> streams, MuxStreamPresence presence)
     {
         if (presence.HasOther)
         {
             query.Append("-c copy ");
             return;
         }
-
         if (presence.HasVideo)
         {
             query.Append("-vcodec copy ");
         }
-
         if (!presence.HasAudio)
         {
             return;
         }
 
         var audioStreams = streams.Where(s => s.Type == FFmpegStreamType.Audio).ToList();
-        var onlyPcmDvd = audioStreams.Count == 1 &&
-                         string.Equals(audioStreams[0].Format, "pcm_dvd", StringComparison.OrdinalIgnoreCase);
+        var onlyPcmDvd = audioStreams.Count == 1 && string.Equals(audioStreams[0].Format, "pcm_dvd", StringComparison.OrdinalIgnoreCase);
         query.Append(onlyPcmDvd ? "-acodec pcm_s16le " : "-acodec copy ");
     }
 
-    private static void AppendContainerMaps(StringBuilder query, MuxOptions muxOptions, InputTable inputs)
+    // Appends container-level metadata and chapter mappings.
+    private static void AppendContainerMaps(StringBuilder query, MuxOptions muxOptions, MuxInputTable muxInputs)
     {
         foreach (var rule in muxOptions.FromInputs)
         {
-            if (!inputs.TryResolve(rule, out var inputIndex))
+            if (!muxInputs.TryResolve(rule, out var inputIndex))
             {
                 continue;
             }
-
             if (rule.ContainerTags)
             {
                 query.AppendFormatInvariant("-map_metadata {0} ", inputIndex);
             }
-
             if (rule.Chapters)
             {
                 query.AppendFormatInvariant("-map_chapters {0} ", inputIndex);
@@ -281,6 +225,7 @@ internal sealed class MuxCommandBuilder
         }
     }
 
+    // Appends output-level metadata.
     private static void AppendOutputMetadata(StringBuilder query, MuxOptions muxOptions)
     {
         foreach (var pair in muxOptions.Metadata)
@@ -289,46 +234,19 @@ internal sealed class MuxCommandBuilder
         }
     }
 
+    // Appends caller-supplied FFmpeg arguments.
     private static void AppendAdditionalArguments(StringBuilder query, MuxOptions muxOptions)
     {
-        if (!muxOptions.AdditionalArguments.HasValue())
+        if (muxOptions.AdditionalArguments.HasValue())
         {
-            return;
-        }
-
-        query.Append(muxOptions.AdditionalArguments.Trim());
-        query.Append(' ');
-    }
-
-    // Maps streams from a From() rule that are not already in the stream list.
-    private void AppendOptionalStreamMaps(StringBuilder map, HashSet<string> mappedKeys, string inputPath, int inputIndex, MuxFromInput rule, ProcessOptionsEncoder? options)
-    {
-        var info = _infoReader.GetFileInfo(inputPath, options);
-
-        foreach (var stream in info.FileStreams)
-        {
-            if (!IncludeStream(rule, stream))
-            {
-                continue;
-            }
-
-            var key = MapKey(inputIndex, stream.Index);
-
-            if (!mappedKeys.Add(key))
-            {
-                continue;
-            }
-
-            map.AppendFormatInvariant("-map {0}:{1} ", inputIndex, stream.Index);
+            query.Append(muxOptions.AdditionalArguments.Trim()).Append(' ');
         }
     }
 
-    // Whether a probed stream matches the From() rule flags
-    // (cover is video + attached_pic).
+    // Determines whether a probed stream matches a MuxOptions inclusion rule.
     private static bool IncludeStream(MuxFromInput rule, MediaStreamInfo stream)
     {
         var isCover = stream.StreamType == FFmpegStreamType.Video && stream.Disposition.Has("attached_pic");
-
         if (isCover)
         {
             return rule.Cover;
@@ -345,9 +263,7 @@ internal sealed class MuxCommandBuilder
         };
     }
 
-    private static string MapKey(int inputIndex, int streamIndex) => "{0}:{1}".FormatInvariant(inputIndex, streamIndex);
-
-    // Appends -metadata:s:N language and custom tags for one output stream.
+    // Appends language and custom metadata for an output stream.
     private static void AppendStreamMetadata(StringBuilder query, int outputIndex, MediaStream stream)
     {
         if (stream.Language.HasValue())
@@ -357,18 +273,18 @@ internal sealed class MuxCommandBuilder
 
         foreach (var pair in stream.Metadata)
         {
-            AppendMetadata(query, outputIndex, pair.Key, pair.Value);
+            // MP4 stores 'name' instead of 'title'; but can only be set as 'title'.
+            AppendMetadata(query, outputIndex, pair.Key == "name" ? "title" : pair.Key, pair.Value);
         }
     }
 
-    // Appends -disposition:N (null = omit, empty = clear 0, else flags). Absolute index, not s:N.
+    // Appends the FFmpeg disposition for an output stream.
     private static void AppendStreamDisposition(StringBuilder query, int outputIndex, StreamDisposition? disposition)
     {
         if (disposition == null)
         {
             return;
         }
-
         if (!disposition.Any)
         {
             query.AppendFormatInvariant("-disposition:{0} 0 ", outputIndex);
@@ -380,7 +296,7 @@ internal sealed class MuxCommandBuilder
         query.Append(' ');
     }
 
-    // Appends -metadata or -metadata:s:N key=value with escaping.
+    // Appends output or stream metadata with FFmpeg escaping.
     private static void AppendMetadata(StringBuilder query, int? streamIndex, string key, string value)
     {
         if (string.IsNullOrEmpty(key))
@@ -403,89 +319,23 @@ internal sealed class MuxCommandBuilder
         query.Append(' ');
     }
 
-    // Escapes a metadata key or value for the FFmpeg command line.
+    // Escapes a metadata token for the FFmpeg command line.
     internal static string EscapeMetadataToken(string value)
     {
         if (value.Length == 0)
         {
             return "\"\"";
         }
+
         if (value.IndexOfAny([' ', '"', '\'', '=', '\\']) >= 0)
         {
             return "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
         }
+
         return value;
     }
 
-    // Ordered -i paths: From(path) first, then stream-list paths (each path once).
-    private sealed class InputTable
-    {
-        private readonly Dictionary<string, int> _pathToIndex = new(StringComparer.Ordinal);
-        public List<string> Paths { get; } = [];
-
-        public static InputTable From(IReadOnlyList<MediaStream> streams, MuxOptions muxOptions)
-        {
-            var table = new InputTable();
-
-            foreach (var rule in muxOptions.FromInputs)
-            {
-                if (rule.Path.HasValue())
-                {
-                    table.Add(rule.Path!);
-                }
-            }
-            foreach (var stream in streams)
-            {
-                table.Add(stream.Path);
-            }
-            return table;
-        }
-
-        private void Add(string path)
-        {
-            if (_pathToIndex.ContainsKey(path))
-            {
-                return;
-            }
-            _pathToIndex[path] = Paths.Count;
-            Paths.Add(path);
-        }
-
-        public int IndexOf(string path) => _pathToIndex[path];
-
-        // Resolves a From() rule to an open -i index (by path or InputIndex).
-        public bool TryResolve(MuxFromInput rule, out int index)
-        {
-            if (rule.Path.HasValue())
-            {
-                return _pathToIndex.TryGetValue(rule.Path!, out index);
-            }
-
-            if (rule.InputIndex is { } i && i >= 0 && i < Paths.Count)
-            {
-                index = i;
-                return true;
-            }
-
-            index = -1;
-            return false;
-        }
-    }
-
-    // Which stream kinds are present (drives -vcodec / -acodec / -c copy).
-    private sealed class StreamPresence
-    {
-        public bool HasVideo { get; set; }
-        public bool HasAudio { get; set; }
-        public bool HasOther { get; set; }
-
-        public static StreamPresence FromListed(
-            IReadOnlyList<MediaStream> streams) =>
-            new()
-            {
-                HasVideo = streams.Any(s => s.Type == FFmpegStreamType.Video),
-                HasAudio = streams.Any(s => s.Type == FFmpegStreamType.Audio),
-                HasOther = streams.Any(s => s.Type is FFmpegStreamType.Subtitle or FFmpegStreamType.Data or FFmpegStreamType.Attachment)
-            };
-    }
+    // Creates a unique key for an input stream mapping.
+    private static string MapKey(int inputIndex, int streamIndex) =>
+        "{0}:{1}".FormatInvariant(inputIndex, streamIndex);
 }

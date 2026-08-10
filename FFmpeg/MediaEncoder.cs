@@ -29,7 +29,7 @@ public class MediaEncoder : IMediaEncoder
         EncodeFFmpeg(source, destination, "utvideo", audio ? "pcm_s16le" : null, null, options, callback);
 
     /// <inheritdoc />
-    public CompletionStatus EncodeFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs,
+    public CompletionStatus EncodeFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs = null,
         ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null) =>
         EncodeFFmpegInternal(SourceType.Direct, source, destination, videoCodec, audioCodec, encodeArgs, options, callback);
 

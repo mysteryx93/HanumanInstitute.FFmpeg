@@ -30,7 +30,7 @@ public interface IMediaEncoder
     /// <param name="options">The options for starting the process.</param>
     /// <param name="callback">A method that will be called after the process has been started.</param>
     /// <returns>The process completion status.</returns>
-    CompletionStatus EncodeFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+    CompletionStatus EncodeFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs = null, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
     /// <summary>
     /// Encodes an Avisynth script file using FFmpeg with specified arguments.
     /// </summary>
