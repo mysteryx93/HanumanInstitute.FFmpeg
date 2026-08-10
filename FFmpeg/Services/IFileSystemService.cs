@@ -17,6 +17,18 @@ internal interface IFileSystemService
     /// <param name="path">The name of the file to be deleted.</param>
     void Delete(string path);
     /// <summary>
+    /// Deletes a file if it exists.
+    /// </summary>
+    /// <param name="path">The path of the file to delete.</param>
+    void DeleteFileSilent(string path);
+    /// <summary>
+    /// Moves a file to a new location.
+    /// </summary>
+    /// <param name="source">The file to move.</param>
+    /// <param name="destination">The new path.</param>
+    /// <param name="overwrite">Whether to overwrite destination if it exists.</param>
+    void Move(string source, string destination, bool overwrite = false);
+    /// <summary>
     /// Returns the file name of the specified path string without the extension.
     /// </summary>
     /// <param name="path">The path of the file.</param>

@@ -263,6 +263,18 @@ public class FileInfoParserFFmpegTests
         Assert.Equal(language, result.Language);
     }
 
+    [Theory]
+    [InlineData("Stream #0:2[0x0]: Video: mjpeg (Progressive), yuvj420p(pc, bt470bg/unknown/unknown), 120x120 [SAR 72:72 DAR 1:1], 90k tbr, 90k tbn (attached pic)", true)]
+    [InlineData("Stream #0:2: Video: mjpeg, yuvj420p, 120x120 (attached_pic)", true)]
+    [InlineData("Stream #0:0: Video: h264, yuv420p, 160x120, 25 fps (default)", false)]
+    public void ParseStreamInfo_AttachedPic_Parsed(string line, bool isAttachedPic)
+    {
+        var result = FileInfoFFmpeg.ParseStreamInfo(line);
+
+        Assert.NotNull(result);
+        Assert.Equal(isAttachedPic, result.Disposition.Has("attached_pic"));
+    }
+
     [Fact]
     public void StreamDisposition_SetAndHas_ByName()
     {

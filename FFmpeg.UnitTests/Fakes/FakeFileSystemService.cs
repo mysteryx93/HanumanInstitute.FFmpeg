@@ -7,6 +7,10 @@ public class FakeFileSystemService : IFileSystemService
 
     public virtual void Delete(string path) { }
 
+    public virtual void DeleteFileSilent(string path) { }
+
+    public virtual void Move(string source, string destination, bool overwrite = false) { }
+
     public virtual bool Exists(string path) => true;
 
     public virtual string GetDirectoryName(string path) => Path.GetDirectoryName(path);

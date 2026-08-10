@@ -12,6 +12,29 @@ internal class FileSystemService : IFileSystemService
     public void Delete(string path) => File.Delete(path);
 
     /// <inheritdoc />
+    public virtual void DeleteFileSilent(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch (IOException) { }
+    }
+
+    /// <inheritdoc />
+    public void Move(string source, string destination, bool overwrite = false)
+    {
+        if (overwrite && File.Exists(destination))
+        {
+            File.Delete(destination);
+        }
+        File.Move(source, destination);
+    }
+
+    /// <inheritdoc />
     public string GetFileNameWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path);
 
     /// <inheritdoc />

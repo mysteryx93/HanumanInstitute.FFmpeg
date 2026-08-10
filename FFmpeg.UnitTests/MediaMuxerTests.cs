@@ -128,12 +128,14 @@ public class MediaMuxerTests
     public void Muxe_SameInput_DeduplicatesAndMapsStreams()
     {
         var muxer = CreateMuxer();
+        // vp9: no elementary→MKV temp remux (h264 would rewrite the video input to temp.mp4).
         muxer.Muxe([
-            new MediaStream("source.mkv", 0, "h264", FFmpegStreamType.Video),
+            new MediaStream("source.mkv", 0, "vp9", FFmpegStreamType.Video),
             new MediaStream("source.mkv", 1, "aac", FFmpegStreamType.Audio),
             new MediaStream("source.mkv", 2, "subrip", FFmpegStreamType.Subtitle)
         ], "dest.mkv");
 
+        Assert.Single(_factory.Instances);
         Assert.Equal(1, Command.Split("-i \"source.mkv\"").Length - 1);
         Assert.Contains("-map 0:0", Command, StringComparison.Ordinal);
         Assert.Contains("-map 0:1", Command, StringComparison.Ordinal);
@@ -188,13 +190,15 @@ public class MediaMuxerTests
     public void Muxe_From_MapsAdditionalInputs()
     {
         var muxer = CreateMuxer();
+        // vp9: no elementary→MKV temp remux (h264 would replace video.mp4 with temp.mp4 in the final command).
         muxer.Muxe([
-            new MediaStream("video.mp4", 0, "h264", FFmpegStreamType.Video),
+            new MediaStream("video.webm", 0, "vp9", FFmpegStreamType.Video),
             new MediaStream("audio.m4a", 0, "aac", FFmpegStreamType.Audio)
         ], "out.mkv", new MuxOptions().From("original.mkv").Subtitles().SideStreams().Container());
 
+        Assert.Single(_factory.Instances);
         Assert.Contains("-i \"original.mkv\"", Command, StringComparison.Ordinal);
-        Assert.Contains("-i \"video.mp4\"", Command, StringComparison.Ordinal);
+        Assert.Contains("-i \"video.webm\"", Command, StringComparison.Ordinal);
         Assert.Contains("-i \"audio.m4a\"", Command, StringComparison.Ordinal);
         Assert.Contains("-map_metadata 0", Command, StringComparison.Ordinal);
         Assert.Contains("-map_chapters 0", Command, StringComparison.Ordinal);
@@ -361,7 +365,8 @@ public class MediaMuxerTests
         {
             Disposition = new StreamDisposition().Set("default")
         };
-        // Null would omit -disposition and keep source default — must emit clear.
+        // Null would omit -disposition and keep source default — relative -default clears only that flag
+        // (absolute 0 would also wipe attached_pic on a demoted video cover).
         var second = new MediaStream("old.aac", 0, "aac", FFmpegStreamType.Audio);
 
         muxer.Muxe([
@@ -371,7 +376,50 @@ public class MediaMuxerTests
         ], "dest.mkv");
 
         Assert.Contains("-disposition:1 default", Command, StringComparison.Ordinal);
-        Assert.Contains("-disposition:2 0", Command, StringComparison.Ordinal);
+        Assert.Contains("-disposition:2 -default", Command, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Muxe_CoverArtWithDefaultVideo_KeepsAttachedPic()
+    {
+        var muxer = CreateMuxer();
+        var main = new MediaStream("src.mp4", 0, "h264", FFmpegStreamType.Video)
+        {
+            Disposition = new StreamDisposition().Set("default")
+        };
+        // Cover: attached_pic only (no default). Must not be demoted with disposition 0.
+        var cover = new MediaStream("src.mp4", 2, "mjpeg", FFmpegStreamType.Video)
+        {
+            Disposition = new StreamDisposition().Set("attached_pic")
+        };
+        var audio = new MediaStream("new.aac", 0, "aac", FFmpegStreamType.Audio)
+        {
+            Disposition = new StreamDisposition().Set("default")
+        };
+
+        muxer.Muxe([main, cover, audio], "dest.mp4");
+
+        Assert.Contains("-disposition:0 default", Command, StringComparison.Ordinal);
+        Assert.Contains("-disposition:1 attached_pic", Command, StringComparison.Ordinal);
+        Assert.DoesNotContain("-disposition:1 0", Command, StringComparison.Ordinal);
+        Assert.Contains("-disposition:2 default", Command, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CopyMetadata_MapsDestStreamsAndSourceContainer()
+    {
+        var muxer = CreateMuxer();
+
+        // FakeMediaInfoReader always returns flv video+audio for any path.
+        // From(source) is -i 0; dest streams open as -i 1 → maps use input 1.
+        var result = muxer.CopyMetadata("source.mkv", "dest.mp4");
+
+        Assert.Equal(CompletionStatus.Success, result);
+        Assert.Contains("-i \"source.mkv\"", Command, StringComparison.Ordinal);
+        Assert.Contains("-i \"dest.mp4\"", Command, StringComparison.Ordinal);
+        Assert.Contains("-map_metadata 0", Command, StringComparison.Ordinal);
+        Assert.Contains("-map_chapters 0", Command, StringComparison.Ordinal);
+        Assert.Contains("-map 1:", Command, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -406,6 +454,8 @@ public class MediaMuxerTests
     [InlineData("video.vvc", "vvc")]
     [InlineData("video.266", "vvc")]
     [InlineData("video.h266", "h266")]
+    [InlineData("video.m2v", "mpeg2video")]
+    [InlineData("video.m1v", "mpeg1video")]
     public void Muxe_ElementaryVideoIntoMkv_UsesTemporaryMp4(string path, string format)
     {
         var muxer = CreateMuxer();
@@ -419,9 +469,13 @@ public class MediaMuxerTests
         Assert.DoesNotContain(path, Command, StringComparison.Ordinal);
     }
 
+    // Dest not MKV, or codec stream-copies to MKV without temp MP4 (see ElementaryToMkvWorkaroundTests).
     [Theory]
     [InlineData("dest.mp4", "h264", "video.264")]
     [InlineData("dest.mkv", "vp9", "video.vp9")]
+    [InlineData("dest.mkv", "vp8", "video.ivf")]
+    [InlineData("dest.mkv", "av1", "video.ivf")]
+    [InlineData("dest.mkv", "mpeg4", "video.m4v")]
     public void Muxe_NonElementaryVideo_DoesNotUseTemporaryMp4(string destination, string format, string path)
     {
         var muxer = CreateMuxer();

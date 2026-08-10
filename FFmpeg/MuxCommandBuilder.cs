@@ -130,9 +130,13 @@ internal sealed class MuxCommandBuilder
         {
             return stream.Disposition;
         }
+
+        // Another stream owns default for this type — ensure this stream is not default.
+        // Null means "omit" (FFmpeg would copy source, which may still be default). We must
+        // clear default only; using absolute 0 would also wipe attached_pic / forced / etc.
         if (stream.Disposition == null)
         {
-            return new StreamDisposition();
+            return StreamDisposition.RemoveDefault;
         }
         if (!stream.Disposition.Has("default"))
         {
@@ -148,6 +152,7 @@ internal sealed class MuxCommandBuilder
             }
         }
 
+        // Only default was set → absolute clear is correct (no other flags to keep).
         return result;
     }
 
@@ -271,10 +276,17 @@ internal sealed class MuxCommandBuilder
             AppendMetadata(query, outputIndex, "language", stream.Language!);
         }
 
+        var hasTitle = stream.Metadata.ContainsKey("title");
         foreach (var pair in stream.Metadata)
         {
             // MP4 stores 'name' instead of 'title'; but can only be set as 'title'.
-            AppendMetadata(query, outputIndex, pair.Key == "name" ? "title" : pair.Key, pair.Value);
+            // Prefer explicit title when both are present.
+            var isName = pair.Key.Equals("name", StringComparison.OrdinalIgnoreCase);
+            if (isName && hasTitle)
+            {
+                continue;
+            }
+            AppendMetadata(query, outputIndex, isName ? "title" : pair.Key, pair.Value);
         }
     }
 

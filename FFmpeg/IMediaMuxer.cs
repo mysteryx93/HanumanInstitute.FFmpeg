@@ -75,4 +75,18 @@ public interface IMediaMuxer
     /// <param name="callback">Invoked after the process has started, or null.</param>
     /// <returns>The process completion status.</returns>
     CompletionStatus Truncate(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+
+    /// <summary>
+    /// Copies container tags, chapters, and matching stream tags/dispositions from
+    /// source onto destination (rewrites destination in place).
+    /// Destination media is stream-copied. Streams are matched by type then by order within that type
+    /// (e.g. 1st video→1st video, 2nd audio→2nd audio). Destination stream metadata keys already present
+    /// are kept; missing keys, language, and disposition flags are merged from the matched source stream.
+    /// </summary>
+    /// <param name="source">File providing metadata (and chapters).</param>
+    /// <param name="destination">File whose media is kept and that receives the metadata.</param>
+    /// <param name="options">Process options, or null for defaults.</param>
+    /// <param name="callback">Invoked after the process has started, or null.</param>
+    /// <returns>The process completion status.</returns>
+    CompletionStatus CopyMetadata(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
 }

@@ -8,9 +8,11 @@ namespace HanumanInstitute.FFmpeg;
 /// <inheritdoc />
 public class MediaMuxer : IMediaMuxer
 {
-    // Raw elementary video → MKV needs a temp MP4 remux (missing timestamps).
+    // Raw elementary video → MKV: only codecs that fail direct stream-copy (missing timestamps).
+    // Verified by ElementaryToMkvWorkaroundTests — do not add vp8/vp9/av1/mpeg4 (direct works;
+    // vp8 cannot even remux into MP4). Keep h265/vvc aliases for annex-B style bitstreams.
     private static readonly HashSet<string> s_elementaryVideoCodecs = new(StringComparer.OrdinalIgnoreCase)
-        { "h264", "h265", "hevc", "vvc", "h266", "av1", "mpeg4", "mpeg2video", "mpeg1video", "vp8", "vp9", "vc1", "msmpeg4v2", "msmpeg4v3", "wmv1", "wmv2", "wmv3" };
+        { "h264", "h265", "hevc", "vvc", "h266", "mpeg2video", "mpeg1video" };
     private readonly IEncoderService _factory;
     private readonly IFileSystemService _fileSystem;
     private readonly IMediaInfoReader _infoReader;
@@ -94,6 +96,90 @@ public class MediaMuxer : IMediaMuxer
             try { _fileSystem.Delete(item); } catch { /* best-effort cleanup */ }
         }
         return result;
+    }
+
+    /// <inheritdoc />
+    public CompletionStatus CopyMetadata(string source, string destination, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null)
+    {
+        source.CheckNotNullOrEmpty();
+        destination.CheckNotNullOrEmpty();
+
+        var sourceInfo = _infoReader.GetFileInfo(source, options);
+        var destInfo = _infoReader.GetFileInfo(destination, options);
+
+        // Stream-copy every destination track; overlay tags from matched source streams.
+        var streams = destInfo.FileStreams.Select(s => MediaStream.FromStreamInfo(destination, s)).ToList();
+        MergeStreamTagsByTypeOrder(sourceInfo.FileStreams, streams);
+
+        // FFmpeg cannot write to an open input; remux to temp then replace.
+        var temp = CreateTempPathWithExtension(destination);
+        var muxOptions = new MuxOptions().From(source).Container();
+        var result = Muxe(streams, temp, muxOptions, options, callback);
+        if (result == CompletionStatus.Success)
+        {
+            try
+            {
+                _fileSystem.Move(temp, destination, true);
+            }
+            catch
+            {
+                _fileSystem.DeleteFileSilent(temp);
+                return CompletionStatus.Failed;
+            }
+        }
+        else
+        {
+            _fileSystem.DeleteFileSilent(temp);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Matches source→destination streams by <see cref="FFmpegStreamType"/> then by order within that type.
+    /// Merges disposition flags and fills missing language/metadata keys (destination wins on conflicts).
+    /// </summary>
+    private static void MergeStreamTagsByTypeOrder(IReadOnlyList<MediaStreamInfo> sourceStreams, IReadOnlyList<MediaStream> destStreams)
+    {
+        var allTypes = new[]
+        {
+            FFmpegStreamType.Video, FFmpegStreamType.Audio, FFmpegStreamType.Subtitle, FFmpegStreamType.Attachment, FFmpegStreamType.Data
+        };
+        foreach (var type in allTypes)
+        {
+            var sources = sourceStreams.Where(s => s.StreamType == type).ToList();
+            var dests = destStreams.Where(s => s.Type == type).ToList();
+            var count = Math.Min(sources.Count, dests.Count);
+            for (var i = 0; i < count; i++)
+            {
+                MergeStreamTags(dests[i], sources[i]);
+            }
+        }
+    }
+
+    // Disposition: union flags. Language: only if dest empty. Metadata: only missing keys (dest wins).
+    private static void MergeStreamTags(MediaStream dest, MediaStreamInfo source)
+    {
+        if (source.Disposition.Any)
+        {
+            dest.Disposition ??= new StreamDisposition();
+            foreach (var flag in source.Disposition.Flags)
+            {
+                dest.Disposition.Set(flag);
+            }
+        }
+
+        if (!dest.Language.HasValue() && source.Language.HasValue())
+        {
+            dest.Language = source.Language;
+        }
+
+        foreach (var pair in source.Metadata)
+        {
+            if (!dest.Metadata.ContainsKey(pair.Key))
+            {
+                dest.Metadata[pair.Key] = pair.Value;
+            }
+        }
     }
 
     // Remuxes elementary H.26x into temp MP4 when dest is MKV (timestamp issues).
