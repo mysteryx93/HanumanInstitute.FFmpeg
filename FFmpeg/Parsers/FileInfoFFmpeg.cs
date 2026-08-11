@@ -205,29 +205,50 @@ public class FileInfoFFmpeg : IFileInfoParser
 
     //     title           : Nu
     //       FREQUENCY       : 440
+    // Multi-line values (FFmpeg dump):
+    //     comment         : line1
+    //                     : line2
     internal static int ParseMetadataBlock(string[] lines, int startIndex, IDictionary<string, string> target)
     {
         var i = startIndex;
+        string? lastKey = null;
         for (; i < lines.Length; i++)
         {
             var line = lines[i];
-            if (!TryParseMetadataEntry(line, out var key, out var value))
+            if (!TryParseMetadataEntry(line, out var key, out var value, out var isContinuation))
             {
                 return i - 1;
             }
+
+            if (isContinuation)
+            {
+                // Append to previous tag; orphan continuations are ignored.
+                if (lastKey != null && target.TryGetValue(lastKey, out var prior))
+                {
+                    target[lastKey] = prior + "\n" + value;
+                }
+                continue;
+            }
+
             if (key.Length > 0)
             {
                 target[key] = value;
+                lastKey = key;
             }
         }
         return i - 1;
     }
 
     //     title           : Nu   /   not:   Duration: 00:00:02.00  /  Stream #0:0: Audio: ...
-    internal static bool TryParseMetadataEntry(string line, out string key, out string value)
+    internal static bool TryParseMetadataEntry(string line, out string key, out string value) =>
+        TryParseMetadataEntry(line, out key, out value, out _);
+
+    // Continuation lines have an empty key (": rest of value") after trim.
+    internal static bool TryParseMetadataEntry(string line, out string key, out string value, out bool isContinuation)
     {
         key = string.Empty;
         value = string.Empty;
+        isContinuation = false;
         if (string.IsNullOrEmpty(line))
         {
             return false;
@@ -248,6 +269,16 @@ public class FileInfoFFmpeg : IFileInfoParser
             trimmed.StartsWithInvariant("Input #"))
         {
             return false;
+        }
+
+        // Multi-line tag continuation: "                    : line2"
+        if (trimmed.StartsWith(":", StringComparison.Ordinal))
+        {
+            isContinuation = true;
+            value = trimmed.Length > 1 && trimmed[1] == ' '
+                ? trimmed.Substring(2)
+                : trimmed.Substring(1);
+            return true;
         }
 
         // title           : Nu

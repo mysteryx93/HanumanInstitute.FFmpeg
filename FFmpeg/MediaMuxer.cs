@@ -113,8 +113,14 @@ public class MediaMuxer : IMediaMuxer
 
         // FFmpeg cannot write to an open input; remux to temp then replace.
         var temp = CreateTempPathWithExtension(destination);
-        var muxOptions = new MuxOptions().From(source).Container();
+        var muxOptions = new MuxOptions().From(source).Container().Cover();
         var result = Muxe(streams, temp, muxOptions, options, callback);
+        if (result != CompletionStatus.Success)
+        {
+            _fileSystem.DeleteFileSilent(temp);
+            result = Muxe(streams, temp, muxOptions.Cover(false), options, callback);
+        }
+
         if (result == CompletionStatus.Success)
         {
             try

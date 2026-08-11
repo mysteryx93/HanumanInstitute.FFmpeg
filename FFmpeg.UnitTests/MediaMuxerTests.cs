@@ -410,8 +410,9 @@ public class MediaMuxerTests
     {
         var muxer = CreateMuxer();
 
-        // FakeMediaInfoReader always returns flv video+audio for any path.
+        // FakeMediaInfoReader always returns flv video+audio (no attached_pic) for any path.
         // From(source) is -i 0; dest streams open as -i 1 → maps use input 1.
+        // Cover is requested but only matches attached_pic streams, so no extra map is added.
         var result = muxer.CopyMetadata("source.mkv", "dest.mp4");
 
         Assert.Equal(CompletionStatus.Success, result);

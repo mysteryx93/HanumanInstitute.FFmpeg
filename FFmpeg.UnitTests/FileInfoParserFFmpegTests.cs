@@ -321,6 +321,42 @@ public class FileInfoParserFFmpegTests
     }
 
     [Fact]
+    public void ParseFileInfo_MultilineComment_DoesNotDropFollowingTags()
+    {
+        // FFmpeg dumps multi-line tags as "key : line1" then continuation lines ": line2".
+        // A naive parser stops at the continuation and loses album/date/etc.
+        const string sample = """
+            Input #0, mp3, from 'SourceArt.mp3':
+              Metadata:
+                artist          : Lira
+                title           : Source Short
+                comment         : $This.
+                                : \is.
+                                : \not.
+                                : \the.
+                                : \end!
+                genre           : Pop Master
+                date            : 2022
+                track           : 2
+                copyright       : Distribute this sample as you wish!
+                album           : My Album
+              Duration: 00:00:02.13, start: 0.023021, bitrate: 112 kb/s
+                Stream #0:0: Audio: mp3, 48000 Hz, mono, fltp, 97 kb/s
+            """;
+        var parser = (FileInfoFFmpeg)SetupParser();
+
+        parser.ParseFileInfo(sample);
+
+        Assert.Equal("Lira", parser.Metadata["artist"]);
+        Assert.Equal("$This.\n\\is.\n\\not.\n\\the.\n\\end!", parser.Metadata["comment"]);
+        Assert.Equal("Pop Master", parser.Metadata["genre"]);
+        Assert.Equal("2022", parser.Metadata["date"]);
+        Assert.Equal("2", parser.Metadata["track"]);
+        Assert.Equal("Distribute this sample as you wish!", parser.Metadata["copyright"]);
+        Assert.Equal("My Album", parser.Metadata["album"]);
+    }
+
+    [Fact]
     public void ParseFileInfo_FrameCountSample_ParsesFormatAndStreamTags()
     {
         var parser = (FileInfoFFmpeg)SetupParser();
