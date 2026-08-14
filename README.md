@@ -7,6 +7,7 @@ Cross-platform .Net wrapper for media encoders such as FFmpeg, X264 and X265, in
 - Manages processes programatically (start, track, cancel).
 - Parses process output from FFmpeg, X264 or X265 to track progress and create a rich user interface.
 - Provides easy access to common functions, and can be extended to call and track any other console process.
+- Muxes streams with metadata, chapters, cover art, and attachments; can copy tags from another file.
 - Can pipe Avisynth and VapourSynth scripts into FFmpeg, X264 and X265 and will manage processes accordingly.
 - Can be extended to support additional encoders.
 - Fully tested with unit tests so it just works.
@@ -121,7 +122,7 @@ Provides functions to get information on media files.
 
 string **GetVersion**() : Returns the version information from FFmpeg.
 
-IFileInfoFFmpeg **GetFileInfo**(string source) : Gets file streams information of specified file via FFmpeg.
+FileInfoFFmpeg **GetFileInfo**(string source) : Gets file streams information of specified file via FFmpeg, including container tags (`Metadata`) and per-stream `Language`, `Metadata`, and `Disposition`.
 
 long **GetFrameCount**(string source) : Returns the exact frame count of specified video file.
 
@@ -131,9 +132,7 @@ Provides functions to manage audio and video streams.
 
 CompletionStatus **Muxe**(string videoFile, string audioFile, string destination) : Merges the first video and first audio stream of the given files.
 
-CompletionStatus **Muxe**(IEnumerable&lt;MediaStream&gt; fileStreams, string destination) : Merges the given streams (order preserved; duplicate paths share one `-i`).
-
-CompletionStatus **Muxe**(IEnumerable&lt;MediaStream&gt; fileStreams, string destination, MuxOptions muxOptions) : Same, plus container metadata, chapters, optional attachment/cover maps, and codec flags.
+CompletionStatus **Muxe**(IEnumerable&lt;MediaStream&gt; fileStreams, string destination, MuxOptions muxOptions = null) : Muxes the given streams (order preserved). Use MuxOptions to add container tags, chapters, cover art, attachments, or extra streams from other files.
 
 CompletionStatus **ExtractVideo**(string source, string destination) : Extracts the video stream from specified file.
 
@@ -143,38 +142,51 @@ CompletionStatus **Concatenate**(IEnumerable&lt;string&gt; files, string destina
 
 CompletionStatus **Truncate**(string source, string destination, TimeSpan? startPos, TimeSpan? duration = null) : Truncates a media file from specified start position with specified duration.
 
-**MediaStream** (mux selection + write): `Path`, `Index`, `Format`, `Type` (from probe); `Language`, `Metadata`, `Disposition` (null=omit, empty=clear), `Codec`.  
-`FromStreamInfo` seeds type, format, and write tags from a probe.  
-Probe/read uses **MediaStreamInfo** (e.g. frequency tags).
+CompletionStatus **CopyMetadata**(string source, string destination) : Copies container tags, chapters, cover art, and matching stream language, tags, and disposition from source onto destination. Destination media is kept (stream-copied). Streams are matched by type then by order (1st video → 1st video, 2nd audio → 2nd audio). Tags already present on the destination are kept.
 
-**MuxOptions** — `new MuxOptions()`, then `From(...)`. Always a **file** (FFmpeg `-i`), never a stream-list slot.
+**MediaStream** selects a stream (`Path`, `Index`). Create one from a probe with `MediaStream.FromStreamInfo(path, info)`, which copies language, metadata, and disposition. You can then set:
+
+- `Language` — stream language
+- `Metadata` — stream tags (title, custom keys)
+- `Disposition` — flags such as default or forced (`null` = leave as-is, empty = clear)
+- `Codec` — per-stream codec, or null for stream-copy
+
+If one stream of a type is marked default, other streams of that type are automatically demoted.
+
+**MuxOptions** pulls extra content from files beyond the stream list. Call `From(path)` then choose what to include:
 
 ```csharp
-// From(path)  — that file (open as -i if needed)
-// From(n)     — already-open -i n (unique paths only)
+var info = infoReader.GetFileInfo(source);
+var video = MediaStream.FromStreamInfo(source, info.VideoStream);
+var audio = MediaStream.FromStreamInfo(newAudio, infoReader.GetFileInfo(newAudio).AudioStream);
+audio.Language = "eng";
+audio.Metadata["title"] = "Commentary";
+audio.Disposition = new StreamDisposition().Set("default");
 
-// Stream list [fileA, fileA, fileB] → -i 0 = fileA, -i 1 = fileB
-// From(0) and From(1) are different files; two streams of fileA share input 0.
-new MuxOptions().From(0).ContainerTags().From(1).Cover();
+// Listed streams + chapters, tags, cover, and attachments from the original
+muxer.Muxe(new[] { video, audio }, dest,
+    new MuxOptions().From(source).Container().Cover().Attachments());
 
-new MuxOptions()
-    .From(sourcePath).Media().Container()
-    .From(otherPath).Cover().Attachments()
-    .Done()
-    .WithAdditionalArguments("-movflags +faststart");
+// Everything from source except its audio
+muxer.Muxe(new[] { video, audio }, dest,
+    new MuxOptions().From(source).All().Audio(false));
 
-// Listed streams + rest of container from source (everything except audio from source)
-muxer.Muxe(new[] { videoStream, audioStream }, dest,
-    new MuxOptions().From(sourcePath).All().Audio(false));
+// Output container tags and extra FFmpeg arguments
+var options = new MuxOptions().From(source).Container();
+options.Metadata["title"] = "Album";
+options.WithAdditionalArguments("-movflags +faststart");
+
+// Copy tags from another file onto an existing encode
+muxer.CopyMetadata("tagged.mkv", "encoded.mp4");
 ```
 
-| On `MuxFromBuilder` | Meaning |
-|---------------------|---------|
-| `ContainerTags` / `Metadata` / `Chapters` | Container-level |
-| `Video` / `Audio` / `Subtitles` / `Cover` / `Attachments` / `Data` | Map those track types (`include: false` turns off) |
+| After `From(path)` | Includes |
+|--------------------|----------|
+| `ContainerTags` / `Metadata` / `Chapters` | Container-level tags and chapters |
+| `Video` / `Audio` / `Subtitles` / `Cover` / `Attachments` / `Data` | Those stream types (`false` turns one off) |
 | `Media()` / `Container()` / `SideStreams()` / `All()` | Combos (`All().Audio(false)` = everything except audio) |
 
-Stream tags: `FromStreamInfo` / `CopyTagsFrom`. Override or clear disposition on the `MediaStream` as needed.
+Call `From` again to include another file. The stream list can be empty if `From` maps the streams.
 
 ### IMediaEncoder
 
@@ -373,4 +385,4 @@ See ExampleApplication to view HanumanInstitute.FFmpeg in action.
 
 ### Author
 
-Brought to you by [Etienne Charland aka Hanuman](https://www.spiritualselftransformation.com/). Made by a Lightworker in his spare time.
+[Created by Etienne Charland aka Hanuman — Coherence-Bound Architecture](https://www.hanumaninstitute.com/)
