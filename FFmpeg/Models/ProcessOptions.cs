@@ -31,6 +31,11 @@ public class ProcessOptions
     /// Gets or sets a timeout after which the process will be stopped.
     /// </summary>
     public TimeSpan Timeout { get; set; }
+    /// <summary>
+    /// Gets or sets the working directory of the process.
+    /// An empty value leaves the process directory unchanged.
+    /// </summary>
+    public string WorkingDirectory { get; set; } = string.Empty;
 
     /// <summary>
     /// Initializes a new instance of the ProcessOptions class.

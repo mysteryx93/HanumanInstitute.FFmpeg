@@ -151,6 +151,20 @@ public class ProcessManagerTests
         Assert.Equal(CompletionStatus.Cancelled, manager.LastCompletionStatus);
     }
 
+    [Fact]
+    public void Run_WorkingDirectory_SetsProcessDirectory()
+    {
+        var manager = SetupManager();
+        const string directory = "/scripts";
+        manager.Options.WorkingDirectory = directory;
+        string seen = null;
+        manager.ProcessStarted += (_, e) => seen = e.ProcessWorker.WorkProcess.StartInfo.WorkingDirectory;
+
+        manager.Run(TestFileName, null);
+
+        Assert.Equal(directory, seen);
+    }
+
     [Theory]
     [InlineData("ffmpeg", null)]
     [InlineData("ffmpeg", "-i abc.avi")]

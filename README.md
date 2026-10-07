@@ -200,6 +200,10 @@ CompletionStatus **EncodeAvisynthToFFmpeg**(string source, string destination, s
 
 CompletionStatus **EncodeVapourSynthToFFmpeg**(string source, string destination, string videoCodec, string audioCodec, string encodeArgs) : Encodes a VapourSynth script file using FFmpeg with specified arguments.
 
+CompletionStatus **EncodeFFmpegAvisynth**(string source, string destination, string encodeArgs) : Opens an AviSynth script in FFmpeg with `-f avisynth`. The argument string is appended as written. An empty destination writes `-f null -`.
+
+CompletionStatus **EncodeFFmpegVapourSynth**(string source, string destination, string encodeArgs) : Opens a VapourSynth script in FFmpeg with `-f vapoursynth`. The argument string is appended as written. An empty destination writes `-f null -`.
+
 CompletionStatus **EncodeX264**(string source, string destination, string encodeArgs) : Encodes a media file using X264 with specified arguments.
 
 CompletionStatus **EncodeAvisynthToX264**(string source, string destination, string encodeArgs) : Encodes an Avisynth script file using X264 with specified arguments.

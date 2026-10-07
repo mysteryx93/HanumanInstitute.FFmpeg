@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="ExampleApplication/ExampleApplication.csproj" />
+  <Project Path="FFmpeg.IntegrationTests/FFmpeg.IntegrationTests.csproj" />
+  <Project Path="FFmpeg.UnitTests/FFmpeg.UnitTests.csproj" />
+  <Project Path="FFmpeg/FFmpeg.csproj" />
+</Solution>

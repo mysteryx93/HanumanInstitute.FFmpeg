@@ -79,6 +79,8 @@ public class ProcessWorker : IProcessWorker, IDisposable
 
         p.StartInfo.FileName = fileName;
         p.StartInfo.Arguments = arguments;
+        p.StartInfo.WorkingDirectory = Options.WorkingDirectory;
+
         CommandWithArgs = $@"""{fileName}"" {arguments}".TrimEnd();
 
         if (OutputType == ProcessOutput.Output)

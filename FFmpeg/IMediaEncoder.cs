@@ -56,6 +56,28 @@ public interface IMediaEncoder
     /// <returns>The process completion status.</returns>
     CompletionStatus EncodeVapourSynthToFFmpeg(string source, string destination, string? videoCodec, string? audioCodec, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
     /// <summary>
+    /// Encodes an Avisynth script by opening it in FFmpeg with <c>-f avisynth</c>.
+    /// The argument string is appended as written. An empty destination writes <c>-f null -</c>.
+    /// </summary>
+    /// <param name="source">The script file to open.</param>
+    /// <param name="destination">The output file. Empty writes nowhere.</param>
+    /// <param name="encodeArgs">The arguments between the input and the destination.</param>
+    /// <param name="options">The options for starting the process.</param>
+    /// <param name="callback">A method that will be called after the process has been started.</param>
+    /// <returns>The process completion status.</returns>
+    CompletionStatus EncodeFFmpegAvisynth(string source, string? destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+    /// <summary>
+    /// Encodes a VapourSynth script by opening it in FFmpeg with <c>-f vapoursynth</c>.
+    /// The argument string is appended as written. An empty destination writes <c>-f null -</c>.
+    /// </summary>
+    /// <param name="source">The script file to open.</param>
+    /// <param name="destination">The output file. Empty writes nowhere.</param>
+    /// <param name="encodeArgs">The arguments between the input and the destination.</param>
+    /// <param name="options">The options for starting the process.</param>
+    /// <param name="callback">A method that will be called after the process has been started.</param>
+    /// <returns>The process completion status.</returns>
+    CompletionStatus EncodeFFmpegVapourSynth(string source, string? destination, string? encodeArgs, ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null);
+    /// <summary>
     /// Encodes a media file using X264 with specified arguments.
     /// </summary>
     /// <param name="source">The file to convert.</param>

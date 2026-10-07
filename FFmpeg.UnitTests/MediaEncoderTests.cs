@@ -278,6 +278,38 @@ public class MediaEncoderTests
     }
 
     [Theory]
+    [InlineData("avisynth", "-c:v libx264 -crf 18", DestPath)]
+    [InlineData("vapoursynth", "-c:v libx265 -pix_fmt yuv420p10le -crf 20", DestPath)]
+    public void EncodeFFmpegSynth_Arguments_OpenWithDemuxer(string demuxer, string arguments, string destination)
+    {
+        var encoder = SetupEncoder();
+
+        var result = demuxer == "avisynth"
+            ? encoder.EncodeFFmpegAvisynth(SourcePath, destination, arguments)
+            : encoder.EncodeFFmpegVapourSynth(SourcePath, destination, arguments);
+
+        AssertSingleInstance();
+        Assert.Equal(CompletionStatus.Success, result);
+        var command = _factory.Instances[0].CommandWithArgs;
+        Assert.Contains($"-y -f {demuxer} -i \"{SourcePath}\" {arguments} \"{destination}\"", command, StringComparison.Ordinal);
+        Assert.DoesNotContain("-vcodec", command, StringComparison.Ordinal);
+        Assert.DoesNotContain("vspipe", command, StringComparison.Ordinal);
+        Assert.DoesNotContain("avs2yuv", command, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void EncodeFFmpegVapourSynth_EmptyDestination_WritesNull()
+    {
+        var encoder = SetupEncoder();
+
+        var result = encoder.EncodeFFmpegVapourSynth(SourcePath, "", null);
+
+        Assert.Equal(CompletionStatus.Success, result);
+        var command = _factory.Instances[0].CommandWithArgs;
+        Assert.EndsWith($"-i \"{SourcePath}\" -f null -", command, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [MemberData(nameof(TestDataSource.NullAndEmptyStrings), 2, MemberType = typeof(TestDataSource))]
     public void EncodeVapourSynthToFFmpeg_NullSourceDest_ThrowsException(string source, string dest, Type ex)
     {

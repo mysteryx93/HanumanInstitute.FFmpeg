@@ -59,6 +59,16 @@ public class MediaEncoder : IMediaEncoder
         EncodeFFmpegInternal(SourceType.VapourSynth, source, destination, videoCodec, audioCodec, encodeArgs, options, callback);
 
     /// <inheritdoc />
+    public CompletionStatus EncodeFFmpegAvisynth(string source, string? destination, string? encodeArgs,
+        ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null) =>
+        EncodeFFmpegSynth("avisynth", source, destination, encodeArgs, options, callback);
+
+    /// <inheritdoc />
+    public CompletionStatus EncodeFFmpegVapourSynth(string source, string? destination, string? encodeArgs,
+        ProcessOptionsEncoder? options = null, ProcessStartedEventHandler? callback = null) =>
+        EncodeFFmpegSynth("vapoursynth", source, destination, encodeArgs, options, callback);
+
+    /// <inheritdoc />
     public CompletionStatus EncodeX264(string source, string destination, string? encodeArgs, ProcessOptionsEncoder? options = null,
         ProcessStartedEventHandler? callback = null) =>
         EncodeX264Internal(SourceType.Direct, EncoderApp.x264, source, destination, encodeArgs, options, callback);
@@ -144,6 +154,31 @@ public class MediaEncoder : IMediaEncoder
         // Run FFmpeg with query.
         var worker = _factory.CreateEncoder(Owner, options, callback);
         return RunEncoderInternal(source, query.ToString(), worker, sourceType, EncoderApp.FFmpeg);
+    }
+
+    // -y -f <demuxer> -i "<source>" <encodeArgs> "<destination>"
+    // An empty destination writes nowhere: -y -f <demuxer> -i "<source>" <encodeArgs> -f null -
+    private CompletionStatus EncodeFFmpegSynth(string demuxer, string source, string? destination, string? encodeArgs,
+        ProcessOptionsEncoder? options, ProcessStartedEventHandler? callback)
+    {
+        source.CheckNotNullOrEmpty();
+        if (destination.HasValue())
+        {
+            File.Delete(destination);
+        }
+
+        var query = new StringBuilder();
+        query.AppendFormat("-y -f {0} -i \"{1}\"", demuxer, source);
+        if (encodeArgs.HasValue())
+        {
+            query.Append(' ').Append(encodeArgs);
+        }
+
+        var dst = destination.HasValue() ? $"\"{destination}\"" : "-f null -";
+        query.Append(' ').Append(dst);
+
+        var worker = _factory.CreateEncoder(Owner, options, callback);
+        return worker.RunEncoder(query.ToString(), EncoderApp.FFmpeg);
     }
 
     private CompletionStatus EncodeX264Internal(SourceType sourceType, EncoderApp encoderApp, string source, string destination,
