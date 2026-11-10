@@ -36,6 +36,10 @@ public class ProcessOptions
     /// An empty value leaves the process directory unchanged.
     /// </summary>
     public string WorkingDirectory { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets environment variables of the process.
+    /// </summary>
+    public Dictionary<string, string> EnvironmentVariables { get; } = new();
 
     /// <summary>
     /// Initializes a new instance of the ProcessOptions class.

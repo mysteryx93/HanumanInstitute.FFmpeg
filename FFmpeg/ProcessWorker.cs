@@ -113,7 +113,12 @@ public class ProcessWorker : IProcessWorker, IDisposable
             p.StartInfo.UseShellExecute = false;
         }
 
-        ProcessStarted?.Invoke(this, new ProcessStartedEventArgs(this));
+        foreach (var entry in Options.EnvironmentVariables)
+        {
+            p.StartInfo.EnvironmentVariables.Add(entry.Key, entry.Value);
+        }
+
+        ProcessStarted?.Invoke(this, new(this));
 
         try
         {

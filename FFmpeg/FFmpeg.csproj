@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>HanumanInstitute.FFmpeg</PackageId>
-    <Version>3.1</Version>
+    <Version>3.2</Version>
     <Authors>Etienne Charland</Authors>
     <Company>Hanuman Institute</Company>
     <Product>HanumanInstitute.FFmpeg</Product>
@@ -15,6 +15,7 @@
     <PackageReleaseNotes>https://github.com/mysteryx93/HanumanInstitute.FFmpeg/releases</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/mysteryx93/HanumanInstitute.FFmpeg</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>HanumanInstitute.FFmpeg</RootNamespace>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <AssemblyName>HanumanInstitute.FFmpeg</AssemblyName>
@@ -48,6 +49,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Remove="FFmpeg.csproj.DotSettings" />
   </ItemGroup>
   <ItemGroup>

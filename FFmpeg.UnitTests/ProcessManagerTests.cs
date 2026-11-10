@@ -165,6 +165,20 @@ public class ProcessManagerTests
         Assert.Equal(directory, seen);
     }
 
+    [Fact]
+    public void Run_Environment_SetsVariableBeforeStart()
+    {
+        var manager = SetupManager();
+        const string library = "/lib/libvsscript.so";
+        manager.Options.EnvironmentVariables["LD_PRELOAD"] = library;
+        string seen = null;
+        manager.ProcessStarted += (_, e) => seen = e.ProcessWorker.WorkProcess.StartInfo.EnvironmentVariables["LD_PRELOAD"];
+
+        manager.Run(TestFileName, null);
+
+        Assert.Equal(library, seen);
+    }
+
     [Theory]
     [InlineData("ffmpeg", null)]
     [InlineData("ffmpeg", "-i abc.avi")]
