@@ -335,6 +335,8 @@ ProcessPriorityClass **Priority** : Gets or sets the overall priority category f
 
 TimeSpan **Timeout** : Gets or sets a timeout after which the process will be stopped.
 
+Dictionary<string, string> **EnvironmentVariables** : Gets or sets environment variables of the process.
+
 ### ProcessOptionsEncoder : ProcessOptions
 
 Contains additional options to control the behaviors of an encoder process.
