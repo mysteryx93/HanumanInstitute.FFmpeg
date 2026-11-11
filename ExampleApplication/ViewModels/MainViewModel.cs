@@ -27,7 +27,7 @@ public partial class MainViewModel : ReactiveObject
     }
 
     [Reactive]
-    public partial string SourcePath { get; set; } = @"/run/media/hanuman/Storage-ntfs/NaturalGrounding/AOA/Confused.mp4";
+    public partial string SourcePath { get; set; } = @"/run/media/hanuman/Elements-ntfs/NaturalGrounding/AOA/Confused.mp4";
 
     [Reactive]
     public partial string DestinationPath { get; set; } = @"/home/hanuman/Downloads/TestOut.mp4";

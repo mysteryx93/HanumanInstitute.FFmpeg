@@ -58,6 +58,7 @@ public class FileInfoFFmpeg : IFileInfoParser
     {
         data.CheckNotNull();
         return data.StartsWithInvariant("Output ") ||
+               data.StartsWithInvariant("frame=") ||
                data.StartsWithInvariant("Press [q] to stop");
     }
 
@@ -73,7 +74,7 @@ public class FileInfoFFmpeg : IFileInfoParser
     {
         options ??= new ProcessOptionsEncoder();
         IsParsed = true;
-        FileDuration = new TimeSpan();
+        FileDuration = TimeSpan.Zero;
         FormatName = null;
         Metadata.Clear();
         FileStreams.Clear();
@@ -420,7 +421,8 @@ public class FileInfoFFmpeg : IFileInfoParser
                         v.DisplayAspectRatio = Math.Round((double)v.Dar1 / v.Dar2, 3);
                     }
                 }
-                var fps = streamInfo.FirstOrDefault(s => s.EndsWithInvariant("fps"));
+                var fps = streamInfo.FirstOrDefault(s => s.EndsWithInvariant("fps")) ??
+                          streamInfo.FirstOrDefault(s => s.EndsWithInvariant("tbr"));
                 if (fps is { Length: > 4 })
                 {
                     fps = fps.Substring(0, fps.Length - 4);

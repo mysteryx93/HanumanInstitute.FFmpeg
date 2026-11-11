@@ -168,7 +168,7 @@ public class MediaEncoder : IMediaEncoder
         }
 
         var query = new StringBuilder();
-        query.AppendFormat("-y -f {0} -i \"{1}\"", demuxer, source);
+        query.AppendFormat("-y -f {0} -i \"{1}\" -stats", demuxer, source);
         if (encodeArgs.HasValue())
         {
             query.Append(' ').Append(encodeArgs);
